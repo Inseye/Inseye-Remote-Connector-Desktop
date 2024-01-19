@@ -1,0 +1,3 @@
+[submodule "API/proto"]
+	path = API/proto
+	url = https://github.com/Inseye/Remote-Connector-API.git

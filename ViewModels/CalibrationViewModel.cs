@@ -1,0 +1,153 @@
+﻿// Module name: ViewModels
+// File name: CalibrationViewModel.cs
+// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc. - All rights reserved.
+// 
+// All information contained herein is, and remains the property of
+// Inseye Inc. The intellectual and technical concepts contained herein are
+// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
+// in process, and are protected by trade secret or copyright law. Dissemination
+// of this information or reproduction of this material is strictly forbidden
+// unless prior written permission is obtained from Inseye Inc. Access to the source
+// code contained herein is hereby forbidden to anyone except current Inseye Inc.
+// employees, managers or contractors who have executed Confidentiality and
+// Non-disclosure agreements explicitly covering such access.
+
+using System.Reactive;
+using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using EyeTrackerStreaming.Shared.Extensions;
+using EyeTrackerStreaming.Shared.Results;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Utility;
+using ReactiveUI;
+
+namespace EyeTrackingStreaming.ViewModels;
+
+public class CalibrationViewModel : ReactiveObject, IDisposable
+{
+    private readonly CancellationDisposable _lifetimeTokenSource = new();
+    private readonly CompositeDisposable _disposables = new();
+    private readonly ObservableAsPropertyHelper<bool> _isPerformingCalibrationPropertyHelper;
+    private readonly InvokeObservable<bool> _isPerformingCalibrationObservable;
+    private CancellationTokenSource? _currentCalibrationTokenSource;
+    private TaskCompletionSource? _userActionTaskCompletionSource;
+    private string _calibrationStateDescription;
+
+    public CalibrationViewModel()
+    {
+        _calibrationStateDescription = string.Empty;
+        _lifetimeTokenSource.DisposeWith(_disposables);
+        var isPerformingCalibrationObservable = new InvokeObservable<bool>();
+        _isPerformingCalibrationObservable = isPerformingCalibrationObservable;
+        _isPerformingCalibrationPropertyHelper = isPerformingCalibrationObservable
+            .Select(x => x)
+            .ToProperty(this, x => x.IsPerformingCalibration)
+            .DisposeWith(_disposables);
+        _disposables.Add(isPerformingCalibrationObservable);
+        CancelCalibrationCommand = ReactiveCommand.Create(execute: CancelCalibration, isPerformingCalibrationObservable)
+            .DisposeWith(_disposables);
+        ExitCalibration = ReactiveCommand.Create(ExitCalibrationHandler);
+    }
+
+    public string CalibrationStateDescription
+    {
+        get => _calibrationStateDescription;
+        set
+        {
+            if (string.Equals(_calibrationStateDescription, value))
+                return;
+            ((IReactiveObject) this).RaisePropertyChanging();
+            _calibrationStateDescription = value;
+            ((IReactiveObject) this).RaisePropertyChanged();
+        }
+    }
+
+    public bool IsPerformingCalibration
+    {
+        get => _isPerformingCalibrationPropertyHelper.Value;
+        private set => _isPerformingCalibrationObservable.Send(value);
+    }
+
+    public ReactiveCommand<Unit, Unit> CancelCalibrationCommand { get; }
+    public ReactiveCommand<Unit, Unit> ExitCalibration { get; }
+
+    public async Task<Result> Calibrate(IRemoteService serviceUsedToPerformCalibration,
+        CancellationToken token)
+    {
+        if (_lifetimeTokenSource.IsDisposed)
+            throw new ObjectDisposedException(nameof(CalibrationViewModel));
+        if (_userActionTaskCompletionSource is {Task.IsCompleted: true})
+            throw new Exception("Cannot be more the one calibration in progress");
+        token.ThrowIfCancellationRequested();
+        _currentCalibrationTokenSource =
+            CancellationTokenSource.CreateLinkedTokenSource(token, _lifetimeTokenSource.Token);
+        _userActionTaskCompletionSource = new();
+        IsPerformingCalibration = true;
+        Result result;
+        try
+        {
+            try
+            {
+                result =
+                    WrapResult(await serviceUsedToPerformCalibration.PerformCalibration(
+                        _currentCalibrationTokenSource.Token));
+            }
+            catch (TaskCanceledException)
+            {
+                if (_userActionTaskCompletionSource.Task.IsCanceled)
+                    return WrapResult(new ErrorResult("Cancelled by user."));
+                throw; // propagate error up
+            }
+            catch (Exception exception)
+            {
+                result = WrapResult(new ErrorResult("Exception:".ConcatStrings(exception.Message)));
+            }
+            finally
+            {
+                IsPerformingCalibration = false;
+            }
+
+            await _userActionTaskCompletionSource.Task;
+            return result;
+        }
+        finally
+        {
+            _currentCalibrationTokenSource.Dispose();
+            _currentCalibrationTokenSource = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        if (!_lifetimeTokenSource.IsDisposed)
+            _disposables.Dispose();
+    }
+
+    private void CancelCalibration()
+    {
+        if (_lifetimeTokenSource.IsDisposed)
+            throw new ObjectDisposedException(nameof(CalibrationViewModel));
+        _userActionTaskCompletionSource?.TrySetCanceled();
+        _currentCalibrationTokenSource?.Cancel();
+    }
+
+    private void ExitCalibrationHandler()
+    {
+        if (_lifetimeTokenSource.IsDisposed)
+            throw new ObjectDisposedException(nameof(CalibrationViewModel));
+        _userActionTaskCompletionSource?.TrySetResult();
+        _currentCalibrationTokenSource?.Cancel();
+    }
+
+    private Result WrapResult(Result result)
+    {
+        if (result.Success)
+            CalibrationStateDescription = "Calibration finished successfully";
+        else if (result.Failure && result is ErrorResult error)
+            CalibrationStateDescription = "Calibration failed.".ConcatStrings(error.ErrorMessage);
+        else
+            CalibrationStateDescription = "Calibration failed.";
+        return result;
+    }
+}

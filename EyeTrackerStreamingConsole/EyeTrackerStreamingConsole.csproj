@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\API\API.csproj"/>
+        <ProjectReference Include="..\ClientCommunication.DependencyInjection\ClientCommunication.DependencyInjection.csproj" />
+        <ProjectReference Include="..\Shared\Shared.csproj"/>
+        <ProjectReference Include="..\TerminalGUI.DependencyInjection\TerminalGUI.DependencyInjection.csproj" />
+        <ProjectReference Include="..\TerminalGUI\TerminalGUI.csproj"/>
+    </ItemGroup>
+
+</Project>
