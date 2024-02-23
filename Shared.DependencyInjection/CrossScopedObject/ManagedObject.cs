@@ -16,20 +16,25 @@
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
+using Microsoft.Extensions.Logging;
+using SimpleInjector;
 
 namespace Shared.DependencyInjection.CrossScopedObject;
 
-internal class ManagedObject<TInterface, TConcrete, TValidation> : IDisposable, IProvider<TInterface>,
-    IPublisher<TConcrete> where TConcrete : TInterface where TValidation : TConcrete
+internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable, IProvider<TInterface>,
+    IPublisher<TConcrete> where TConcrete : TInterface where TVerification: TInterface, new()
 {
-    private readonly ObjectManager<TInterface, TConcrete, TValidation> _objectManager;
+    private readonly ScopedObjectManager<TInterface, TConcrete> _scopedObjectManager;
     private InvokeObservable<TInterface> _stream = new();
     private DisposeBool _disposed;
-
-    public ManagedObject(ObjectManager<TInterface, TConcrete, TValidation> objectManager)
+    private readonly bool _isVerifying;
+    private readonly ILogger<ManagedObject<TInterface, TConcrete, TVerification>> _logger;
+    public ManagedObject(ScopedObjectManager<TInterface, TConcrete> scopedObjectManager, Scope scope, ILogger<ManagedObject<TInterface, TConcrete, TVerification>> logger)
     {
-        _objectManager = objectManager;
-        objectManager.IncrementCounter();
+        _scopedObjectManager = scopedObjectManager;
+        scopedObjectManager.IncrementCounter();
+        _isVerifying = scope.Container!.IsVerifying;
+        _logger = logger;
     }
 
     void IDisposable.Dispose()
@@ -37,12 +42,30 @@ internal class ManagedObject<TInterface, TConcrete, TValidation> : IDisposable, 
         if (!_disposed.PerformDispose())
             return;
         _stream.Dispose();
-        _objectManager.DecrementCounter();
+        _scopedObjectManager.DecrementCounter();
+    }
+
+    public bool TryGet(out TInterface? value)
+    {
+        if (_scopedObjectManager.Instance != null)
+        {
+            value = _scopedObjectManager.Instance;
+            return true;
+        }
+
+        value = default;
+        return false;
     }
 
     TInterface IProvider<TInterface>.Get()
     {
-        var instance = _objectManager.Instance;
+        if (_isVerifying)
+        {
+            _logger.LogWarning($"Creating validation instance of {nameof(TVerification)}");
+            return new TVerification();
+        }
+
+        var instance = _scopedObjectManager.Instance;
         if (instance == null)
             throw new Exception($"Failed to provide service of type: {typeof(TInterface)}");
         return instance;
@@ -50,11 +73,11 @@ internal class ManagedObject<TInterface, TConcrete, TValidation> : IDisposable, 
 
     IObservable<TInterface?> IProvider<TInterface>.ChangesStream() => _disposed
         ? throw new ObjectDisposedException(nameof(IProvider<TInterface>))
-        : _objectManager.ChangesStream;
+        : _scopedObjectManager.ChangesStream;
 
 
     void IPublisher<TConcrete>.Publish(TConcrete value)
     {
-        _objectManager.Instance = value;
+        _scopedObjectManager.Instance = value;
     }
 }

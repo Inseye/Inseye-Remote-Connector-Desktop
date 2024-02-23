@@ -23,7 +23,7 @@ public static class ContainerExtensions
 {
     public static Container RegisterClientCommunicationServices(this Container container)
     {
-        container.Register<IGazeDataSink, SharedMemoryCommunicator>(Lifestyle.Singleton);
+        container.Collection.Register<IGazeDataSink>(new[]{typeof(SharedMemoryCommunicator)}, Lifestyle.Singleton);
         return container;
     }
 }

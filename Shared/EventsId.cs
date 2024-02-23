@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
-// File name: IProvider.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: EventsId.cs
+// Last edit: 2024-2-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,11 +13,12 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
+using Microsoft.Extensions.Logging;
 
-public interface IProvider<T>
+namespace EyeTrackerStreaming.Shared;
+
+public static class EventsId
 {
-    bool TryGet(out T? value);
-    T Get();
-    IObservable<T?> ChangesStream();
+    public static EventId ConstructorCall = new(1, nameof(ConstructorCall));
+    public static EventId DisposeCall = new(2, nameof(DisposeCall));
 }

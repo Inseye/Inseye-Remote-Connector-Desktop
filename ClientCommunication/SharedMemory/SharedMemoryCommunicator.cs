@@ -20,6 +20,8 @@ using ClientCommunication.SystemInterop.Internal;
 using ClientCommunication.Utility;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using Microsoft.Extensions.Logging;
+using ILogger = Grpc.Core.Logging.ILogger;
 
 namespace ClientCommunication.SharedMemory;
 
@@ -31,16 +33,19 @@ public sealed class SharedMemoryCommunicator : IDisposable, IGazeDataSink
     private static readonly uint SharedFileHeaderSize = (uint) Marshal.SizeOf<SharedMemoryHeader>();
     public static readonly uint TotalSize = GazeDataStructSize * GazeDataBufferMaxSamples + SharedFileHeaderSize;
 
+    private readonly ILogger<SharedMemoryCommunicator> _logger;
     private readonly MemoryMappedFile _mmapedFile;
-
+    
     private readonly MappedMemoryOverlay _mappedMemoryOverlay;
     private readonly object _thisLock = new();
 
     // this lock protected data
     private DisposeBool _disposed = false;
 
-    public SharedMemoryCommunicator()
+    public SharedMemoryCommunicator(ILogger<SharedMemoryCommunicator> logger)
     {
+        _logger = logger;
+        _logger.LogTrace(eventId: EventsId.ConstructorCall, $"Creating {nameof(SharedMemoryCommunicator)}, {{0}}", this);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             _mmapedFile = MemoryMappedFile.CreateOrOpen(SharedMemoryName,
                 TotalSize, MemoryMappedFileAccess.ReadWrite);
@@ -62,6 +67,7 @@ public sealed class SharedMemoryCommunicator : IDisposable, IGazeDataSink
     public void Dispose()
     {
         if (!_disposed.PerformDispose()) return;
+        _logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(SharedMemoryCommunicator)}, id: {{0}}", this);
         lock(_thisLock)
             _mmapedFile.Dispose();
     }

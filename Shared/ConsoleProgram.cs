@@ -19,13 +19,31 @@ namespace EyeTrackerStreaming.Shared;
 /// <summary>
 /// Helper class that runs console main body in safe context 
 /// </summary>
-public class ConsoleProgram {
-    
-    public static async Task Run(Func<Task> main) 
+public class ConsoleProgram
+{
+    public static async Task Run(Func<CancellationToken, Task> main, CancellationToken token)
     {
         try
         {
-            await main();
+            await main(token);
+        }
+        catch (OperationCanceledException operationCanceledException)
+        {
+           if (operationCanceledException.CancellationToken == token)
+               return;
+           HandleException(operationCanceledException);
+        }
+        catch (Exception exception)
+        {
+            HandleException(exception);
+        }
+    }
+
+    public static async Task Run(Task task)
+    {
+        try
+        {
+            await task;
         }
         catch (Exception exception)
         {
@@ -48,25 +66,24 @@ public class ConsoleProgram {
     private static void HandleException(Exception exception)
     {
         Console.Clear();
-        const int maxWidth = 200;
-        const int maxHeight = 300;
         var stringifiedException = exception.ToString();
         var split = stringifiedException
             .Split(Environment.NewLine)
-            .Select(s => s.Chunk(maxWidth))
+            .Select(s => s.Chunk(Console.LargestWindowWidth))
             .SelectMany(s => s)
             .Select(s => new string(s))
             .ToArray();
         var width = split.Max(s => s.Length);
         var height = split.Length + 3;
-        if (height > maxHeight)
+        if (height > Console.LargestWindowHeight)
         {
-            Console.SetWindowSize(width, maxHeight);
+            Console.SetWindowSize(width, Console.LargestWindowHeight);
             var currentLineInWindow = 0;
             foreach (var line in split)
             {
                 Console.Write(line);
-                if (++currentLineInWindow != maxHeight - 1) continue;
+                Console.Write('\n');
+                if (++currentLineInWindow != Console.LargestWindowHeight - 1) continue;
                 Console.WriteLine("Press enter to continue...");
                 Console.ReadLine();
                 Console.Clear();

@@ -14,7 +14,9 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using System.Reactive.Concurrency;
+using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using Microsoft.Extensions.Logging;
 using ReactiveExample;
 using ReactiveUI;
 using Terminal.Gui;
@@ -24,9 +26,11 @@ namespace TerminalGUI;
 public class TerminalGuiApplication : IApplication, IDisposable
 {
     private readonly Toplevel _top;
+    private readonly ILogger<TerminalGuiApplication> _logger;
 
-    public TerminalGuiApplication(Toplevel top)
+    public TerminalGuiApplication(Toplevel top, ILogger<TerminalGuiApplication> logger)
     {
+        _logger = logger;
         Application.Init();
         SynchronizationContext.SetSynchronizationContext(null);
         _top = top;
@@ -34,6 +38,7 @@ public class TerminalGuiApplication : IApplication, IDisposable
 
     public async Task Run(CancellationToken token)
     {
+        _logger.LogInformation("Starting terminal GUI application");
         var currScheduler = RxApp.MainThreadScheduler;
         var currTaskPoolScheduler = RxApp.TaskpoolScheduler;
 
@@ -41,7 +46,7 @@ public class TerminalGuiApplication : IApplication, IDisposable
         {
             RxApp.MainThreadScheduler = TerminalScheduler.Default;
             RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
-            using (token.Register(static () => Application.RequestStop()))
+            await using (token.Register(static () => Application.Invoke(() => Application.RequestStop())))
             {
                 Application.Run(_top);
             }
@@ -50,12 +55,14 @@ public class TerminalGuiApplication : IApplication, IDisposable
         {
             RxApp.MainThreadScheduler = currScheduler;
             RxApp.TaskpoolScheduler = currTaskPoolScheduler;
+            _logger.LogInformation("Stopped terminal GUI application");
         }
     }
 
 
     public void Dispose()
     {
+        _logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
         Application.Shutdown();
     }
 

@@ -34,10 +34,10 @@ public static class ContainerExtension
     public static Container RegisterTerminalGuiApplication(this Container container)
     {
         container.Register<TerminalGuiApplication>(Lifestyle.Singleton);
-        container.RegisterInstance<Toplevel>(new Window
+        container.Register(() => new Toplevel
         {
             BorderStyle = LineStyle.None
-        });
+        }, Lifestyle.Singleton);
         container.Register<IApplication, TerminalGuiApplication>(Lifestyle.Singleton);
         return container;
     }

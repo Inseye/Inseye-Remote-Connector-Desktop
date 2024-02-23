@@ -13,6 +13,7 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
+using System.Reflection.Metadata;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -25,32 +26,54 @@ namespace TerminalGUI.DependencyInjection;
 
 public static class TerminalGuiProgram
 {
-    public static Task Run(Action<Container> config) => Run<Window>(config);
-
-    public static Task Run<TTop>(Action<Container> config) where TTop : Toplevel
+    private sealed class PWindow : Window
     {
-        static async Task Fun(Action<Container> config)
+        public PWindow()
         {
-            using var tokenSource = new CancellationTokenSource();
-            await using var terminalGuiContainer = new Container().SetDefaultOptions();
-            config.Invoke(terminalGuiContainer);
-            terminalGuiContainer.RegisterTerminalRouter();
-            terminalGuiContainer.RegisterTerminalGuiApplication<TTop>();
-            terminalGuiContainer.Verify();
-            try
-            {
-                var guiApplication = terminalGuiContainer.GetInstance<IApplication>();
-                var router = terminalGuiContainer.GetInstance<IRouter>();
-                await Task.WhenAll(
-                    router.NavigateTo(Route.AndroidServiceSearch, tokenSource.Token),
-                    guiApplication.Run(tokenSource.Token));
-            }
-            finally
-            {
-                await tokenSource.CancelAsync();
-            }
+            BorderStyle = LineStyle.None;
         }
+    }
 
-        return ConsoleProgram.Run(() => Fun(config));
+    public static Task Run(Action<Container> config, CancellationToken token = default) => Run<PWindow>(config, token);
+
+    public static Task Run<TTop>(Action<Container> config, CancellationToken token = default) where TTop : Toplevel =>
+        ConsoleProgram.Run(RunUnsafe<TTop>(config, token));
+
+    /// <summary>
+    /// Runs terminal application but doesn't handle top level exceptions in graceful way.  
+    /// </summary>
+    /// <param name="config">Dependency injection container configuration</param>
+    /// <param name="token">GUI application cancellation token</param>
+    public static Task RunUnsafe(Action<Container> config, CancellationToken token = default) =>
+        RunUnsafe<PWindow>(config, token);
+
+    /// <summary>
+    /// Runs terminal application but doesn't handle top level exceptions in graceful way.  
+    /// </summary>
+    /// <param name="config">Dependency injection container configuration</param>
+    /// <param name="token">GUI application cancellation token</param>
+    /// <typeparam name="TTop">Type of Window to display at the top.</typeparam>
+    public static async Task RunUnsafe<TTop>(Action<Container> config, CancellationToken token) where TTop : Toplevel
+    {
+        await Task.Yield();
+        using var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(token);
+        await using var terminalGuiContainer = new Container().SetDefaultOptions();
+        config.Invoke(terminalGuiContainer);
+        terminalGuiContainer.RegisterTerminalRouter();
+        terminalGuiContainer.RegisterTerminalGuiApplication<TTop>();
+        terminalGuiContainer.Verify();
+        try
+        {
+            var guiApplication = terminalGuiContainer.GetInstance<IApplication>();
+            var router = terminalGuiContainer.GetInstance<IRouter>();
+            await Task.WhenAll(
+                router.NavigateTo(Route.AndroidServiceSearch, tokenSource.Token),
+                guiApplication.Run(tokenSource.Token));
+        }
+        finally
+        {
+            if (!tokenSource.IsCancellationRequested)
+                await tokenSource.CancelAsync();
+        }
     }
 }

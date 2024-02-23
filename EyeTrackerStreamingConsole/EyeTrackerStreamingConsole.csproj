@@ -8,11 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\API.DependencyInjection\API.DependencyInjection.csproj" />
         <ProjectReference Include="..\API\API.csproj"/>
         <ProjectReference Include="..\ClientCommunication.DependencyInjection\ClientCommunication.DependencyInjection.csproj" />
         <ProjectReference Include="..\Shared\Shared.csproj"/>
         <ProjectReference Include="..\TerminalGUI.DependencyInjection\TerminalGUI.DependencyInjection.csproj" />
         <ProjectReference Include="..\TerminalGUI\TerminalGUI.csproj"/>
+        <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+      <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     </ItemGroup>
 
 </Project>

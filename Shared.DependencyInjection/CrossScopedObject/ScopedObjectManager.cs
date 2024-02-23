@@ -14,13 +14,11 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.Utility;
-using SimpleInjector;
 
 namespace Shared.DependencyInjection.CrossScopedObject;
 
-internal class ObjectManager<TInterface, TConcrete, TValidation>(TValidation validationObject, Container container) : IDisposable
+internal class ScopedObjectManager<TInterface, TConcrete> : IDisposable
     where TConcrete : TInterface
-    where TValidation : TConcrete
 {
     private readonly object _lock = new();
     private int _counter;
@@ -28,7 +26,7 @@ internal class ObjectManager<TInterface, TConcrete, TValidation>(TValidation val
 
     internal TConcrete? Instance
     {
-        get => container.IsVerifying ? validationObject : _instance;
+        get => _instance;
         set
         {
             var publishChange = !EqualityComparer<TConcrete>.Default.Equals(_instance, value);

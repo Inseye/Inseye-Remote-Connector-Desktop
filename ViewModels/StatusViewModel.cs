@@ -36,13 +36,13 @@ public class StatusViewModel : ReactiveObject, IDisposable
     private readonly ILogger<StatusViewModel> _logger;
     private readonly IRouter _router;
 
-    public StatusViewModel(IProvider<IRemoteService> remoteService,
+    public StatusViewModel(IProvider<IRemoteService> remoteServiceProvider,
         ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router)
     {
         _logger = logger;
         _router = router;
         _calibrationHandler = calibrationHandler;
-        _remoteService = remoteService.Get()!;
+        _remoteService = remoteServiceProvider.Get();
         _lifeBoundedSource.DisposeWith(_disposable);
         _eyeTrackerStatus = _remoteService.EyeTrackerStatusStream
             .ToProperty(this, x => x.EyeTrackerStatus,

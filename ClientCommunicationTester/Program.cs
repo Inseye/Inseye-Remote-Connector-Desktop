@@ -1,11 +1,12 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using ClientCommunication.SharedMemory;
-using ClientCommunication.SystemInterop;
 using EyeTrackerStreaming.Shared;
+using Microsoft.Extensions.Logging.Abstractions;
+
 // Console.WriteLine(SharedMemoryCommunicator.TotalSize);
 // return;
-using var comm = new SharedMemoryCommunicator();
+using var comm = new SharedMemoryCommunicator(NullLogger<SharedMemoryCommunicator>.Instance);
 GazeDataSample sample;
 int i = 1;
 while (i > 0)
