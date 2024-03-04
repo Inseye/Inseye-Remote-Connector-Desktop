@@ -16,18 +16,24 @@
 using System.IO.Pipes;
 using System.Reactive.Disposables;
 using System.Runtime.InteropServices;
-using ClientCommunication.SystemInterop;
+using ClientCommunication.NamedPipes.Messages;
+using ClientCommunication.ServiceInterfaces;
+using ClientCommunication.SharedMemory;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 
 namespace ClientCommunication.NamedPipes;
 
-public class NamedPipeServer : IDisposable, IAsyncDisposable
+/// <summary>
+/// Object that serves 
+/// </summary>
+public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
 {
-    public const int MessageMaximumLength = 1024;
+    private const string ServicePipeName = "inseye.desktop-service";
+    private const int MessageMaximumLength = 1024;
     private readonly Task _backgroundTask;
 
     private readonly ObjectPool<byte[]> _byteBufferObjectPool = new DefaultObjectPool<byte[]>(
@@ -37,20 +43,34 @@ public class NamedPipeServer : IDisposable, IAsyncDisposable
     private readonly SemaphoreSlim _connectionsSemaphore;
     private readonly CancellationDisposable _lifetimeBoundedCancellable;
     private readonly ILogger<NamedPipeServer> _logger;
-    private readonly NamedPipeServerOptions _options;
-    private readonly HashSet<Task> _serveClientTasks;
-    private DisposeBool _disposed;
 
-    public NamedPipeServer(IOptions<NamedPipeServerOptions> options, ILogger<NamedPipeServer> logger)
+    private readonly NamedPipeServerOptions _options = new()
+    {
+        NamedPipeName = ServicePipeName,
+        MaximumNumberOfConcurrentClients = 10
+    };
+
+    private readonly List<Task> _serverTasks = new();
+    private readonly IFactory<ISharedMemoryCommunicator, string> _sharedMemoryCommunicatorFactory;
+    private DisposeBool _disposed;
+    private readonly object _communicatorLock = new();
+    private IDisposable? _sharedMemoryCommunicator;
+    private string _sharedMemoryFilePath = String.Empty;
+
+    public NamedPipeServer(IFactory<ISharedMemoryCommunicator, string> communicatorFactory,
+        ILogger<NamedPipeServer> logger)
     {
         _lifetimeBoundedCancellable = new();
-        _options = options.Value;
         _logger = logger;
-        _connectionsSemaphore = new SemaphoreSlim(0, _options.MaximumNumberOfConcurrentClients);
-        _backgroundTask = MainServerLoop(_lifetimeBoundedCancellable.Token);
-        _serveClientTasks = new HashSet<Task>(_options.MaximumNumberOfConcurrentClients);
+        _connectionsSemaphore = new SemaphoreSlim(_options.MaximumNumberOfConcurrentClients,
+            _options.MaximumNumberOfConcurrentClients);
+        _backgroundTask = MainServerLoop();
+        _sharedMemoryCommunicatorFactory = communicatorFactory;
     }
 
+    /// <summary>
+    /// Stops the server and waits for cleanup and final termination
+    /// </summary>
     public async ValueTask DisposeAsync()
     {
         if (_disposed.PerformDispose())
@@ -66,44 +86,98 @@ public class NamedPipeServer : IDisposable, IAsyncDisposable
             catch (Exception exception)
             {
                 const string message = $"Exception occured in {nameof(NamedPipeServer)}.{nameof(MainServerLoop)}";
-                _logger.LogCritical(default, exception, message);
+                _logger.LogCritical(EventsId.DisposeCall, exception, message);
             }
         }
     }
 
+    /// <summary>
+    /// Waits for server closing the named pipe server main loop.
+    /// Returns immediately if the server has finished serving clients.
+    /// </summary>
+    /// <param name="token">Cancellation token that breaks waiting operation.</param>
+    /// <returns>Task that is finished when main loop ends</returns>
+    public Task WaitForServeLoopClose(CancellationToken token = default)
+    {
+        token.ThrowIfCancellationRequested();
+        if (!token.CanBeCanceled || _backgroundTask.IsCompleted)
+            return _backgroundTask;
+        return _backgroundTask.ContinueWith(task => task, token);
+    }
 
     public void Dispose()
     {
-        if (!_disposed.PerformDispose()) return;
-        _lifetimeBoundedCancellable.Dispose();
-        try
-        {
-            _connectionsSemaphore.Dispose();
-            _backgroundTask.Wait();
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception exception)
-        {
-            const string message = $"Exception occured in {nameof(NamedPipeServer)}.{nameof(MainServerLoop)}";
-            _logger.LogCritical(default, exception, message);
-        }
+        DisposeAsync().AsTask().Wait();
     }
 
-    private async Task MainServerLoop(CancellationToken token)
+    private async Task MainServerLoop()
     {
+        _logger.LogTrace($"Starting {nameof(NamedPipeServer)} server main loop.");
+        var token = _lifetimeBoundedCancellable.Token;
         token.ThrowIfCancellationRequested();
         try
         {
-            while (token.IsCancellationRequested)
+            var waitForClientTask = WaitForClient(token);
+            lock (_serverTasks)
             {
-                var server = await WaitForClient(token);
-                _serveClientTasks.Add(ServeClient(server, token));
+                _serverTasks.Add(waitForClientTask);
+            }
+
+            while (!token.IsCancellationRequested)
+            {
+                Task<Task> whenAnyTask;
+                lock (_serverTasks)
+                {
+                    whenAnyTask = Task.WhenAny(_serverTasks);
+                }
+
+                var finished = await whenAnyTask;
+                if (finished.IsFaulted)
+                    return;
+
+
+                if (finished == waitForClientTask)
+                {
+                    _logger.LogTrace("New client has connected to named pipe server.");
+                    lock (_serverTasks)
+                    {
+                        if (_serverTasks.Count == 1)
+                            MaybeCreateSharedMemoryCommunicator();
+                        _serverTasks.Add(ServeClient(waitForClientTask.Result, token));
+                        waitForClientTask = WaitForClient(token);
+                        _serverTasks[0] = waitForClientTask;
+                    }
+                }
+                else
+                {
+                    _logger.LogTrace("Client has disconnected from named pipe server.");
+                    lock (_serverTasks)
+                    {
+                        _serverTasks.Remove(finished);
+                        if (_serverTasks.Count > 1) continue;
+                        lock (_communicatorLock)
+                        {
+                            _sharedMemoryCommunicator?.Dispose();
+                            _sharedMemoryCommunicator = null;
+                        }
+                    }
+                }
             }
         }
         catch (OperationCanceledException)
         {
+        }
+        finally
+        {
+            _lifetimeBoundedCancellable.Dispose();
+            Task whenAllTask;
+            _logger.LogTrace($"Terminating {nameof(NamedPipeServer)} server main loop.");
+            lock (_serverTasks)
+            {
+                whenAllTask = Task.WhenAll(_serverTasks);
+            }
+
+            await whenAllTask;
         }
     }
 
@@ -116,26 +190,49 @@ public class NamedPipeServer : IDisposable, IAsyncDisposable
         return server;
     }
 
+    /// <summary>
+    /// Looping task that listens to client requests and serve them
+    /// </summary>
+    /// <param name="server">Server used to </param>
+    /// <param name="token"></param>
     private async Task ServeClient(NamedPipeServerStream server, CancellationToken token)
     {
         await Task.Yield();
-        using var buffer = _byteBufferObjectPool.GetAutoDisposing();
-        var array = buffer.Object;
+        using var bufferHandle = _byteBufferObjectPool.GetAutoDisposing();
+        var buffer = bufferHandle.Object;
         try
         {
-            var requestLength = await server.ReadAsync(array, token);
-            var messageType = GetMessageHeader(array.AsSpan()[..requestLength]);
-            switch (messageType)
+            while (!token.IsCancellationRequested)
             {
-                case NamedPipeMessageType.GetNamedPipeName:
-                    //await server.WriteAsync(WritePipeOffer(array, ))
-                    throw new NotImplementedException();
-                    break;
+                var requestLength = await server.ReadAsync(buffer, token);
+                if (requestLength <= 0)
+                    return;
+                var messageType = GetMessageHeader(buffer.AsSpan()[..requestLength]);
+                switch (messageType)
+                {
+                    case NamedPipeMessageType.ServiceInfoRequest:
+                        ServiceInfoResponseMessage message;
+                        lock (_communicatorLock)
+                        {
+                            MaybeCreateSharedMemoryCommunicator();
+                            message = new ServiceInfoResponseMessage
+                            {
+                                Version = ServiceClientCommunicationProtocol.Version,
+                                SharedMemoryPath = _sharedMemoryFilePath
+                            };
+                        }
+
+                        var bytesOccupied = message.SerializeTo(buffer.AsSpan());
+                        await server.WriteAsync(buffer, 0, bytesOccupied, token);
+                        break;
+                    default:
+                        throw new NotImplementedException($"Failed to serve {messageType:G}");
+                }
             }
         }
         finally
         {
-            _byteBufferObjectPool.Return(buffer);
+            _byteBufferObjectPool.Return(bufferHandle);
             if (!_disposed)
                 _connectionsSemaphore.Release();
         }
@@ -146,22 +243,34 @@ public class NamedPipeServer : IDisposable, IAsyncDisposable
         return MemoryMarshal.Read<NamedPipeMessageType>(bytesRead);
     }
 
-    private static ReadOnlyMemory<byte> WritePipeOffer(byte[] messageBuffer, string path)
+    private static string GenerateSharedMemoryName(int totalLength)
     {
-        WriteMessageType(messageBuffer, NamedPipeMessageType.NamedPipeOffer);
-        if (path.Length > messageBuffer.Length)
-            throw new Exception($"String to long. Maximum length is {messageBuffer.Length}");
-        if (path.Any(c => c > 255))
-            throw new Exception("String contains non ASCII characters.");
-        throw new NotImplementedException();
-        // for (var i = 0; i < path.Length; i++)
-        //     messageBuffer[i + ] = (byte) path[i];
-        // return messageBuffer.AsMemory(0, );
+        Random random = Random.Shared;
+        using var sbHandle = SharedStringBuilderObjectPool.GetAutoDisposing();
+        var sb = sbHandle.Object;
+        sb.Append("Local\\");
+        while (sb.Length < totalLength)
+        {
+            var c = (char) random.Next(33, 126);
+            switch (c)
+            {
+                case '/':
+                    continue;
+                case '\\':
+                    continue;
+            }
+
+            sb.Append(c);
+        }
+
+        return sb.ToString();
     }
 
-    private static Memory<byte> WriteMessageType(byte[] buffer, NamedPipeMessageType type)
+    private void MaybeCreateSharedMemoryCommunicator()
     {
-        MemoryMarshal.Write(buffer, type);
-        return new Memory<byte>(buffer, sizeof(NamedPipeMessageType), buffer.Length - sizeof(NamedPipeMessageType));
+        if (_sharedMemoryCommunicator != null)
+            return;
+        _sharedMemoryFilePath = GenerateSharedMemoryName(100);
+        _sharedMemoryCommunicator = _sharedMemoryCommunicatorFactory.Create(_sharedMemoryFilePath);
     }
 }

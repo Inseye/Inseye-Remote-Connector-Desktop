@@ -44,9 +44,9 @@ public static class ContainerExtensions
 
     public static Container RegisterCrossScopeManagedService<TService, TImplementation, TValidationType>(
         this Container container)
-        where TImplementation : class, TService
         where TService : class 
-        where TValidationType : class, TImplementation, new()
+        where TImplementation : class, TService
+        where TValidationType : class, TService, new()
     {
         container.Register<TValidationType>(Lifestyle.Singleton);
         container.Register<ScopedObjectManager<TService, TImplementation>>(Lifestyle.Singleton);

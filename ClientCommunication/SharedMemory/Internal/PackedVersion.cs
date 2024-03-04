@@ -1,6 +1,6 @@
 ﻿// Module name: ClientCommunication
-// File name: SharedMemoryHeader.cs
-// Last edit: 2024-1-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: PackedVersion.cs
+// Last edit: 2024-2-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,8 +13,6 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-// ReSharper disable BuiltInTypeReferenceStyle
-
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ClientCommunication.Utility;
@@ -22,61 +20,40 @@ using ClientCommunication.Utility;
 namespace ClientCommunication.SharedMemory.Internal;
 
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal struct SharedMemoryHeader
+public struct PackedVersion
 {
-    private PackedVersion _version;
-    private UInt32 _headerSize;
-    private UInt32 _totalSize;
-    private UInt32 _sample_size;
-    private volatile UInt32 _samplesWritten;
+    private UInt32 _versionMajor;
+    private UInt32 _versionMinor;
+    private UInt32 _versionPatch;
 
-    public UInt32 VersionMajor
+    public PackedVersion(UInt32 major, UInt32 minor, UInt32 patch)
     {
-        get => _version.Major;
-        set => _version.Major = value;
+        Major = major;
+        Minor = minor;
+        Patch = patch;
+    }
+    
+    public UInt32 Major
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _versionMajor.ReadLittleEndian();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => _versionMajor.WriteLittleEndian(value);
     }
 
-    public UInt32 VersionMinor
+    public UInt32 Minor
     {
-        get => _version.Minor;
-        set => _version.Minor = value;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        get => _versionMinor.ReadLittleEndian();
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        set => _versionMinor.WriteLittleEndian(value);
     }
 
-    public UInt32 VersionPatch
-    {
-        get => _version.Patch;
-        set => _version.Patch = value;
-    }
-
-    public UInt32 HeaderSize
+    public UInt32 Patch
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _headerSize.ReadLittleEndian();
+        get => _versionPatch.ReadLittleEndian();
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _headerSize.WriteLittleEndian(value);
-    }
-
-    public UInt32 TotalSize
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _totalSize.ReadLittleEndian();
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _totalSize.WriteLittleEndian(value);
-    }
-
-    public UInt32 SampleSize
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _sample_size.ReadLittleEndian();
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _sample_size.WriteLittleEndian(value);
-    }
-
-    public UInt32 SamplesWritten
-    {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        get => _samplesWritten.ReadLittleEndian();
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        set => _samplesWritten = value.ReadLittleEndian();
+        set => _versionPatch.WriteLittleEndian(value);
     }
 }

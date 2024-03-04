@@ -15,39 +15,35 @@
 
 using System.IO.MemoryMappedFiles;
 using System.Runtime.InteropServices;
+using ClientCommunication.ServiceInterfaces;
 using ClientCommunication.SharedMemory.Internal;
-using ClientCommunication.SystemInterop.Internal;
 using ClientCommunication.Utility;
 using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Microsoft.Extensions.Logging;
-using ILogger = Grpc.Core.Logging.ILogger;
 
 namespace ClientCommunication.SharedMemory;
 
-public sealed class SharedMemoryCommunicator : IDisposable, IGazeDataSink
+public sealed class SharedMemoryCommunicator : ISharedMemoryCommunicator
 {
-    public const string SharedMemoryName = "Local\\Inseye-Remote-Connector-Shared-Memory";
     private const int GazeDataBufferMaxSamples = 1_000;
     private static readonly uint GazeDataStructSize = (uint) Marshal.SizeOf<EyeTrackerDataStruct>();
     private static readonly uint SharedFileHeaderSize = (uint) Marshal.SizeOf<SharedMemoryHeader>();
     public static readonly uint TotalSize = GazeDataStructSize * GazeDataBufferMaxSamples + SharedFileHeaderSize;
 
-    private readonly ILogger<SharedMemoryCommunicator> _logger;
+    private readonly ILogger<ISharedMemoryCommunicator> _logger;
     private readonly MemoryMappedFile _mmapedFile;
     
     private readonly MappedMemoryOverlay _mappedMemoryOverlay;
     private readonly object _thisLock = new();
-
     // this lock protected data
     private DisposeBool _disposed = false;
 
-    public SharedMemoryCommunicator(ILogger<SharedMemoryCommunicator> logger)
+    public SharedMemoryCommunicator(string sharedMemoryFilePath, ILogger<ISharedMemoryCommunicator> logger)
     {
         _logger = logger;
-        _logger.LogTrace(eventId: EventsId.ConstructorCall, $"Creating {nameof(SharedMemoryCommunicator)}, {{0}}", this);
+        _logger.LogTrace(eventId: EventsId.ConstructorCall, $"Creating {nameof(SharedMemoryCommunicator)}, {{this}}, fileName: {{sharedMemoryFileName}}", this, sharedMemoryFilePath);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            _mmapedFile = MemoryMappedFile.CreateOrOpen(SharedMemoryName,
+            _mmapedFile = MemoryMappedFile.CreateOrOpen(sharedMemoryFilePath,
                 TotalSize, MemoryMappedFileAccess.ReadWrite);
         else
             throw new NotImplementedException(

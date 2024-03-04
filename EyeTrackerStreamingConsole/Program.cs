@@ -16,7 +16,10 @@
 // See https://aka.ms/new-console-template for more information
 
 using System.Reactive.Disposables;
+using ClientCommunication.NamedPipes;
+using ClientCommunication.ServiceInterfaces;
 using ClientCommunication.SharedMemory;
+using ClientCommunication.Utility;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.NullObjects;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -107,11 +110,16 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
         
         serviceContainer
             .RegisterCrossContainer<IProvider<IRemoteService>>(masterContainer, Lifestyle.Scoped);
-        serviceContainer.Register<IGazeDataSink, SharedMemoryCommunicator>(Lifestyle.Singleton);
+        serviceContainer
+            .RegisterCrossScopeManagedService<IGazeDataSink, NullGazeDataSink>();
         serviceContainer.Register<RemoteServiceToClientCommunicator>(Lifestyle.Scoped);
+        serviceContainer.Register<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactory>();
+        serviceContainer.RegisterDecorator<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactoryWrapper>();
+        serviceContainer.Register<NamedPipeServer>(Lifestyle.Scoped);
         serviceContainer.Verify();
         await using var scope = new Scope(serviceContainer);
         scope.GetInstance<RemoteServiceToClientCommunicator>();
+        scope.GetInstance<NamedPipeServer>();
         await tcs.Task;
     }
     catch (OperationCanceledException operationCanceledException)
@@ -124,7 +132,7 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
 
 static async Task WrapParallelTasks(Task[] tasks, Action onFirstFinished)
 {
-    List<Exception> exceptions = new List<Exception>();
+    var exceptions = new List<Exception>();
     try
     {
         var finishedTask = await Task.WhenAny(tasks);

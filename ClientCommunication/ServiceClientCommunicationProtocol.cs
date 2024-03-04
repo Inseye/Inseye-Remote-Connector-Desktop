@@ -1,6 +1,6 @@
-﻿// Module name: Core.DependencyInjection
-// File name: ContainerExtensions.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ClientCommunication
+// File name: SCCP.cs
+// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,11 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ClientCommunication.NamedPipes;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using SimpleInjector;
+using Version = EyeTrackerStreaming.Shared.Version;
 
-namespace ClientCommunication.DependencyInjection;
+namespace ClientCommunication;
 
-public static class ContainerExtensions
+public static class ServiceClientCommunicationProtocol
 {
-    public static Container RegisterClientCommunicationServices(this Container container)
-    {
-        container.Register<IFactory<IDisposable, string>>(Lifestyle.Singleton);
-        container.Register<NamedPipeServer>();
-        return container;
-    }
+    public static readonly Version Version = new Version(0, 1, 0);
 }

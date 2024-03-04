@@ -1,6 +1,6 @@
-﻿// Module name: Core.DependencyInjection
-// File name: ContainerExtensions.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ClientCommunication
+// File name: VersionExtensions.cs
+// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,15 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ClientCommunication.NamedPipes;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using SimpleInjector;
+using ClientCommunication.SharedMemory.Internal;
+using Version = EyeTrackerStreaming.Shared.Version;
 
-namespace ClientCommunication.DependencyInjection;
+namespace ClientCommunication.Extensions;
 
-public static class ContainerExtensions
+internal static class VersionExtensions
 {
-    public static Container RegisterClientCommunicationServices(this Container container)
+    internal static PackedVersion ToPackedVersion(this Version version)
     {
-        container.Register<IFactory<IDisposable, string>>(Lifestyle.Singleton);
-        container.Register<NamedPipeServer>();
-        return container;
+        return new PackedVersion((uint) version.Major, (uint) version.Minor, (uint) version.Patch);
     }
 }

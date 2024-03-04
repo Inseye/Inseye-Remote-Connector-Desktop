@@ -1,6 +1,6 @@
-﻿// Module name: Core.DependencyInjection
-// File name: ContainerExtensions.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ClientCommunication
+// File name: SharedMemoryFactory.cs
+// Last edit: 2024-2-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,23 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ClientCommunication.NamedPipes;
+using ClientCommunication.ServiceInterfaces;
+using ClientCommunication.SharedMemory;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using SimpleInjector;
+using Microsoft.Extensions.Logging;
 
-namespace ClientCommunication.DependencyInjection;
+namespace ClientCommunication.Utility;
 
-public static class ContainerExtensions
+public class SharedMemoryFactory : IFactory<ISharedMemoryCommunicator, string>
 {
-    public static Container RegisterClientCommunicationServices(this Container container)
+    private readonly ILogger<ISharedMemoryCommunicator> _logger;
+
+    public SharedMemoryFactory(ILogger<ISharedMemoryCommunicator> logger)
     {
-        container.Register<IFactory<IDisposable, string>>(Lifestyle.Singleton);
-        container.Register<NamedPipeServer>();
-        return container;
+        _logger = logger;
+    }
+    public ISharedMemoryCommunicator Create(string sharedMemoryFileName)
+    {
+        return new SharedMemoryCommunicator(sharedMemoryFileName, _logger);
     }
 }

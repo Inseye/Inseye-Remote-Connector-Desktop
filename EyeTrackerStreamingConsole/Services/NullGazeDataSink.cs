@@ -1,6 +1,6 @@
-﻿// Module name: ClientCommunication
-// File name: NamedPipeMessageType.cs
-// Last edit: 2024-2-5 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: EyeTrackerStreamingConsole
+// File name: NullGazeDataSink.cs
+// Last edit: 2024-3-4 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,10 +13,15 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-namespace ClientCommunication.NamedPipes;
+using EyeTrackerStreaming.Shared;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-public enum NamedPipeMessageType : Int32
+namespace EyeTrackerStreamingConsole.Services;
+
+public class NullGazeDataSink : IGazeDataSink
 {
-    GetNamedPipeName,
-    NamedPipeOffer,
+    public void WriteGazeData(in GazeDataSample gazeDataSample)
+    {
+        
+    }
 }

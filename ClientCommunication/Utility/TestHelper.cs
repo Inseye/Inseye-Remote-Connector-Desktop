@@ -1,6 +1,6 @@
-﻿// Module name: Core.DependencyInjection
-// File name: ContainerExtensions.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ClientCommunication
+// File name: TestHelper.cs
+// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,20 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ClientCommunication.NamedPipes;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using SimpleInjector;
+using System.Runtime.InteropServices;
+using ClientCommunication.NamedPipes.Messages.Memory;
 
-namespace ClientCommunication.DependencyInjection;
+namespace ClientCommunication.Utility;
 
-public static class ContainerExtensions
+public static class TestHelper
 {
-    public static Container RegisterClientCommunicationServices(this Container container)
+    private const int ExpectedMemoryLayoutSize = 1024;
+    public static void AssertMemoryLayoutStructSize()
     {
-        container.Register<IFactory<IDisposable, string>>(Lifestyle.Singleton);
-        container.Register<NamedPipeServer>();
-        return container;
+        var actualSize = Marshal.SizeOf<ServiceInfoResponseMemoryLayout>();
+        if (actualSize != ExpectedMemoryLayoutSize)
+            throw new Exception(
+                $"Invalid memory size of {nameof(ServiceInfoResponseMemoryLayout)}, expected {ExpectedMemoryLayoutSize} but got {actualSize} instead.");
     }
+    
 }

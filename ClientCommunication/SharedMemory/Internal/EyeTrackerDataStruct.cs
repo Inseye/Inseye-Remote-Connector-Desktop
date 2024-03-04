@@ -15,7 +15,6 @@
 
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using ClientCommunication.SystemInterop;
 using ClientCommunication.Utility;
 // ReSharper disable BuiltInTypeReferenceStyle
 

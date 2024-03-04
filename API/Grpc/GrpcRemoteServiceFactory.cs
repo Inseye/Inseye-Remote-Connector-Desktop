@@ -35,7 +35,7 @@ public class GrpcRemoteServiceFactory(ILogger<GrpcRemoteServiceFactory> factoryL
             {
                 registration = token.Register(() => channel.ShutdownAsync());
             }
-
+            serviceLogger.LogTrace("Connecting to {offer}", offer);
             await channel.ConnectAsync();
             return new GrpcRemoteService(channel, offer, serviceLogger);
         }

@@ -22,7 +22,7 @@ using SimpleInjector;
 namespace Shared.DependencyInjection.CrossScopedObject;
 
 internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable, IProvider<TInterface>,
-    IPublisher<TConcrete> where TConcrete : TInterface where TVerification: TInterface, new()
+    IPublisher<TConcrete> where TConcrete : class, TInterface where TVerification: TInterface, new()
 {
     private readonly ScopedObjectManager<TInterface, TConcrete> _scopedObjectManager;
     private InvokeObservable<TInterface> _stream = new();
@@ -45,7 +45,7 @@ internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable
         _scopedObjectManager.DecrementCounter();
     }
 
-    public bool TryGet(out TInterface? value)
+    public bool TryGet(out TInterface value)
     {
         if (_scopedObjectManager.Instance != null)
         {
@@ -53,7 +53,7 @@ internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable
             return true;
         }
 
-        value = default;
+        value = default!;
         return false;
     }
 

@@ -15,7 +15,7 @@
 
 namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-public interface IPublisher<in T>
+public interface IPublisher<in T> where T: class
 {
-    public void Publish(T value);
+    public void Publish(T? value);
 }

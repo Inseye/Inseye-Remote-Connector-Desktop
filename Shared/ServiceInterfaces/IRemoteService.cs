@@ -17,12 +17,11 @@ using EyeTrackerStreaming.Shared.Results;
 
 namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-public interface IRemoteService
+public interface IRemoteService : IGazeDataSource
 {
     public ServiceOffer HostInfo { get; }
     public RemoteServiceStatus ServiceStatus { get; }
     public IObservable<RemoteServiceStatus> ServiceStatusStream { get; }
-    public IObservable<GazeDataSample> GazeDataStream { get; }
     public IObservable<EyeTrackerStatus> EyeTrackerStatusStream { get; }
     public Task<Result> PerformCalibration(CancellationToken userToken);
 }

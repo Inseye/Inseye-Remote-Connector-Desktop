@@ -21,4 +21,9 @@ public readonly struct ServiceOffer(string serviceName, string address, int port
     public readonly string Address = address;
     public readonly int Port = port;
     public readonly Version Version = version;
+
+    public override string ToString()
+    {
+        return $"{serviceName} at {Address}:{Port} ver: {Version}";
+    }
 }

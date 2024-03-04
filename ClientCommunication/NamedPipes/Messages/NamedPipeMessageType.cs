@@ -1,6 +1,6 @@
-﻿// Module name: Core.DependencyInjection
-// File name: ContainerExtensions.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ClientCommunication
+// File name: NamedPipeMesageType.cs
+// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,10 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ClientCommunication.NamedPipes;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using SimpleInjector;
+namespace ClientCommunication.NamedPipes.Messages;
 
-namespace ClientCommunication.DependencyInjection;
-
-public static class ContainerExtensions
+public enum NamedPipeMessageType : UInt32
 {
-    public static Container RegisterClientCommunicationServices(this Container container)
-    {
-        container.Register<IFactory<IDisposable, string>>(Lifestyle.Singleton);
-        container.Register<NamedPipeServer>();
-        return container;
-    }
+    ServiceInfoRequest = 0,
+    ServiceInfoResponse = 1
 }
