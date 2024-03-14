@@ -42,18 +42,18 @@ await ConsoleProgram.Run(async token =>
     {
         await using var masterContainer = new Container().SetDefaultOptions();
         masterContainer
-            .RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>()
-            .AddLogging(config =>
-            {
-                var serilogLogger = new LoggerConfiguration()
-                    .MinimumLevel.Verbose()
-                    .Enrich.FromLogContext()
-                    .WriteTo.File(
-                        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-                            "desktop_service.log"))
-                    .CreateLogger();
-                config.AddSerilog(logger: serilogLogger);
-            });
+            .RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>();
+        masterContainer.AddLogging(config =>
+        {
+            var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                        "desktop_service.log"))
+                .CreateLogger();
+            config.AddSerilog(logger: serilogLogger);
+        });
         masterContainer.Verify();
         ConsoleEventHandler.SetCaptureFunction(ctrlType =>
         {
@@ -62,7 +62,6 @@ await ConsoleProgram.Run(async token =>
             ConsoleEventHandler.RemoveCaptureFunction();
             disposeFinishedEvent.WaitOne();
             return true;
-
         });
         var parallelTasks = new[]
         {
@@ -90,7 +89,6 @@ await ConsoleProgram.Run(async token =>
         ConsoleEventHandler.RemoveCaptureFunction();
         disposeFinishedEvent.Set();
     }
-
 }, mainCancellationTokenSource.Token);
 return;
 
@@ -107,7 +105,7 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
         serviceContainer
             .RegisterCrossContainer<ILoggerFactory>(masterContainer, Lifestyle.Singleton)
             .Register(typeof(ILogger<>), typeof(Logger<>), Lifestyle.Singleton);
-        
+
         serviceContainer
             .RegisterCrossContainer<IProvider<IRemoteService>>(masterContainer, Lifestyle.Scoped);
         serviceContainer
@@ -149,6 +147,7 @@ static async Task WrapParallelTasks(Task[] tasks, Action onFirstFinished)
     {
         exceptions.Add(exception);
     }
+
     onFirstFinished.Invoke(); //should not throw 
     try
     {
@@ -162,8 +161,8 @@ static async Task WrapParallelTasks(Task[] tasks, Action onFirstFinished)
     {
         exceptions.Add(exception);
     }
+
     if (exceptions.Count == 0)
         return;
     throw new AggregateException(exceptions);
-
 }

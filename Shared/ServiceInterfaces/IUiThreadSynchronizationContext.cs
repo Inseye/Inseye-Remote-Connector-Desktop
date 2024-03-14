@@ -1,6 +1,6 @@
-﻿// Module name: ClientCommunication
-// File name: ISharedMemoryCommunicator.cs
-// Last edit: 2024-3-4 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: TerminalGUI
+// File name: ITerminalSynchronizationContextProvider.cs
+// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,11 +13,9 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
+namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-namespace ClientCommunication.ServiceInterfaces;
-
-public interface ISharedMemoryCommunicator : IGazeDataSink, IDisposable
+public interface IUiThreadSynchronizationContext
 {
-    string SharedMemoryFilePath { get; } 
+    SynchronizationContext Context { get; }
 }

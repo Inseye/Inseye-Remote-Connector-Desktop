@@ -21,40 +21,42 @@ namespace EyeTrackerStreamingConsole.Services;
 
 public sealed class SharedMemoryFactoryWrapper : IFactory<ISharedMemoryCommunicator, string>
 {
-    private readonly IFactory<ISharedMemoryCommunicator, string> _decorated;
-    private readonly IPublisher<IGazeDataSink> _publisher;
+    private IFactory<ISharedMemoryCommunicator, string> Decorated { get; }
+    private IPublisher<IGazeDataSink> Publisher { get; }
     public SharedMemoryFactoryWrapper(IFactory<ISharedMemoryCommunicator, string> decorated, IPublisher<IGazeDataSink> dataSinkPublisher)
     {
-        _decorated = decorated;
-        _publisher = dataSinkPublisher;
+        Decorated = decorated;
+        Publisher = dataSinkPublisher;
     }
 
     public ISharedMemoryCommunicator Create(string argument)
     {
-        return new Wrapper(_decorated.Create(argument), _publisher);
+        return new Wrapper(Decorated.Create(argument), Publisher);
     }
 
     private sealed class Wrapper : ISharedMemoryCommunicator
     {
         private DisposeBool _disposed;
-        private readonly ISharedMemoryCommunicator _wrapped;
-        private readonly IPublisher<IGazeDataSink> _gazeDataSinkPublisher;
+        private ISharedMemoryCommunicator Wrapped { get; }
+        private IPublisher<IGazeDataSink> GazeDataSinkPublisher { get; }
         public Wrapper(ISharedMemoryCommunicator communicator, IPublisher<IGazeDataSink> gazeDataSinkPublisher)
         {
-            _wrapped = communicator;
-            _gazeDataSinkPublisher = gazeDataSinkPublisher;
-            _gazeDataSinkPublisher.Publish(communicator);
+            Wrapped = communicator;
+            GazeDataSinkPublisher = gazeDataSinkPublisher;
+            GazeDataSinkPublisher.Publish(communicator);
         }
 
         public void WriteGazeData(in GazeDataSample gazeDataSample)
         {
-            _wrapped.WriteGazeData(gazeDataSample);
+            Wrapped.WriteGazeData(gazeDataSample);
         }
         
         public void Dispose()
         {
             if(_disposed.PerformDispose())
-                _gazeDataSinkPublisher.Publish(null);
+                GazeDataSinkPublisher.Publish(null);
         }
+
+        public string SharedMemoryFilePath => Wrapped.SharedMemoryFilePath;
     }
 }

@@ -20,7 +20,7 @@ using Microsoft.Extensions.Logging;
 
 namespace API.Grpc;
 
-public class GrpcRemoteServiceFactory(ILogger<GrpcRemoteServiceFactory> factoryLogger, ILogger<GrpcRemoteService> serviceLogger) : IRemoteServiceFactory
+public class GrpcRemoteServiceFactory(ILogger<GrpcRemoteServiceFactory> factoryLogger, ILogger<IRemoteService> serviceLogger) : IRemoteServiceFactory
 {
     public async ValueTask<IRemoteService> CreateRemoteService(ServiceOffer offer, CancellationToken token)
     {

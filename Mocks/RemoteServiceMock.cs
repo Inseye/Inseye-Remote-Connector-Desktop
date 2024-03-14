@@ -35,6 +35,7 @@ public sealed class RemoteServiceMock(ServiceOffer offer) : IRemoteService, IDis
 
     public ServiceOffer HostInfo { get; } = offer;
     public RemoteServiceStatus ServiceStatus => RemoteServiceStatus.Connected;
+    public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatus.Connected;
     public IObservable<RemoteServiceStatus> ServiceStatusStream => _remoteStatusStream;
     public IObservable<GazeDataSample> GazeDataStream => _gazeDataStream;
     public IObservable<EyeTrackerStatus> EyeTrackerStatusStream => _eyeTrackerStatus;
@@ -43,5 +44,10 @@ public sealed class RemoteServiceMock(ServiceOffer offer) : IRemoteService, IDis
     {
         await Task.Delay(4000, userToken);
         return SuccessResult.Default;
+    }
+
+    public void Disconnect()
+    {
+        
     }
 }

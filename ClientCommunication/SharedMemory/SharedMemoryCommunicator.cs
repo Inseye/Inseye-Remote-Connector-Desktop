@@ -37,9 +37,11 @@ public sealed class SharedMemoryCommunicator : ISharedMemoryCommunicator
     private readonly object _thisLock = new();
     // this lock protected data
     private DisposeBool _disposed = false;
+    public string SharedMemoryFilePath { get; }
 
     public SharedMemoryCommunicator(string sharedMemoryFilePath, ILogger<ISharedMemoryCommunicator> logger)
     {
+        SharedMemoryFilePath = sharedMemoryFilePath;
         _logger = logger;
         _logger.LogTrace(eventId: EventsId.ConstructorCall, $"Creating {nameof(SharedMemoryCommunicator)}, {{this}}, fileName: {{sharedMemoryFileName}}", this, sharedMemoryFilePath);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))

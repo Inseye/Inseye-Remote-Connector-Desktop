@@ -38,6 +38,7 @@ public static class ContainerExtension
         {
             BorderStyle = LineStyle.None
         }, Lifestyle.Singleton);
+        container.Register<IUiThreadSynchronizationContext, TerminalGuiApplication>(Lifestyle.Singleton);
         container.Register<IApplication, TerminalGuiApplication>(Lifestyle.Singleton);
         return container;
     }

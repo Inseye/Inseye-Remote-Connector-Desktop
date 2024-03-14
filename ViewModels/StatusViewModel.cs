@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels
 // File name: StatusViewModel.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -27,63 +27,76 @@ namespace EyeTrackingStreaming.ViewModels;
 
 public class StatusViewModel : ReactiveObject, IDisposable
 {
-    private readonly ICalibrationHandler _calibrationHandler;
-    private readonly CompositeDisposable _disposable = new();
-    private readonly ObservableAsPropertyHelper<EyeTrackerStatus> _eyeTrackerStatus;
-    private readonly CancellationDisposable _lifeBoundedSource = new();
-    private readonly IRemoteService _remoteService;
-    private readonly ObservableAsPropertyHelper<RemoteServiceStatus> _remoteServiceStatus;
-    private readonly ILogger<StatusViewModel> _logger;
-    private readonly IRouter _router;
-
     public StatusViewModel(IProvider<IRemoteService> remoteServiceProvider,
-        ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router)
+        ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router,
+        IPublisher<IRemoteService> remoteServicePublisher)
     {
-        _logger = logger;
-        _router = router;
-        _calibrationHandler = calibrationHandler;
-        _remoteService = remoteServiceProvider.Get();
-        _lifeBoundedSource.DisposeWith(_disposable);
-        _eyeTrackerStatus = _remoteService.EyeTrackerStatusStream
+        RemoteServicePublisher = remoteServicePublisher;
+        Logger = logger;
+        Router = router;
+        CalibrationHandler = calibrationHandler;
+        RemoteService = remoteServiceProvider.Get();
+        LifeBoundedSource.DisposeWith(Disposable);
+        EyeTrackerStatusPropertyHelper = RemoteService.EyeTrackerStatusStream
             .ToProperty(this, x => x.EyeTrackerStatus,
-                () => EyeTrackerStatus.Unknown)
-            .DisposeWith(_disposable);
-        _remoteServiceStatus = _remoteService.ServiceStatusStream
-            .ToProperty(this, x => x.RemoteServiceStatus, () => _remoteService.ServiceStatus)
-            .DisposeWith(_disposable);
-        _remoteService.ServiceStatusStream
+                () => RemoteService.EyeTrackerStatus)
+            .DisposeWith(Disposable);
+        RemoteServiceStatusPropertyHelper = RemoteService.ServiceStatusStream
+            .ToProperty(this, x => x.RemoteServiceStatus, () => RemoteService.ServiceStatus)
+            .DisposeWith(Disposable);
+        RemoteService.ServiceStatusStream
             .Where(s => s == RemoteServiceStatus.Disconnected || s == RemoteServiceStatus.Disconnecting)
             .ObserveOn(RxApp.MainThreadScheduler)
             .InvokeCommand(ReactiveCommand.CreateFromTask<RemoteServiceStatus, Unit>(OnServiceDisconnected)
-                .DisposeWith(_disposable))
-            .DisposeWith(_disposable);
-        HostName = _remoteService.HostInfo.ServiceName;
+                .DisposeWith(Disposable))
+            .DisposeWith(Disposable);
+        HostName = RemoteService.HostInfo.ServiceName;
         BeginCalibration = ReactiveCommand.CreateFromTask(PerformCalibration
                 //, canExecute: _calibrationHandler.IsPerformingCalibration.Select(x => !x)
             )
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposable);
+        Disconnect = ReactiveCommand.CreateFromTask(PerformDisconnect).DisposeWith(Disposable);
     }
 
-    public EyeTrackerStatus EyeTrackerStatus => _eyeTrackerStatus.Value;
-    public RemoteServiceStatus RemoteServiceStatus => _remoteServiceStatus.Value;
+    private ICalibrationHandler CalibrationHandler { get; }
+    private CompositeDisposable Disposable { get; } = new();
+    private ObservableAsPropertyHelper<EyeTrackerStatus> EyeTrackerStatusPropertyHelper { get; }
+    private CancellationDisposable LifeBoundedSource { get; } = new();
+    private IRemoteService RemoteService { get; }
+    private ObservableAsPropertyHelper<RemoteServiceStatus> RemoteServiceStatusPropertyHelper { get; }
+    private ILogger<StatusViewModel> Logger { get; }
+    private IRouter Router { get; }
+    private IPublisher<IRemoteService> RemoteServicePublisher { get; }
+
+    public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatusPropertyHelper.Value;
+    public RemoteServiceStatus RemoteServiceStatus => RemoteServiceStatusPropertyHelper.Value;
     public ReactiveCommand<Unit, Result> BeginCalibration { get; }
+    public ReactiveCommand<Unit, Unit> Disconnect { get; }
 
     public string HostName { get; }
 
     public void Dispose()
     {
-        _logger.LogTrace($"Disposing {nameof(StatusViewModel)}");
-        _disposable.Dispose();
+        Logger.LogTrace($"Disposing {nameof(StatusViewModel)}");
+        Disposable.Dispose();
     }
 
     private Task<Result> PerformCalibration()
     {
-        return _calibrationHandler.CalibrationHandler(_remoteService, _lifeBoundedSource.Token);
+        return CalibrationHandler.CalibrationHandler(RemoteService, LifeBoundedSource.Token);
+    }
+
+    private async Task<Unit> PerformDisconnect()
+    {
+        Logger.LogDebug("Disconnecting from remote service [user action]");
+        RemoteService.Disconnect();
+        RemoteServicePublisher.Publish(null);
+        return await OnServiceDisconnected(RemoteServiceStatus.Disconnected);
     }
 
     private async Task<Unit> OnServiceDisconnected(RemoteServiceStatus status)
     {
-        await _router.NavigateTo(Route.AndroidServiceSearch, default);
+        await Router.NavigateTo(Route.AndroidServiceSearch, default);
         return Unit.Default;
     }
 }

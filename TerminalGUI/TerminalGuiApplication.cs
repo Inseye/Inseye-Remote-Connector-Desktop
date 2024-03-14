@@ -23,57 +23,126 @@ using Terminal.Gui;
 
 namespace TerminalGUI;
 
-public class TerminalGuiApplication : IApplication, IDisposable
+public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchronizationContext
 {
-    private readonly Toplevel _top;
-    private readonly ILogger<TerminalGuiApplication> _logger;
+    private enum State : uint
+    {
+        Initializing,
+        Initialized,
+        Running,
+        Disposed,
+        Faulted
+    }
+    private Toplevel Top { get; }
+    private ILogger<TerminalGuiApplication> Logger { get; }
+    private uint _applicationStateBackingField;
 
+    private State ApplicationState
+    {
+        get => (State) _applicationStateBackingField;
+        set => _applicationStateBackingField = (uint) value;
+    }
+    private Thread MainUiThread { get; set; }
+    private TaskCompletionSource WaitForRunInvoke { get; }
+    private TaskCompletionSource WaitForRunFinished { get; } = new();
+    private CancellationToken Token { get; set; }
+    public SynchronizationContext Context { get; private set; }
     public TerminalGuiApplication(Toplevel top, ILogger<TerminalGuiApplication> logger)
     {
-        _logger = logger;
-        Application.Init();
-        SynchronizationContext.SetSynchronizationContext(null);
-        _top = top;
+        Context = null!; // Context is initialized in UiThreadImplementation
+        Logger = logger;
+        Top = top;
+        WaitForRunInvoke = new TaskCompletionSource();
+        MainUiThread = new Thread(UiThreadImplementation);
+        MainUiThread.Name = "MainUiThread";
+        MainUiThread.Start();
+        ApplicationState = State.Initializing;
+        while(ApplicationState == State.Initializing) { 
+            // spin wait for MainUiThread
+        }
+
+        if (ApplicationState != State.Initialized)
+            throw new Exception("Failed to initialize TerminalGuiApplication. Check application logs.");
     }
 
-    public async Task Run(CancellationToken token)
+    public Task Run(CancellationToken token)
     {
-        _logger.LogInformation("Starting terminal GUI application");
+        if ((uint) State.Initialized != Interlocked.CompareExchange(ref _applicationStateBackingField, (uint) State.Running,
+                (uint) State.Initialized))
+            throw new Exception($"Application is in invalid state {ApplicationState:G}."); 
+        Logger.LogInformation("Starting terminal GUI application");
+        Token = token;
+        try
+        {
+            token.ThrowIfCancellationRequested();
+            WaitForRunInvoke.TrySetResult();
+        }
+        catch (OperationCanceledException tcs)
+        {
+            WaitForRunInvoke.TrySetCanceled(tcs.CancellationToken);
+            throw;
+        }
+
+        return WaitForRunFinished.Task;
+    }
+
+    private void UiThreadImplementation()
+    {
+        // initialize application on Ui managed thread
+        try
+        {
+            Application.Init();
+            Context = SynchronizationContext.Current ?? throw new Exception("Synchronization context is null");
+            ApplicationState = State.Initialized;
+        }
+        catch (Exception exception)
+        {
+            ApplicationState = State.Faulted;
+            Logger.LogCritical(exception: exception, "Ui Thread Init block thrown exception");
+        }
+        WaitForRunInvoke.Task.Wait(); // wait for 'Run' method invoke
+        // continue 
         var currScheduler = RxApp.MainThreadScheduler;
         var currTaskPoolScheduler = RxApp.TaskpoolScheduler;
-
         try
         {
             RxApp.MainThreadScheduler = TerminalScheduler.Default;
             RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
-            await using (token.Register(static () => Application.Invoke(() => Application.RequestStop())))
+            using(Token.Register(static () => Application.Invoke(() => Application.RequestStop())))
             {
-                Application.Run(_top);
+                Application.Run(Top);
             }
         }
         finally
         {
             RxApp.MainThreadScheduler = currScheduler;
             RxApp.TaskpoolScheduler = currTaskPoolScheduler;
-            _logger.LogInformation("Stopped terminal GUI application");
+            Logger.LogInformation("Stopped terminal GUI application");
+            if (Token.IsCancellationRequested)
+                WaitForRunFinished.TrySetCanceled(Token);
+            else
+                WaitForRunFinished.TrySetResult();
         }
     }
 
 
     public void Dispose()
     {
-        _logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
+        Logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
+        WaitForRunInvoke.TrySetCanceled();
         Application.Shutdown();
+        MainUiThread.Join();
+        ApplicationState = State.Disposed;
     }
 
     public void RemoveAll()
     {
-        _top.RemoveAll();
+        Top.RemoveAll();
     }
 
     public void Add(View view)
     {
-        _top.Add(view);
-        _top.SetNeedsDisplay();
+        Top.Add(view);
+        Top.SetNeedsDisplay();
     }
 }

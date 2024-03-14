@@ -71,7 +71,7 @@ public sealed class StatusView : DisposingView<StatusViewModel>
         Add(eyeTrackerStatusDisplay);
         var beginCalibrationButton = new Button
         {
-            X = Pos.Center(),
+            X = Pos.Percent(100.0f / 3),
             Y = Pos.Bottom(eyeTrackerStatusDisplay) + 1,
             Text = "Start calibration"
         };
@@ -82,5 +82,18 @@ public sealed class StatusView : DisposingView<StatusViewModel>
             .InvokeCommand(ViewModel, x => x.BeginCalibration)
             .DisposeWith(Disposable);
         Add(beginCalibrationButton);
+        var disconnectButton = new Button
+        {
+            X = Pos.Percent(200.0f / 3),
+            Y = Pos.Bottom(eyeTrackerStatusDisplay) + 1,
+            Text = "Disconnect"
+        };
+        disconnectButton
+            .Events()
+            .Clicked
+            .Select(_ => Unit.Default)
+            .InvokeCommand(ViewModel, x => x.Disconnect)
+            .DisposeWith(Disposable);
+        Add(disconnectButton);
     }
 }

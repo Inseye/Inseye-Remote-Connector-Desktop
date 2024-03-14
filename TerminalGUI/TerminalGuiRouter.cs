@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiRouter.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -24,8 +24,7 @@ using TerminalGUI.Views;
 
 namespace TerminalGUI;
 
-public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IServiceProvider serviceProvider)
-    : IRouter, IDisposable
+public class TerminalGuiRouter : IRouter, IDisposable
 {
     private readonly InvokeObservable<bool> _canNavigateBack = new();
     private readonly Stack<Route> _routeStack = new();
@@ -49,8 +48,14 @@ public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IS
 
     private IDisposable? _currentView;
 
-    private IServiceProvider ServiceProvider { get; } = serviceProvider;
-    private TerminalGuiApplication TerminalGuiApplication { get; } = terminalGuiApplication;
+    public TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IServiceProvider serviceProvider)
+    {
+        ServiceProvider = serviceProvider;
+        TerminalGuiApplication = terminalGuiApplication;
+    }
+
+    private IServiceProvider ServiceProvider { get; }
+    private TerminalGuiApplication TerminalGuiApplication { get; }
 
     public void Dispose()
     {
@@ -67,6 +72,7 @@ public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IS
         token.ThrowIfCancellationRequested();
         if (CurrentRoute == route)
             return;
+        await TerminalGuiApplication.Context.SwitchTo();
         _currentView?.Dispose();
         _currentView = await NavigateInternal(route, token);
         _routeStack.Clear();
@@ -79,6 +85,7 @@ public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IS
         token.ThrowIfCancellationRequested();
         if (CurrentRoute == route)
             return;
+        await TerminalGuiApplication.Context.SwitchTo();
         _currentView?.Dispose();
         _currentView = await NavigateInternal(route, token);
         _routeStack.Push(route);
@@ -91,6 +98,7 @@ public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IS
         token.ThrowIfCancellationRequested();
         if (!CanNavigateBack)
             throw new Exception("There is not way back. (route stack has single view)");
+        await TerminalGuiApplication.Context.SwitchTo();
         var canNavigateBackPreCall = CanNavigateBack;
         var currentRoute = _routeStack.Pop();
         var previousRoute = _routeStack.Peek();
@@ -129,13 +137,11 @@ public class TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IS
                 return Disposable.Create(state, static state => state.Task.TrySetCanceled(state.Token));
             });
         if (token != default)
-        {
             registration = token.Register(() =>
             {
                 disposable.Dispose();
                 tcs.SetCanceled(token);
             });
-        }
 
         try
         {

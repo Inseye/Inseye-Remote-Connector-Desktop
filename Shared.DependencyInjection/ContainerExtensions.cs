@@ -52,8 +52,6 @@ public static class ContainerExtensions
         container.Register<ScopedObjectManager<TService, TImplementation>>(Lifestyle.Singleton);
         container.Register<IProvider<TService>, ManagedObject<TService, TImplementation, TValidationType>>(Lifestyle.Scoped);
         container.Register<IPublisher<TImplementation>, ManagedObject<TService, TImplementation, TValidationType>>(Lifestyle.Scoped);
-        // container.RegisterConditional<IProvider<TService>>(Lifestyle.Scoped.CreateRegistration<ManagedObject<TService, TImplementation>>(container), context => !context.Handled);
-        // container.RegisterConditional<IPublisher<TService>>(Lifestyle.Scoped.CreateRegistration<ManagedObject<TService, TImplementation, TValidationType>>(container), context => !context.Handled);
         return container;
     }
 

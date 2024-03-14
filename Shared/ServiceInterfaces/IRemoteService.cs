@@ -21,7 +21,9 @@ public interface IRemoteService : IGazeDataSource
 {
     public ServiceOffer HostInfo { get; }
     public RemoteServiceStatus ServiceStatus { get; }
+    public EyeTrackerStatus EyeTrackerStatus { get; }
     public IObservable<RemoteServiceStatus> ServiceStatusStream { get; }
     public IObservable<EyeTrackerStatus> EyeTrackerStatusStream { get; }
     public Task<Result> PerformCalibration(CancellationToken userToken);
+    public void Disconnect();
 }

@@ -20,6 +20,7 @@ using System.Reactive.Linq;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Utility;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
@@ -56,9 +57,9 @@ public class SearchViewModel : ReactiveObject, IDisposable
             .Scan(0, (prev, _) => prev + 1)
             .ToProperty(this, x => x.Updates)
             .DisposeWith(_disposable);
-        ConnectTo = ReactiveCommand.CreateFromTask<ServiceOffer, Unit>(execute: ConnectToHandler)
+        ConnectTo = ReactiveCommand
+            .CreateFromTask<ServiceOffer, Unit>(execute: arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg))
             .DisposeWith(_disposable);
-        
     }
 
     public IReadOnlyList<ServiceOffer> ServiceOffers => _offers.Value;

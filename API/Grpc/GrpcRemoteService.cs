@@ -1,6 +1,6 @@
 ﻿// Module name: API
 // File name: GrpcRemoteService.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -27,31 +27,22 @@ using RemoteConnector.Proto;
 
 namespace API.Grpc;
 
-public class GrpcRemoteService : IRemoteService, IDisposable
+internal class GrpcRemoteService : IRemoteService, IDisposable
 {
-    private readonly ILogger<GrpcRemoteService> _logger;
-    private readonly RemoteService.RemoteServiceClient _remoteService;
-    private readonly InvokeObservable<EyeTrackerStatus> _eyeTrackerStatusObservable;
-    private readonly InvokeObservable<GazeDataSample> _gazeDataSampleObservable;
-    private readonly CancellationToken _objectLifetimeToken;
-    private readonly CompositeDisposable _compositeDisposable = new();
-    private readonly ObservableValue<RemoteServiceStatus> _remoteServiceStatusObservable = new(RemoteServiceStatus.Connected);
-    private readonly ObservableSubscriptionTracker<GazeDataSample> _gazeDataSampleSubscriptionTracker;
-    private CancellationDisposable _eyeTrackingBackgroundTaskTokenSource = new(); // don't add to composite disposables
-
-    public GrpcRemoteService(Channel openChannel, ServiceOffer offer, ILogger<GrpcRemoteService> serviceLogger)
+    public GrpcRemoteService(Channel openChannel, ServiceOffer offer, ILogger<IRemoteService> serviceLogger)
     {
-        _logger = serviceLogger;
-        _logger.LogTrace($"Creating new instance of {nameof(GrpcRemoteService)}");
-        _compositeDisposable.Add(_eyeTrackerStatusObservable = new());
-        _compositeDisposable.Add(_gazeDataSampleObservable = new ());
+        Logger = serviceLogger;
+        Logger.LogTrace($"Creating new instance of {nameof(GrpcRemoteService)}");
+        CompositeDisposable.Add(EyeTrackerStatusObservable = new InvokeObservable<EyeTrackerStatus>());
+        CompositeDisposable.Add(GazeDataSampleObservable = new InvokeObservable<GazeDataSample>());
         var lifetimeBoundedCancellationToke = new CancellationDisposable();
-        _objectLifetimeToken = lifetimeBoundedCancellationToke.Token;
-        _compositeDisposable.Add(lifetimeBoundedCancellationToke);
-        _remoteService = new RemoteService.RemoteServiceClient(openChannel);
-        _compositeDisposable.Add(_remoteServiceStatusObservable);
-        _compositeDisposable.Add(_gazeDataSampleSubscriptionTracker = new ObservableSubscriptionTracker<GazeDataSample>(_gazeDataSampleObservable));
-        _compositeDisposable.Add(_gazeDataSampleSubscriptionTracker.SubscribersCountObservable
+        ObjectLifetimeToken = lifetimeBoundedCancellationToke.Token;
+        CompositeDisposable.Add(lifetimeBoundedCancellationToke);
+        RemoteService = new RemoteService.RemoteServiceClient(openChannel);
+        CompositeDisposable.Add(RemoteServiceStatusObservable);
+        CompositeDisposable.Add(GazeDataSampleSubscriptionTracker =
+            new ObservableSubscriptionTracker<GazeDataSample>(GazeDataSampleObservable));
+        CompositeDisposable.Add(GazeDataSampleSubscriptionTracker.SubscribersCountObservable
             .StartWith(0)
             .Buffer(2, 1)
             .Subscribe(l =>
@@ -66,34 +57,55 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                         break;
                 }
             }));
-        _compositeDisposable.Add((CallbackDisposable)(() => _eyeTrackingBackgroundTaskTokenSource.Dispose()));
-        _compositeDisposable.Add(_eyeTrackerStatusObservable.Subscribe(status => _logger.LogInformation("Eye tracker status: {status}", status)));
-        _compositeDisposable.Add(_remoteServiceStatusObservable.Subscribe(status => _logger.LogInformation("Remote service statusL {status}", status)));
+        CompositeDisposable.Add((CallbackDisposable) (() => EyeTrackingBackgroundTaskTokenSource.Dispose()));
+        CompositeDisposable.Add(EyeTrackerStatusObservable.Subscribe(status =>
+            Logger.LogInformation("Eye tracker status: {status}", status)));
+        CompositeDisposable.Add(RemoteServiceStatusObservable.Subscribe(status =>
+            Logger.LogInformation("Remote service status: {status}", status)));
         HostInfo = offer;
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         EyeTrackingStatusBackgroundTask();
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
     }
 
-    public IObservable<RemoteServiceStatus> ServiceStatusStream => _remoteServiceStatusObservable;
-    public ServiceOffer HostInfo { get; }
-    public RemoteServiceStatus ServiceStatus => _remoteServiceStatusObservable.Value;
+    private ILogger<IRemoteService> Logger { get; }
+    private RemoteService.RemoteServiceClient RemoteService { get; }
+    private InvokeObservable<EyeTrackerStatus> EyeTrackerStatusObservable { get; }
+    private InvokeObservable<GazeDataSample> GazeDataSampleObservable { get; }
+    private CancellationToken ObjectLifetimeToken { get; }
+    private CompositeDisposable CompositeDisposable { get; } = new();
 
-    public IObservable<GazeDataSample> GazeDataStream => _gazeDataSampleSubscriptionTracker;
-    public IObservable<EyeTrackerStatus> EyeTrackerStatusStream => _eyeTrackerStatusObservable;
+    private ObservableValue<RemoteServiceStatus> RemoteServiceStatusObservable { get; } =
+        new(RemoteServiceStatus.Connected);
+
+    private ObservableSubscriptionTracker<GazeDataSample> GazeDataSampleSubscriptionTracker { get; }
+
+    private CancellationDisposable EyeTrackingBackgroundTaskTokenSource { get; set; } =
+        new(); // don't add to composite disposables
+
+    public void Dispose()
+    {
+        CompositeDisposable.Dispose();
+    }
+
+    public IObservable<RemoteServiceStatus> ServiceStatusStream => RemoteServiceStatusObservable;
+    public ServiceOffer HostInfo { get; }
+    public RemoteServiceStatus ServiceStatus => RemoteServiceStatusObservable.Value;
+    public EyeTrackerStatus EyeTrackerStatus { get; private set; }
+
+    public IObservable<GazeDataSample> GazeDataStream => GazeDataSampleSubscriptionTracker;
+    public IObservable<EyeTrackerStatus> EyeTrackerStatusStream => EyeTrackerStatusObservable;
 
     public async Task<Result> PerformCalibration(CancellationToken userToken = default)
     {
-        _logger.LogInformation("Performing calibration");
-        _objectLifetimeToken.ThrowIfCancellationRequested();
+        Logger.LogInformation("Performing calibration");
+        ObjectLifetimeToken.ThrowIfCancellationRequested();
         userToken.ThrowIfCancellationRequested();
-        var token = _objectLifetimeToken;
+        var token = ObjectLifetimeToken;
         if (userToken != default)
-        {
-            token = CancellationTokenSource.CreateLinkedTokenSource(userToken, _objectLifetimeToken).Token;
-        }
+            token = CancellationTokenSource.CreateLinkedTokenSource(userToken, ObjectLifetimeToken).Token;
 
-        var streamingCall = _remoteService.PerformCalibration(new CalibrationRequest(), cancellationToken: token);
+        var streamingCall = RemoteService.PerformCalibration(new CalibrationRequest(), cancellationToken: token);
         var responseStream = streamingCall.ResponseStream;
         CalibrationResponse? response = null;
         try
@@ -129,15 +141,20 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         };
         return result;
     }
-    
+
+    public void Disconnect()
+    {
+        Dispose();
+    }
+
 
     private async Task EyeTrackingStatusBackgroundTask()
     {
         try
         {
-            var asyncCall = _remoteService.ObserveEyeTrackerAvailability(new ObserveEyeTrackerAvailabilityRequest(),
-                cancellationToken: _objectLifetimeToken);
-            var token = _objectLifetimeToken;
+            var asyncCall = RemoteService.ObserveEyeTrackerAvailability(new ObserveEyeTrackerAvailabilityRequest(),
+                cancellationToken: ObjectLifetimeToken);
+            var token = ObjectLifetimeToken;
             var responseStream = asyncCall.ResponseStream;
 
             while (await responseStream.MoveNext(token).ConfigureAwait(false))
@@ -147,9 +164,10 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                     continue;
                 var status = current.Status switch
                 {
-                    EyeTrackerAvailability.Types.Status.Available => _gazeDataSampleSubscriptionTracker.SubscribersCount > 0
-                        ? EyeTrackerStatus.StreamingGazeData
-                        : EyeTrackerStatus.Connected,
+                    EyeTrackerAvailability.Types.Status.Available =>
+                        GazeDataSampleSubscriptionTracker.SubscribersCount > 0
+                            ? EyeTrackerStatus.StreamingGazeData
+                            : EyeTrackerStatus.Connected,
                     EyeTrackerAvailability.Types.Status.Unknown => EyeTrackerStatus.Unknown,
                     EyeTrackerAvailability.Types.Status.Disconnected => EyeTrackerStatus.Disconnected,
                     EyeTrackerAvailability.Types.Status.NotCalibrated => EyeTrackerStatus.NotCalibrated,
@@ -158,7 +176,8 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 // TODO: consider pushing this in async manner
-                _eyeTrackerStatusObservable.Send(status);
+                EyeTrackerStatus = status;
+                EyeTrackerStatusObservable.Send(status);
             }
         }
         catch (RpcException rpcException)
@@ -166,9 +185,10 @@ public class GrpcRemoteService : IRemoteService, IDisposable
             if (rpcException.Status.StatusCode == StatusCode.Unavailable)
             {
                 // service become become unavailable, inform subscribers that eye tracker is unknown and service is broken
-                _remoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
-                _eyeTrackerStatusObservable.Send(EyeTrackerStatus.Unknown);
-                _eyeTrackerStatusObservable.Complete();
+                RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
+                EyeTrackerStatus = EyeTrackerStatus.Unknown;
+                EyeTrackerStatusObservable.Send(EyeTrackerStatus.Unknown);
+                EyeTrackerStatusObservable.Complete();
                 return;
             }
 
@@ -177,32 +197,32 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         catch (Exception exception)
         {
             // TODO: Consider what to do with observers exceptions thrown during 'SendError' invoke
-            _eyeTrackerStatusObservable.SendError(exception);
+            EyeTrackerStatusObservable.SendError(exception);
         }
         finally
         {
-            _eyeTrackerStatusObservable.Complete();
+            EyeTrackerStatusObservable.Complete();
         }
     }
 
     private void StartEyeTrackingBackgroundTask()
     {
-        _logger.LogInformation("Starting gaze data reading background task.");
-        lock (_eyeTrackingBackgroundTaskTokenSource)
+        Logger.LogInformation("Starting gaze data reading background task.");
+        lock (EyeTrackingBackgroundTaskTokenSource)
         {
 #pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            EyeTrackingGazeDataBackgroundTask(_eyeTrackingBackgroundTaskTokenSource.Token);
+            EyeTrackingGazeDataBackgroundTask(EyeTrackingBackgroundTaskTokenSource.Token);
 #pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
 
     private void StopEyeTrackingBackgroundTask()
     {
-        _logger.LogInformation("Stopping gaze data reading background task.");
-        lock (_eyeTrackingBackgroundTaskTokenSource)
+        Logger.LogInformation("Stopping gaze data reading background task.");
+        lock (EyeTrackingBackgroundTaskTokenSource)
         {
-            _eyeTrackingBackgroundTaskTokenSource.Dispose();
-            _eyeTrackingBackgroundTaskTokenSource = new();
+            EyeTrackingBackgroundTaskTokenSource.Dispose();
+            EyeTrackingBackgroundTaskTokenSource = new CancellationDisposable();
         }
     }
 
@@ -210,7 +230,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
     {
         try
         {
-            var asyncCall = _remoteService.OpenGazeStream(new GazeDataRequest(), cancellationToken: token);
+            var asyncCall = RemoteService.OpenGazeStream(new GazeDataRequest(), cancellationToken: token);
             var responseStream = asyncCall.ResponseStream;
 
             while (await responseStream.MoveNext(token).ConfigureAwait(false))
@@ -218,7 +238,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                 var current = responseStream.Current;
                 if (current == null)
                     continue;
-                _gazeDataSampleObservable.Send(current.ToGazeDataSample());
+                GazeDataSampleObservable.Send(current.ToGazeDataSample());
             }
         }
         catch (RpcException rpcException)
@@ -226,7 +246,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
             if (rpcException.Status.StatusCode == StatusCode.Unavailable)
             {
                 // service become become unavailable, inform subscribers that eye tracker has finished
-                _gazeDataSampleObservable.Complete();
+                GazeDataSampleObservable.Complete();
                 return;
             }
 
@@ -234,16 +254,11 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         }
         catch (Exception exception)
         {
-            _gazeDataSampleObservable.SendError(exception);
+            GazeDataSampleObservable.SendError(exception);
         }
         finally
         {
-            _gazeDataSampleObservable.Complete();
+            GazeDataSampleObservable.Complete();
         }
-    }
-    
-    public void Dispose()
-    {
-        _compositeDisposable.Dispose();
     }
 }

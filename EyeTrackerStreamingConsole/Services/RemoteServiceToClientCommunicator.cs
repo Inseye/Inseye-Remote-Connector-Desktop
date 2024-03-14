@@ -26,96 +26,76 @@ namespace EyeTrackerStreamingConsole.Services;
 public class RemoteServiceToClientCommunicator : IDisposable, IObserver<GazeDataSample>
 {
     private DisposeBool _disposed;
-    private readonly IProvider<IGazeDataSink> _gazeDataSinkProvider;
-    private readonly IProvider<IRemoteService> _remoteServiceProvider;
-    private readonly ILogger<RemoteServiceToClientCommunicator> _logger;
-    private readonly CompositeDisposable _disposable = new();
-    private IGazeDataSink? _gazeDataSink;
-    private IDisposable? _gazeStreamSubscription;
-    private readonly object _objectLock = new();
+    private IProvider<IRemoteService> RemoteServiceProvider { get; }
+    private ILogger<RemoteServiceToClientCommunicator> Logger { get; }
+    private CompositeDisposable Disposable { get; } = new();
+    private IGazeDataSink? GazeDataSink { get; set; }
+    private IDisposable? GazeStreamSubscription { get; set; }
+    private object ObjectLock { get; } = new();
 
     public RemoteServiceToClientCommunicator(ILogger<RemoteServiceToClientCommunicator> logger,
         IProvider<IRemoteService> remoteServiceProvider, IProvider<IGazeDataSink> gazeDataSinkProvider)
     {
-        _logger = logger;
-        _gazeDataSinkProvider = gazeDataSinkProvider;
-        _disposable.Add((CallbackDisposable) (() => { _gazeStreamSubscription?.Dispose(); }));
-        _remoteServiceProvider = remoteServiceProvider;
-        remoteServiceProvider.ChangesStream().Subscribe(HandleNewRemoteService).DisposeWith(_disposable);
-        gazeDataSinkProvider.ChangesStream().Subscribe(HandleNewGazeDataSink).DisposeWith(_disposable);
+        Logger = logger;
+        Disposable.Add((CallbackDisposable) (() => { GazeStreamSubscription?.Dispose(); }));
+        RemoteServiceProvider = remoteServiceProvider;
+        remoteServiceProvider.ChangesStream().Subscribe(HandleNewRemoteService).DisposeWith(Disposable);
+        gazeDataSinkProvider.ChangesStream().Subscribe(HandleNewGazeDataSink).DisposeWith(Disposable);
     }
 
     private void HandleNewRemoteService(IRemoteService? service)
     {
-        lock (_objectLock)
+        lock (ObjectLock)
         {
             if (service == null)
             {
-                _logger.LogTrace("Unsubscribing from gaze data stream.");
+                Logger.LogTrace("Unsubscribing from gaze data stream.");
                 DisposeService();
                 return;
             }
 
-            if (_gazeDataSink != null)
+            if (GazeDataSink != null)
                 ConnectToGazeStream(service);
         }
     }
 
     private void HandleNewGazeDataSink(IGazeDataSink? gazeDataSink)
     {
-        lock (_objectLock)
+        lock (ObjectLock)
         {
-            _gazeDataSink = gazeDataSink;
-            if (_gazeDataSink != null && _gazeStreamSubscription == null)
+            GazeDataSink = gazeDataSink;
+            if (GazeDataSink != null && GazeStreamSubscription == null)
             {
-                if (_remoteServiceProvider.TryGet(out var service))
+                if (RemoteServiceProvider.TryGet(out var service))
                     ConnectToGazeStream(service);
                 else
-                    _logger.LogTrace("Gaze data sink waiting for remote service with gaze data.");
+                    Logger.LogTrace("Gaze data sink waiting for remote service with gaze data.");
             }
             else
             {
                 DisposeService();
-                _logger.LogTrace("Removed gaze data sink.");
+                Logger.LogTrace("Removed gaze data sink.");
             }
         }
     }
 
     private void ConnectToGazeStream(IRemoteService service)
     {
-        _gazeStreamSubscription?.Dispose();
-        _logger.LogInformation("Connecting to gaze data stream.");
-        _gazeStreamSubscription = service.GazeDataStream.Subscribe(this);
-    }
-    
-    private void HandleGazeDataAndRemoteService(IRemoteService? remoteService, IGazeDataSink? gazeDataSink)
-    {
-        lock (_objectLock)
-        {
-            switch ((remoteService, gazeDataSink))
-            {
-                case ({} service, {} sink):
-                    break;
-                case ({ } service, null):
-                    break;
-                case (null, {} sink):
-                    break;
-                case (null, null):
-                    break;
-            }
-        }
+        GazeStreamSubscription?.Dispose();
+        Logger.LogInformation("Connecting to gaze data stream.");
+        GazeStreamSubscription = service.GazeDataStream.Subscribe(this);
     }
 
     void IDisposable.Dispose()
     {
         if (_disposed.PerformDispose())
-            _disposable.Dispose();
+            Disposable.Dispose();
     }
 
     void IObserver<GazeDataSample>.OnCompleted()
     {
-        _logger.LogInformation("Current gaze data stream has finished.");
-        lock (_objectLock)
+        Logger.LogInformation("Current gaze data stream has finished.");
+        lock (ObjectLock)
         {
             DisposeService();
         }
@@ -123,22 +103,20 @@ public class RemoteServiceToClientCommunicator : IDisposable, IObserver<GazeData
 
     void IObserver<GazeDataSample>.OnError(Exception error)
     {
-        _logger.LogError(message: "Gaze data stream encountered error", exception: error);
+        Logger.LogError(message: "Gaze data stream encountered error", exception: error);
         throw error;
     }
 
     void IObserver<GazeDataSample>.OnNext(GazeDataSample value)
     {
-        _gazeDataSink?.WriteGazeData(value);
+        GazeDataSink?.WriteGazeData(value);
     }
 
     private void DisposeService()
     {
-        if (_gazeStreamSubscription != null)
-        {
-            _logger.LogTrace("Removing gaze data subscription.");
-            _gazeStreamSubscription.Dispose();
-            _gazeStreamSubscription = null;
-        }
+        if (GazeStreamSubscription == null) return;
+        Logger.LogTrace("Removing gaze data subscription.");
+        GazeStreamSubscription.Dispose();
+        GazeStreamSubscription = null;
     }
 }
