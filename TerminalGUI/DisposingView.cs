@@ -16,31 +16,41 @@
 using System.Reactive.Disposables;
 using ReactiveUI;
 using Terminal.Gui;
+using Attribute = Terminal.Gui.Attribute;
 
 namespace TerminalGUI;
 
-public class DisposingView<T>(T viewModel) : Window, IViewFor<T>
+public class DisposingView<T> : View, IViewFor<T>
     where T : class
 {
     protected readonly CompositeDisposable Disposable = new();
+    private T _viewModel;
+
+    public DisposingView(T viewModel) : base()
+    {
+        _viewModel = viewModel;
+        Width = Dim.Fill();
+        Height = Dim.Fill();
+        BorderStyle = LineStyle.Single;
+    }
 
     object? IViewFor.ViewModel
     {
-        get => viewModel;
-        set => viewModel = (T) value!;
+        get => _viewModel;
+        set => _viewModel = (T) value!;
     }
 
     T? IViewFor<T>.ViewModel
     {
-        get => viewModel;
+        get => _viewModel;
         set
         {
             ArgumentNullException.ThrowIfNull(value, nameof(ViewModel));
-            viewModel = value;
+            _viewModel = value;
         }
     }
 
-    public T ViewModel => viewModel;
+    public T ViewModel => _viewModel;
 
     protected sealed override void Dispose(bool disposing)
     {

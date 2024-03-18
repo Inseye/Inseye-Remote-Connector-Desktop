@@ -40,12 +40,6 @@ public sealed class GazeDataView : View, IDisposable
         _provider.ChangesStream()
             .Subscribe(HandleRemoteServiceChange) // provide implementation
             .DisposeWith(_scope);
-        var label = new Label
-        {
-            Text = "Test label",
-
-        };
-        Add(label);
         Add(_listView = new ListView
         {
             BorderStyle = LineStyle.Single,
