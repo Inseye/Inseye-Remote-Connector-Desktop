@@ -1,6 +1,6 @@
 ﻿// Module name: ClientCommunication
 // File name: SharedMemoryFactory.cs
-// Last edit: 2024-2-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -28,6 +28,7 @@ public class SharedMemoryFactory : IFactory<ISharedMemoryCommunicator, string>
     {
         _logger = logger;
     }
+
     public ISharedMemoryCommunicator Create(string sharedMemoryFileName)
     {
         return new SharedMemoryCommunicator(sharedMemoryFileName, _logger);

@@ -1,5 +1,5 @@
-﻿// Module name: Mocks
-// File name: RemoteServiceFactoryMock.cs
+﻿// Module name: Shared
+// File name: Void.cs
 // Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
@@ -13,18 +13,10 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
+namespace EyeTrackerStreaming.Shared.NullObjects;
 
-namespace Mocks;
-
-public class RemoteServiceFactoryMock : IRemoteServiceFactory
+// ReSharper disable once ConvertToStaticClass
+public sealed class Void
 {
-    public Func<ServiceOffer, CancellationToken, ValueTask<IRemoteService>> OnCreateRemoteService { get; set; } =
-        (offer, _) => new ValueTask<IRemoteService>(new RemoteServiceMock(offer));
-
-    public ValueTask<IRemoteService> CreateRemoteService(ServiceOffer offer, CancellationToken token)
-    {
-        return OnCreateRemoteService(offer, token);
-    }
+    private Void() {}
 }

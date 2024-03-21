@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels
 // File name: SearchViewModel.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -28,57 +28,66 @@ namespace EyeTrackingStreaming.ViewModels;
 
 public class SearchViewModel : ReactiveObject, IDisposable
 {
-    private readonly CancellationDisposable _cts = new();
-    private readonly CompositeDisposable _disposable = new();
-
-    private readonly ObservableAsPropertyHelper<IReadOnlyList<ServiceOffer>> _offers;
-    private readonly IPublisher<IRemoteService> _publisher;
-    private readonly IRemoteServiceFactory _remoteServiceFactory;
-    private readonly IRouter _router;
-    private readonly ObservableAsPropertyHelper<int> _serviceUpdates;
-    private readonly ILogger<SearchViewModel> _logger;
-
     public SearchViewModel(
         IPublisher<IRemoteService> publisher, IRemoteServiceFactory remoteServiceFactory,
         IRemoteServiceOffersProvider offersProvider, IRouter router, ILogger<SearchViewModel> logger)
     {
-        _logger = logger;
-        _remoteServiceFactory = remoteServiceFactory;
-        _publisher = publisher;
-        _router = router;
-        _cts = new CancellationDisposable()
-            .DisposeWith(_disposable);
+        Logger = logger;
+        RemoteServiceFactory = remoteServiceFactory;
+        Publisher = publisher;
+        Router = router;
+        Cts = new CancellationDisposable()
+            .DisposeWith(Disposable);
         ReadOnlyObservableCollection<ServiceOffer> serviceOffers;
-        _offers = offersProvider.ServiceOffers
+        Offers = offersProvider.ServiceOffers
             .Select(x => x.ToArray())
             .ToProperty(this, x => x.ServiceOffers)
-            .DisposeWith(_disposable);
-        _serviceUpdates = offersProvider.ServiceOffers
+            .DisposeWith(Disposable);
+        ServiceUpdates = offersProvider.ServiceOffers
             .Scan(0, (prev, _) => prev + 1)
             .ToProperty(this, x => x.Updates)
-            .DisposeWith(_disposable);
+            .DisposeWith(Disposable);
         ConnectTo = ReactiveCommand
-            .CreateFromTask<ServiceOffer, Unit>(execute: arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg))
-            .DisposeWith(_disposable);
+            .CreateFromTask<ServiceOffer, Unit>(
+                arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg))
+            .DisposeWith(Disposable);
     }
 
-    public IReadOnlyList<ServiceOffer> ServiceOffers => _offers.Value;
-    public int Updates => _serviceUpdates.Value;
+    private CancellationDisposable Cts { get; }
+    private CompositeDisposable Disposable { get; } = new();
+
+    private ObservableAsPropertyHelper<IReadOnlyList<ServiceOffer>> Offers { get; }
+    private IPublisher<IRemoteService> Publisher { get; }
+    private IRemoteServiceFactory RemoteServiceFactory { get; }
+    private IRouter Router { get; }
+    private ObservableAsPropertyHelper<int> ServiceUpdates { get; }
+    private ILogger<SearchViewModel> Logger { get; }
+
+    public IReadOnlyList<ServiceOffer> ServiceOffers => Offers.Value;
+    public int Updates => ServiceUpdates.Value;
 
     public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
 
     public void Dispose()
     {
-        _logger.LogTrace($"Disposing {nameof(SearchViewModel)}");
-        _disposable.Dispose();
+        Logger.LogTrace($"Disposing {nameof(SearchViewModel)}");
+        Disposable.Dispose();
     }
 
     private async Task<Unit> ConnectToHandler(ServiceOffer serviceOffer)
     {
-        _logger.LogTrace("ConnectToHandlerCalled");
-        var service = await _remoteServiceFactory.CreateRemoteService(serviceOffer, _cts.Token);
-        _publisher.Publish(service);
-        await _router.NavigateTo(Route.ConnectionStatus, _cts.Token);
+        try
+        {
+            Logger.LogTrace("ConnectToHandlerCalled");
+            var service = await RemoteServiceFactory.CreateRemoteService(serviceOffer, Cts.Token);
+            Publisher.Publish(service);
+            await Router.NavigateTo(Route.ConnectionStatus, Cts.Token);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogCritical(exception, "Failed to connect to service offer: {@serviceOffer}", serviceOffer);
+        }
+
         return default;
     }
 }

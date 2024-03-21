@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
 // File name: IFactory.cs
-// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -14,6 +14,11 @@
 // Non-disclosure agreements explicitly covering such access.
 
 namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
+
+public interface IFactory<out TOut>
+{
+    public TOut Create();
+}
 
 public interface IFactory<out TOut, in TIn>
 {

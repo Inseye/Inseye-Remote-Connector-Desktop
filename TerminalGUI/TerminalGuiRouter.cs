@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiRouter.cs
-// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -43,6 +43,11 @@ public class TerminalGuiRouter : IRouter, IDisposable
             {
                 Route.Calibration,
                 serviceProvider => new CalibrationView(serviceProvider.GetServiceRequired<CalibrationViewModel>())
+            },
+            {
+                Route.ClientAuthorization,
+                serviceProvider =>
+                    new AuthorizationView(serviceProvider.GetServiceRequired<ClientAuthorizationViewModel>())
             }
         };
 

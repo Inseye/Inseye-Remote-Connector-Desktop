@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
 // File name: Route.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -20,6 +20,6 @@ public enum Route
     None,
     AndroidServiceSearch,
     ConnectionStatus,
-    Error,
+    ClientAuthorization,
     Calibration
 }

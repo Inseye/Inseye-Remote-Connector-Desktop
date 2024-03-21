@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels
 // File name: CalibrationViewModel.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -16,26 +16,30 @@
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Results;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
 
 namespace EyeTrackingStreaming.ViewModels;
 
 public class CalibrationViewModel : ReactiveObject, IDisposable
 {
-    private readonly CancellationDisposable _lifetimeTokenSource = new();
     private readonly CompositeDisposable _disposables = new();
-    private readonly ObservableAsPropertyHelper<bool> _isPerformingCalibrationPropertyHelper;
     private readonly InvokeObservable<bool> _isPerformingCalibrationObservable;
+    private readonly ObservableAsPropertyHelper<bool> _isPerformingCalibrationPropertyHelper;
+    private readonly CancellationDisposable _lifetimeTokenSource = new();
+    private string _calibrationStateDescription;
     private CancellationTokenSource? _currentCalibrationTokenSource;
     private TaskCompletionSource? _userActionTaskCompletionSource;
-    private string _calibrationStateDescription;
 
-    public CalibrationViewModel()
+    public CalibrationViewModel(ILogger<CalibrationViewModel> logger)
     {
+        Logger = logger;
+        Logger.LogTrace(EventsId.ConstructorCall, "Constructing {type}", typeof(CalibrationViewModel));
         _calibrationStateDescription = string.Empty;
         _lifetimeTokenSource.DisposeWith(_disposables);
         var isPerformingCalibrationObservable = new InvokeObservable<bool>();
@@ -45,10 +49,12 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
             .ToProperty(this, x => x.IsPerformingCalibration)
             .DisposeWith(_disposables);
         _disposables.Add(isPerformingCalibrationObservable);
-        CancelCalibrationCommand = ReactiveCommand.Create(execute: CancelCalibration, isPerformingCalibrationObservable)
+        CancelCalibrationCommand = ReactiveCommand.Create(CancelCalibration, isPerformingCalibrationObservable)
             .DisposeWith(_disposables);
         ExitCalibration = ReactiveCommand.Create(ExitCalibrationHandler);
     }
+
+    private ILogger<CalibrationViewModel> Logger { get; }
 
     public string CalibrationStateDescription
     {
@@ -72,6 +78,15 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
     public ReactiveCommand<Unit, Unit> CancelCalibrationCommand { get; }
     public ReactiveCommand<Unit, Unit> ExitCalibration { get; }
 
+    public void Dispose()
+    {
+        if (!_lifetimeTokenSource.IsDisposed)
+        {
+            Logger.LogTrace(EventsId.DisposeCall, "Disposing {type}", typeof(CalibrationViewModel));
+            _disposables.Dispose();
+        }
+    }
+
     public async Task<Result> Calibrate(IRemoteService serviceUsedToPerformCalibration,
         CancellationToken token)
     {
@@ -82,7 +97,7 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
         token.ThrowIfCancellationRequested();
         _currentCalibrationTokenSource =
             CancellationTokenSource.CreateLinkedTokenSource(token, _lifetimeTokenSource.Token);
-        _userActionTaskCompletionSource = new();
+        _userActionTaskCompletionSource = new TaskCompletionSource();
         IsPerformingCalibration = true;
         Result result;
         try
@@ -116,12 +131,6 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
             _currentCalibrationTokenSource.Dispose();
             _currentCalibrationTokenSource = null;
         }
-    }
-
-    public void Dispose()
-    {
-        if (!_lifetimeTokenSource.IsDisposed)
-            _disposables.Dispose();
     }
 
     private void CancelCalibration()

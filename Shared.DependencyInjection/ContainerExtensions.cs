@@ -1,6 +1,6 @@
 ﻿// Module name: Shared.DependencyInjection
 // File name: ContainerExtensions.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,7 +13,6 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using System.Diagnostics.Tracing;
 using EyeTrackerStreaming.Shared.Decorators;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -22,13 +21,14 @@ using Shared.DependencyInjection.CrossScopedObject;
 using Shared.DependencyInjection.Interfaces;
 using SimpleInjector;
 using SimpleInjector.Lifestyles;
+using Void = EyeTrackerStreaming.Shared.NullObjects.Void;
 
 namespace Shared.DependencyInjection;
 
 public static class ContainerExtensions
 {
     /// <summary>
-    /// Sets 
+    ///     Sets
     /// </summary>
     /// <param name="container"></param>
     /// <returns></returns>
@@ -39,19 +39,23 @@ public static class ContainerExtensions
     }
 
     public static Container RegisterCrossScopeManagedService<TService, TValidationType>(this Container container)
-        where TService : class where TValidationType : class, TService, new() =>
-        container.RegisterCrossScopeManagedService<TService, TService, TValidationType>();
+        where TService : class where TValidationType : class, TService, new()
+    {
+        return container.RegisterCrossScopeManagedService<TService, TService, TValidationType>();
+    }
 
     public static Container RegisterCrossScopeManagedService<TService, TImplementation, TValidationType>(
         this Container container)
-        where TService : class 
+        where TService : class
         where TImplementation : class, TService
         where TValidationType : class, TService, new()
     {
         container.Register<TValidationType>(Lifestyle.Singleton);
         container.Register<ScopedObjectManager<TService, TImplementation>>(Lifestyle.Singleton);
-        container.Register<IProvider<TService>, ManagedObject<TService, TImplementation, TValidationType>>(Lifestyle.Scoped);
-        container.Register<IPublisher<TImplementation>, ManagedObject<TService, TImplementation, TValidationType>>(Lifestyle.Scoped);
+        container.Register<IProvider<TService>, ManagedObject<TService, TImplementation, TValidationType>>(
+            Lifestyle.Scoped);
+        container.Register<IPublisher<TImplementation>, ManagedObject<TService, TImplementation, TValidationType>>(
+            Lifestyle.Scoped);
         return container;
     }
 
@@ -77,15 +81,17 @@ public static class ContainerExtensions
                 return (TService) producer!.GetInstance(targetScope);
             }, lifestyle);
         }
-        else 
+        else
+        {
             targetContainer.Register(sourceContainer.GetInstance<TService>, lifestyle);
+        }
+
         return targetContainer;
     }
-    
 
-    
 
-    public static Container RegisterScopingRouterFor<TRouter>(this Container container, Lifestyle routersLifestyle) where TRouter: class, IRouter
+    public static Container RegisterScopingRouterFor<TRouter>(this Container container, Lifestyle routersLifestyle)
+        where TRouter : class, IRouter
     {
         container.Register<IRouter, ScopingRouter<TRouter>>(routersLifestyle);
         container.Register<TRouter>(Lifestyle.Singleton);
@@ -97,6 +103,7 @@ public static class ContainerExtensions
     {
         container.Register(() => LoggerFactory.Create(configure), Lifestyle.Singleton);
         container.Register(typeof(ILogger<>), typeof(Logger<>), Lifestyle.Singleton);
+        container.Register<ILogger, Logger<Void>>();
         return container;
     }
 
@@ -106,7 +113,8 @@ public static class ContainerExtensions
         return container;
     }
 
-    public static Container RegisterScopedForSingleton<TService, TSingleton>(this Container container) where TService : class
+    public static Container RegisterScopedForSingleton<TService, TSingleton>(this Container container)
+        where TService : class
     {
         container.RegisterConditional<TService>(Lifestyle.Singleton.CreateRegistration(() =>
         {
@@ -116,5 +124,4 @@ public static class ContainerExtensions
         }, container), ctx => ctx.HasConsumer && ctx.Consumer.ImplementationType == typeof(TSingleton));
         return container;
     }
-    
 }

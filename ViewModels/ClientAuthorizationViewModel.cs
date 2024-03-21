@@ -1,6 +1,6 @@
-﻿// Module name: Mocks
-// File name: RemoteServiceFactoryMock.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: ViewModels
+// File name: ClientAuthorizationViewModel.cs
+// Last edit: 2024-3-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,18 +13,11 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using ReactiveUI;
 
-namespace Mocks;
+namespace EyeTrackingStreaming.ViewModels;
 
-public class RemoteServiceFactoryMock : IRemoteServiceFactory
+public class ClientAuthorizationViewModel : ReactiveObject
 {
-    public Func<ServiceOffer, CancellationToken, ValueTask<IRemoteService>> OnCreateRemoteService { get; set; } =
-        (offer, _) => new ValueTask<IRemoteService>(new RemoteServiceMock(offer));
-
-    public ValueTask<IRemoteService> CreateRemoteService(ServiceOffer offer, CancellationToken token)
-    {
-        return OnCreateRemoteService(offer, token);
-    }
+    
 }

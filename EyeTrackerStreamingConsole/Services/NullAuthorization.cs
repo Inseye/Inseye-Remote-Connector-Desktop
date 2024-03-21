@@ -1,5 +1,5 @@
-﻿// Module name: Mocks
-// File name: RemoteServiceFactoryMock.cs
+﻿// Module name: EyeTrackerStreamingConsole
+// File name: NullAuthorization.cs
 // Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
@@ -13,18 +13,19 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-namespace Mocks;
+namespace EyeTrackerStreamingConsole.Services;
 
-public class RemoteServiceFactoryMock : IRemoteServiceFactory
+public class NullAuthorization : IClientAuthorization
 {
-    public Func<ServiceOffer, CancellationToken, ValueTask<IRemoteService>> OnCreateRemoteService { get; set; } =
-        (offer, _) => new ValueTask<IRemoteService>(new RemoteServiceMock(offer));
-
-    public ValueTask<IRemoteService> CreateRemoteService(ServiceOffer offer, CancellationToken token)
+    public bool IsClientAuthorized()
     {
-        return OnCreateRemoteService(offer, token);
+        return true;
+    }
+
+    public Task AuthorizeClient(CancellationToken token)
+    {
+        return Task.CompletedTask;
     }
 }

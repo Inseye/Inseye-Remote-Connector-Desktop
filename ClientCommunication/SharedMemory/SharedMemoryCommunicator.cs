@@ -1,6 +1,6 @@
 ﻿// Module name: ClientCommunication
-// File name: InterprocessCommunicator.cs
-// Last edit: 2024-1-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: SharedMemoryCommunicator.cs
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -30,29 +30,27 @@ public sealed class SharedMemoryCommunicator : ISharedMemoryCommunicator
     private static readonly uint SharedFileHeaderSize = (uint) Marshal.SizeOf<SharedMemoryHeader>();
     public static readonly uint TotalSize = GazeDataStructSize * GazeDataBufferMaxSamples + SharedFileHeaderSize;
 
-    private readonly ILogger<ISharedMemoryCommunicator> _logger;
-    private readonly MemoryMappedFile _mmapedFile;
-    
-    private readonly MappedMemoryOverlay _mappedMemoryOverlay;
     private readonly object _thisLock = new();
+
     // this lock protected data
     private DisposeBool _disposed = false;
-    public string SharedMemoryFilePath { get; }
 
     public SharedMemoryCommunicator(string sharedMemoryFilePath, ILogger<ISharedMemoryCommunicator> logger)
     {
         SharedMemoryFilePath = sharedMemoryFilePath;
-        _logger = logger;
-        _logger.LogTrace(eventId: EventsId.ConstructorCall, $"Creating {nameof(SharedMemoryCommunicator)}, {{this}}, fileName: {{sharedMemoryFileName}}", this, sharedMemoryFilePath);
+        Logger = logger;
+        Logger.LogTrace(EventsId.ConstructorCall,
+            $"Creating {nameof(SharedMemoryCommunicator)}, {{this}}, fileName: {{sharedMemoryFileName}}", this,
+            sharedMemoryFilePath);
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            _mmapedFile = MemoryMappedFile.CreateOrOpen(sharedMemoryFilePath,
+            MmapedFile = MemoryMappedFile.CreateOrOpen(sharedMemoryFilePath,
                 TotalSize, MemoryMappedFileAccess.ReadWrite);
         else
             throw new NotImplementedException(
                 $"Memory mapped file was not properly implemented on current platform {RuntimeInformation.OSDescription}.");
-        _mappedMemoryOverlay = new MappedMemoryOverlay(_mmapedFile.CreateViewAccessor(0, TotalSize));
+        MappedMemoryOverlay = new MappedMemoryOverlay(MmapedFile.CreateViewAccessor(0, TotalSize));
         // prepare header
-        ref var header = ref _mappedMemoryOverlay.As<SharedMemoryHeader>();
+        ref var header = ref MappedMemoryOverlay.As<SharedMemoryHeader>();
         header.VersionMajor = 0;
         header.VersionMinor = 0;
         header.VersionPatch = 1;
@@ -62,12 +60,20 @@ public sealed class SharedMemoryCommunicator : ISharedMemoryCommunicator
         header.SamplesWritten = 0;
     }
 
+    private ILogger<ISharedMemoryCommunicator> Logger { get; }
+    private MappedMemoryOverlay MappedMemoryOverlay { get; }
+    private MemoryMappedFile MmapedFile { get; }
+
+    public string SharedMemoryFilePath { get; }
+
     public void Dispose()
     {
         if (!_disposed.PerformDispose()) return;
-        _logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(SharedMemoryCommunicator)}, id: {{0}}", this);
-        lock(_thisLock)
-            _mmapedFile.Dispose();
+        Logger.LogTrace(EventsId.DisposeCall, $"Disposing {nameof(SharedMemoryCommunicator)}, id: {{0}}", this);
+        lock (_thisLock)
+        {
+            MmapedFile.Dispose();
+        }
     }
 
     public void WriteGazeData(in GazeDataSample gazeData)
@@ -75,10 +81,10 @@ public sealed class SharedMemoryCommunicator : ISharedMemoryCommunicator
         lock (_thisLock)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
-            ref var header = ref _mappedMemoryOverlay.As<SharedMemoryHeader>();
+            ref var header = ref MappedMemoryOverlay.As<SharedMemoryHeader>();
             var newSamplesValue = header.SamplesWritten + 1;
             var offset = GetGazeDataOffset((int) newSamplesValue % GazeDataBufferMaxSamples);
-            ref var dataInMemory = ref _mappedMemoryOverlay.As<EyeTrackerDataStruct>(offset);
+            ref var dataInMemory = ref MappedMemoryOverlay.As<EyeTrackerDataStruct>(offset);
             dataInMemory.Time = (ulong) gazeData.MillisecondsUTC;
             dataInMemory.LeftEyeX = gazeData.LeftEyeX;
             dataInMemory.LeftEyeY = gazeData.LeftEyeY;

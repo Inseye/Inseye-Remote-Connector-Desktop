@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels
 // File name: StatusViewModel.cs
-// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -17,7 +17,6 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.Results;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Microsoft.Extensions.Logging;
@@ -51,9 +50,7 @@ public class StatusViewModel : ReactiveObject, IDisposable
                 .DisposeWith(Disposable))
             .DisposeWith(Disposable);
         HostName = RemoteService.HostInfo.ServiceName;
-        BeginCalibration = ReactiveCommand.CreateFromTask(PerformCalibration
-                //, canExecute: _calibrationHandler.IsPerformingCalibration.Select(x => !x)
-            )
+        BeginCalibration = ReactiveCommand.CreateFromTask(PerformCalibration)
             .DisposeWith(Disposable);
         Disconnect = ReactiveCommand.CreateFromTask(PerformDisconnect).DisposeWith(Disposable);
     }
@@ -70,7 +67,7 @@ public class StatusViewModel : ReactiveObject, IDisposable
 
     public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatusPropertyHelper.Value;
     public RemoteServiceStatus RemoteServiceStatus => RemoteServiceStatusPropertyHelper.Value;
-    public ReactiveCommand<Unit, Result> BeginCalibration { get; }
+    public ReactiveCommand<Unit, Unit> BeginCalibration { get; }
     public ReactiveCommand<Unit, Unit> Disconnect { get; }
 
     public string HostName { get; }
@@ -81,22 +78,46 @@ public class StatusViewModel : ReactiveObject, IDisposable
         Disposable.Dispose();
     }
 
-    private Task<Result> PerformCalibration()
+    private async Task PerformCalibration()
     {
-        return CalibrationHandler.CalibrationHandler(RemoteService, LifeBoundedSource.Token);
+        try
+        {
+            await CalibrationHandler.CalibrationHandler(RemoteService, LifeBoundedSource.Token);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogCritical(exception, "Failed to perform calibration.");
+        }
     }
 
     private async Task<Unit> PerformDisconnect()
     {
-        Logger.LogDebug("Disconnecting from remote service [user action]");
-        RemoteService.Disconnect();
-        RemoteServicePublisher.Publish(null);
-        return await OnServiceDisconnected(RemoteServiceStatus.Disconnected);
+        try
+        {
+            Logger.LogDebug("Disconnecting from remote service [user action]");
+            RemoteService.Disconnect();
+            RemoteServicePublisher.Publish(null);
+            await Router.NavigateTo(Route.AndroidServiceSearch, default);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogCritical(exception, "Failed to disconnect in response to user action");
+        }
+
+        return Unit.Default;
     }
 
     private async Task<Unit> OnServiceDisconnected(RemoteServiceStatus status)
     {
-        await Router.NavigateTo(Route.AndroidServiceSearch, default);
+        try
+        {
+            await Router.NavigateTo(Route.AndroidServiceSearch, default);
+        }
+        catch (Exception exception)
+        {
+            Logger.LogCritical(exception, "Failed to respond to service disconnection");
+        }
+
         return Unit.Default;
     }
 }

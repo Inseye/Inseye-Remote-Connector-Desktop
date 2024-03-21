@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: CalibrationView.cs
-// Last edit: 2024-1-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -24,7 +24,7 @@ using Terminal.Gui;
 
 namespace TerminalGUI.Views;
 
-public sealed class CalibrationView: DisposingView<CalibrationViewModel>
+public sealed class CalibrationView : DisposingView<CalibrationViewModel>
 {
     private readonly View _buttonContainer;
     private readonly Button _cancelButton;
@@ -33,21 +33,15 @@ public sealed class CalibrationView: DisposingView<CalibrationViewModel>
     public CalibrationView(CalibrationViewModel viewModel) : base(viewModel)
     {
         Title = "Test title";
-        
+
         var textInfoBox = new Label
         {
-            Text = "test",
-            //Text = string.Empty,
             X = 0,
             Y = 0,
             Width = Dim.Fill(1),
             Height = Dim.Height(this) - 5,
             TextAlignment = TextAlignment.Centered,
-            VerticalTextAlignment = VerticalTextAlignment.Middle,
-            // ColorScheme = new ColorScheme
-            // {
-            //     Normal = new Attribute(ColorName.White, ColorName.Black)
-            // }
+            VerticalTextAlignment = VerticalTextAlignment.Middle
         };
         Add(textInfoBox);
         _buttonContainer = new View
@@ -55,11 +49,7 @@ public sealed class CalibrationView: DisposingView<CalibrationViewModel>
             X = Pos.Center(),
             Y = Pos.Bottom(textInfoBox),
             Width = Dim.Fill(1),
-            Height = Dim.Fill(),
-            // ColorScheme = new ColorScheme
-            // {
-            //     Normal = new Attribute(ColorName.White, ColorName.Red)
-            // }
+            Height = Dim.Fill()
         };
         Add(_buttonContainer);
         _cancelButton = new Button
@@ -79,7 +69,7 @@ public sealed class CalibrationView: DisposingView<CalibrationViewModel>
         {
             Text = "Continue",
             X = Pos.Center(),
-            Y = Pos.Center(),
+            Y = Pos.Center()
         };
         _goBackButton
             .Events()
@@ -112,6 +102,4 @@ public sealed class CalibrationView: DisposingView<CalibrationViewModel>
         _buttonContainer.RemoveAll();
         _buttonContainer.Add(loadedButton);
     }
-    
-    
 }

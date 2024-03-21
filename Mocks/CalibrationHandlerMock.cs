@@ -1,6 +1,6 @@
-﻿// Module name: TerminalGUI
-// File name: ErrorView.cs
-// Last edit: 2024-1-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: Mocks
+// File name: CalibrationHandlerMock.cs
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,9 +13,17 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-namespace TerminalGUI.Views;
+using EyeTrackerStreaming.Shared.Results;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-public class ErrorView
+namespace Mocks;
+ 
+public class CalibrationHandlerMock : ICalibrationHandler
 {
-    
+    public Func<IRemoteService, CancellationToken, Task<Result>> OnCalibrationHandler { get; set; } =
+        (_, _) => Task.FromResult((Result) SuccessResult.Default);
+    public Task<Result> CalibrationHandler(IRemoteService serviceUsedToPerformCalibration, CancellationToken token)
+    {
+        return OnCalibrationHandler(serviceUsedToPerformCalibration, token);
+    }
 }

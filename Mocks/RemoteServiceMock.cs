@@ -1,6 +1,6 @@
 ﻿// Module name: Mocks
 // File name: RemoteServiceMock.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -17,6 +17,7 @@ using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Results;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
+using Version = EyeTrackerStreaming.Shared.Version;
 
 namespace Mocks;
 
@@ -25,6 +26,9 @@ public sealed class RemoteServiceMock(ServiceOffer offer) : IRemoteService, IDis
     private readonly InvokeObservable<EyeTrackerStatus> _eyeTrackerStatus = new();
     private readonly InvokeObservable<GazeDataSample> _gazeDataStream = new();
     private readonly InvokeObservable<RemoteServiceStatus> _remoteStatusStream = new();
+
+    public static RemoteServiceMock Default =>
+        new(new ServiceOffer("mock service", "0.0.0.0", 1234, new Version(0, 0, 1, "mock")));
 
     public void Dispose()
     {
@@ -48,6 +52,5 @@ public sealed class RemoteServiceMock(ServiceOffer offer) : IRemoteService, IDis
 
     public void Disconnect()
     {
-        
     }
 }

@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiApplication.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -25,28 +25,8 @@ namespace TerminalGUI;
 
 public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchronizationContext
 {
-    private enum State : uint
-    {
-        Initializing,
-        Initialized,
-        Running,
-        Disposed,
-        Faulted
-    }
-    private Toplevel Top { get; }
-    private ILogger<TerminalGuiApplication> Logger { get; }
     private uint _applicationStateBackingField;
 
-    private State ApplicationState
-    {
-        get => (State) _applicationStateBackingField;
-        set => _applicationStateBackingField = (uint) value;
-    }
-    private Thread MainUiThread { get; set; }
-    private TaskCompletionSource WaitForRunInvoke { get; }
-    private TaskCompletionSource WaitForRunFinished { get; } = new();
-    private CancellationToken Token { get; set; }
-    public SynchronizationContext Context { get; private set; }
     public TerminalGuiApplication(Toplevel top, ILogger<TerminalGuiApplication> logger)
     {
         Context = null!; // Context is initialized in UiThreadImplementation
@@ -57,7 +37,8 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         MainUiThread.Name = "MainUiThread";
         MainUiThread.Start();
         ApplicationState = State.Initializing;
-        while(ApplicationState == State.Initializing) { 
+        while (ApplicationState == State.Initializing)
+        {
             // spin wait for MainUiThread
         }
 
@@ -65,11 +46,26 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
             throw new Exception("Failed to initialize TerminalGuiApplication. Check application logs.");
     }
 
+    private Toplevel Top { get; }
+    private ILogger<TerminalGuiApplication> Logger { get; }
+
+    private State ApplicationState
+    {
+        get => (State) _applicationStateBackingField;
+        set => _applicationStateBackingField = (uint) value;
+    }
+
+    private Thread MainUiThread { get; set; }
+    private TaskCompletionSource WaitForRunInvoke { get; }
+    private TaskCompletionSource WaitForRunFinished { get; } = new();
+    private CancellationToken Token { get; set; }
+
     public Task Run(CancellationToken token)
     {
-        if ((uint) State.Initialized != Interlocked.CompareExchange(ref _applicationStateBackingField, (uint) State.Running,
+        if ((uint) State.Initialized != Interlocked.CompareExchange(ref _applicationStateBackingField,
+                (uint) State.Running,
                 (uint) State.Initialized))
-            throw new Exception($"Application is in invalid state {ApplicationState:G}."); 
+            throw new Exception($"Application is in invalid state {ApplicationState:G}.");
         Logger.LogInformation("Starting terminal GUI application");
         Token = token;
         try
@@ -86,6 +82,23 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         return WaitForRunFinished.Task;
     }
 
+
+    public void Dispose()
+    {
+        Logger.LogTrace(EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
+        WaitForRunInvoke.TrySetCanceled();
+        Application.Shutdown();
+        MainUiThread.Join();
+        ApplicationState = State.Disposed;
+    }
+
+    public SynchronizationContext Context { get; private set; }
+
+    /// <summary>
+    ///     UI thread implementation.
+    ///     Whole UI loop is implemented as a single C# managed thread.
+    /// </summary>
+    /// <exception cref="Exception"></exception>
     private void UiThreadImplementation()
     {
         // initialize application on Ui managed thread
@@ -98,9 +111,21 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         catch (Exception exception)
         {
             ApplicationState = State.Faulted;
-            Logger.LogCritical(exception: exception, "Ui Thread Init block thrown exception");
+            Logger.LogCritical(exception, "Ui Thread Init block thrown exception");
         }
-        WaitForRunInvoke.Task.Wait(); // wait for 'Run' method invoke
+
+        try
+        {
+            WaitForRunInvoke.Task.Wait(); // wait for 'Run' method invoke
+        }
+        catch (AggregateException aggregateException)
+        {
+            if (aggregateException.InnerExceptions.Count > 1 ||
+                aggregateException.InnerExceptions[0] is not TaskCanceledException)
+                throw;
+            return;
+        }
+
         // continue 
         var currScheduler = RxApp.MainThreadScheduler;
         var currTaskPoolScheduler = RxApp.TaskpoolScheduler;
@@ -108,10 +133,14 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         {
             RxApp.MainThreadScheduler = TerminalScheduler.Default;
             RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
-            using(Token.Register(static () => Application.Invoke(() => Application.RequestStop())))
+            using (Token.Register(static () => Application.Invoke(() => Application.RequestStop())))
             {
                 Application.Run(Top);
             }
+        }
+        catch (Exception exception)
+        {
+            WaitForRunFinished.TrySetException(exception);
         }
         finally
         {
@@ -125,16 +154,6 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         }
     }
 
-
-    public void Dispose()
-    {
-        Logger.LogTrace(eventId: EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
-        WaitForRunInvoke.TrySetCanceled();
-        Application.Shutdown();
-        MainUiThread.Join();
-        ApplicationState = State.Disposed;
-    }
-
     public void RemoveAll()
     {
         Top.RemoveAll();
@@ -144,5 +163,14 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
     {
         Top.Add(view);
         Top.SetNeedsDisplay();
+    }
+
+    private enum State : uint
+    {
+        Initializing,
+        Initialized,
+        Running,
+        Disposed,
+        Faulted
     }
 }
