@@ -15,6 +15,7 @@
 
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection.Metadata;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
@@ -28,88 +29,97 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
 {
     private DisposeBool _disposped;
     public const string Protocol = "_inseye-et._tcp.local.";
-    private readonly HashSet<IZeroconfHost> _hosts = new();
-    private readonly ZeroconfResolver.ResolverListener _resolverListener;
-    private readonly ILogger<ZeroconfServiceProvider> _logger;
+    private HashSet<ServiceOffer> Offers { get; set; } = new();
+    private ILogger<ZeroconfServiceProvider> Logger { get; }
+    private CancellationTokenSource CancellationTokenSource { get; } = new();
     private readonly InvokeObservable<IReadOnlyList<ServiceOffer>> _invokeObservable = new();
-    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers => !_disposped ? _invokeObservable : throw new ObjectDisposedException(nameof(ZeroconfServiceProvider));
+
+    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers => !_disposped
+        ? _invokeObservable
+        : throw new ObjectDisposedException(nameof(ZeroconfServiceProvider));
 
     public ZeroconfServiceProvider(ILogger<ZeroconfServiceProvider> logger)
     {
-        _logger = logger;
-        _resolverListener = ZeroconfResolver.CreateListener(Protocol);
-        _resolverListener.ServiceFound += ServiceFoundHandler;
-        _resolverListener.ServiceLost += ServiceLostHandler;
-        _resolverListener.Error += ServiceErrorHandler;
+        Logger = logger;
+        SynchronizationContextExtensions.RunOnNull(() => ZeroconfLoop(CancellationTokenSource.Token));
     }
 
-    private void ServiceFoundHandler(object? _, IZeroconfHost host)
+    private async Task ZeroconfLoop(CancellationToken token)
     {
-        var preCount = _hosts.Count;
-        _hosts.Add(host);
-        if (preCount != _hosts.Count)
-            PublishChanges();
-    }
+        HashSet<ServiceOffer> newSet = new();
+        while (!token.IsCancellationRequested)
+        {
+            try
+            {
+                var hosts = await ZeroconfResolver.ResolveAsync(protocol: Protocol, cancellationToken: token);
+                newSet.Clear();
+                foreach (var host in hosts)
+                    foreach (var offer in ToServiceOffers(host))
+                        newSet.Add(offer);
+                if (newSet.SetEquals(Offers))
+                    continue;
+                (Offers, newSet) = (newSet, Offers);
+                PublishChanges();
 
-    private void ServiceLostHandler(object? _, IZeroconfHost host)
-    {
-        var preCount = _hosts.Count;
-        _hosts.Remove(host);
-        if (preCount != _hosts.Count)
-            PublishChanges();
-    }
-
-    private void ServiceErrorHandler(object? _, Exception exception)
-    {
-        _invokeObservable.SendError(exception);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch (Exception exception)
+            {
+                Logger.LogError(exception, "Error encountered in ZeroconfLoop");
+            }
+        }
+        Logger.LogTrace("Terminating ZeroconfLoop");
     }
 
     public void Dispose()
     {
-        if(!_disposped.PerformDispose()) return;
-        _resolverListener.ServiceFound -= ServiceFoundHandler;
-        _resolverListener.ServiceLost -= ServiceLostHandler;
-        _resolverListener.Error -= ServiceErrorHandler;
-        _resolverListener.Dispose();
+        if (!_disposped.PerformDispose()) return;
+        CancellationTokenSource.Cancel();
+        CancellationTokenSource.Dispose();
         _invokeObservable.Dispose();
     }
 
     private void PublishChanges()
     {
-        IEnumerable<ServiceOffer> Selector(HashSet<IZeroconfHost> hosts)
+        _invokeObservable.Send(Offers.ToArray());
+    }
+
+    private IEnumerable<ServiceOffer> ToServiceOffers(IZeroconfHost host)
+    {
+        if (host.IPAddresses is null)
+            yield break;
+        foreach (var address in host.IPAddresses)
         {
-            foreach (var host in hosts)
+            if (!IPAddress.TryParse(address, out var addres))
+                continue;
+            if (addres.AddressFamily != AddressFamily.InterNetwork)
+                continue;
+            foreach (var service in host.Services)
             {
-                foreach (var address in host.IPAddresses)
+                var version = new Version(0, 0, 0, "unknown");
+                foreach (var dict in service.Value.Properties)
                 {
-                    if (!IPAddress.TryParse(address, out var addres))
-                        continue;
-                    if (addres.AddressFamily != AddressFamily.InterNetwork)
-                        continue;
-                    foreach (var service in host.Services)
+                    if (dict.TryGetValue("version", out var toParse))
                     {
-                        var version = new Version(0, 0, 0, "unknown");
-                        foreach (var dict in service.Value.Properties)
+                        try
                         {
-                            if (dict.TryGetValue("version", out var toParse))
-                            {
-                                try
-                                {
-                                    version = Version.Parse(toParse);
-                                    break;
-                                }
-                                catch(Exception exception)
-                                {
-                                    _logger.LogWarning("Failed to parse remote service version {version}, exception message: {message}" ,"version", exception.Message);
-                                }
-                            }
+                            version = Version.Parse(toParse);
+                            break;
                         }
-                        
-                        yield return new ServiceOffer(host.DisplayName, address, service.Value.Port, version);
+                        catch (Exception exception)
+                        {
+                            Logger.LogWarning(
+                                "Failed to parse remote service version {version}, exception message: {message}",
+                                "version", exception.Message);
+                        }
                     }
                 }
+                yield return new ServiceOffer(host.DisplayName, address, service.Value.Port, version);
             }
         }
-        _invokeObservable.Send(Selector(_hosts).ToArray());
     }
+
 }

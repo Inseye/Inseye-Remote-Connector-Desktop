@@ -15,15 +15,38 @@
 
 namespace EyeTrackerStreaming.Shared;
 
-public readonly struct ServiceOffer(string serviceName, string address, int port, Version version)
+public readonly struct ServiceOffer : IEquatable<ServiceOffer>
 {
-    public readonly string ServiceName = serviceName;
-    public readonly string Address = address;
-    public readonly int Port = port;
-    public readonly Version Version = version;
+    public readonly string ServiceName;
+    public readonly string Address;
+    public readonly int Port;
+    public readonly Version Version;
+
+    public ServiceOffer(string serviceName, string address, int port, Version version)
+    {
+        ServiceName = serviceName;
+        Address = address;
+        Port = port;
+        Version = version;
+    }
 
     public override string ToString()
     {
-        return $"{serviceName} at {Address}:{Port} ver: {Version}";
+        return $"{ServiceName} at {Address}:{Port} ver: {Version}";
+    }
+
+    public bool Equals(ServiceOffer other)
+    {
+        return ServiceName == other.ServiceName && Address == other.Address && Port == other.Port && Version.Equals(other.Version);
+    }
+
+    public override bool Equals(object? obj)
+    {
+        return obj is ServiceOffer other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(ServiceName, Address, Port, Version);
     }
 }
