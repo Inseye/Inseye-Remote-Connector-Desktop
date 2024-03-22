@@ -201,6 +201,7 @@ internal class GrpcRemoteService : IRemoteService, IDisposable
         }
         finally
         {
+            EyeTrackerStatusObservable.Send(EyeTrackerStatus.Unknown);
             EyeTrackerStatusObservable.Complete();
         }
     }
