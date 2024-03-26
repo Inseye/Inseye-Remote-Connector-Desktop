@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
 // File name: SimpleConsoleLogger.cs
-// Last edit: 2024-2-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,23 +13,29 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
+using EyeTrackerStreaming.Shared.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace EyeTrackerStreaming.Shared.Utility;
 
 /// <summary>
-/// Utility logger for development, testing and debugging purposes. 
+///     Utility logger for development, testing and debugging purposes.
 /// </summary>
 /// <typeparam name="T">Logger consumer type</typeparam>
 public sealed class SimpleConsoleLogger<T> : ILogger<T>
 {
-    public static readonly SimpleConsoleLogger<T> Instance = new(); 
-    private SimpleConsoleLogger() {}
-    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+    public static readonly SimpleConsoleLogger<T> Instance = new();
+
+    private SimpleConsoleLogger()
     {
-        using var handle = SharedStringBuilderObjectPool.GetAutoDisposing();
+    }
+
+    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception,
+        Func<TState, Exception?, string> formatter)
+    {
+        using var handle = StringBuilderPool.Shared.GetAutoDisposing();
         Console.WriteLine(handle.Object.Append(logLevel.ToString("G"))
-            .Append(' ').Append(typeof(T).Name).Append(' ').Append( formatter(state, exception)));
+            .Append(' ').Append(typeof(T).Name).Append(' ').Append(formatter(state, exception)));
     }
 
     public bool IsEnabled(LogLevel logLevel)

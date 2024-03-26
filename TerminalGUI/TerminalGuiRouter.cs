@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiRouter.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -14,10 +14,13 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using System.Reactive.Disposables;
+using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Routing;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
 using EyeTrackingStreaming.ViewModels;
+using Microsoft.Extensions.Logging;
 using ReactiveExample;
 using Terminal.Gui;
 using TerminalGUI.Views;
@@ -26,9 +29,6 @@ namespace TerminalGUI;
 
 public class TerminalGuiRouter : IRouter, IDisposable
 {
-    private readonly InvokeObservable<bool> _canNavigateBack = new();
-    private readonly Stack<Route> _routeStack = new();
-
     private readonly Dictionary<Route, Func<IServiceProvider, View>> _viewResolver =
         new()
         {
@@ -52,36 +52,58 @@ public class TerminalGuiRouter : IRouter, IDisposable
         };
 
     private IDisposable? _currentView;
+    private DisposeBool _disposed;
 
-    public TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IServiceProvider serviceProvider)
+    public TerminalGuiRouter(TerminalGuiApplication terminalGuiApplication, IServiceProvider serviceProvider,
+        ILogger<TerminalGuiRouter> logger)
     {
+        Logger = logger;
         ServiceProvider = serviceProvider;
         TerminalGuiApplication = terminalGuiApplication;
     }
+
+    private InvokeObservable<bool> CanNavigateBackInvokeObservable { get; } = new();
+    private Stack<Route> RouteStack { get; } = new();
+    private ILogger<TerminalGuiRouter> Logger { get; }
 
     private IServiceProvider ServiceProvider { get; }
     private TerminalGuiApplication TerminalGuiApplication { get; }
 
     public void Dispose()
     {
-        _canNavigateBack.Dispose();
+        if (!_disposed.PerformDispose())
+            return;
+        CanNavigateBackInvokeObservable.Dispose();
         _currentView?.Dispose();
+        RouteStack.Clear();
     }
 
-    public bool CanNavigateBack => _routeStack.Count > 1;
-    public IObservable<bool> CanNavigateBackObservable => _canNavigateBack;
-    public Route CurrentRoute => _routeStack.Count > 0 ? _routeStack.Peek() : Route.None;
+    public bool CanNavigateBack => RouteStack.Count > 1;
+    public IObservable<bool> CanNavigateBackObservable => CanNavigateBackInvokeObservable;
+    public Route CurrentRoute => RouteStack.Count > 0 ? RouteStack.Peek() : Route.None;
 
     public async Task NavigateTo(Route route, CancellationToken token)
     {
         token.ThrowIfCancellationRequested();
         if (CurrentRoute == route)
             return;
-        await TerminalGuiApplication.Context.SwitchTo();
+        if (_disposed)
+        {
+            LogRouteAborted(route);
+            return;
+        }
+
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        if (_disposed)
+        {
+            LogRouteAborted(route);
+            return;
+        }
+
         _currentView?.Dispose();
         _currentView = await NavigateInternal(route, token);
-        _routeStack.Clear();
-        _routeStack.Push(route);
+        RouteStack.Clear();
+        RouteStack.Push(route);
     }
 
     public async Task NavigateToStack(Route route, CancellationToken token)
@@ -90,12 +112,24 @@ public class TerminalGuiRouter : IRouter, IDisposable
         token.ThrowIfCancellationRequested();
         if (CurrentRoute == route)
             return;
-        await TerminalGuiApplication.Context.SwitchTo();
+        if (_disposed)
+        {
+            LogRouteAborted(route);
+            return;
+        }
+
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        if (_disposed)
+        {
+            LogRouteAborted(route);
+            return;
+        }
+
         _currentView?.Dispose();
         _currentView = await NavigateInternal(route, token);
-        _routeStack.Push(route);
+        RouteStack.Push(route);
         if (canNavigateBackPreCall != CanNavigateBack)
-            _canNavigateBack.Send(CanNavigateBack);
+            CanNavigateBackInvokeObservable.Send(CanNavigateBack);
     }
 
     public async Task NavigateBack(CancellationToken token)
@@ -103,16 +137,30 @@ public class TerminalGuiRouter : IRouter, IDisposable
         token.ThrowIfCancellationRequested();
         if (!CanNavigateBack)
             throw new Exception("There is not way back. (route stack has single view)");
-        await TerminalGuiApplication.Context.SwitchTo();
+        if (_disposed)
+        {
+            Logger.LogTrace("Navigation back was aborted because router was disposed.");
+            return;
+        }
+
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        if (_disposed)
+        {
+            Logger.LogTrace("Navigation back was aborted because router was disposed.");
+            return;
+        }
+
         var canNavigateBackPreCall = CanNavigateBack;
-        var currentRoute = _routeStack.Pop();
-        var previousRoute = _routeStack.Peek();
+        var currentRoute = RouteStack.Pop();
+        var previousRoute = RouteStack.Peek();
         if (currentRoute == previousRoute)
             return;
         _currentView?.Dispose();
         await NavigateInternal(previousRoute, token);
+        if (_disposed)
+            return;
         if (canNavigateBackPreCall != CanNavigateBack)
-            _canNavigateBack.Send(CanNavigateBack);
+            CanNavigateBackInvokeObservable.Send(CanNavigateBack);
     }
 
     private async Task<View> NavigateInternal(Route route, CancellationToken token)
@@ -157,5 +205,10 @@ public class TerminalGuiRouter : IRouter, IDisposable
         {
             await registration.DisposeAsync();
         }
+    }
+
+    private void LogRouteAborted(Route targetRoute)
+    {
+        Logger.LogTrace("Navigation to {route} was aborted because router was disposed.", targetRoute);
     }
 }

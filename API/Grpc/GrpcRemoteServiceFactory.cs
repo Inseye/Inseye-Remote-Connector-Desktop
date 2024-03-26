@@ -1,6 +1,6 @@
 ﻿// Module name: API
 // File name: GrpcRemoteServiceFactory.cs
-// Last edit: 2024-1-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -17,10 +17,13 @@ using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Grpc.Core;
 using Microsoft.Extensions.Logging;
+using RemoteConnector.Proto;
 
 namespace API.Grpc;
 
-public class GrpcRemoteServiceFactory(ILogger<GrpcRemoteServiceFactory> factoryLogger, ILogger<IRemoteService> serviceLogger) : IRemoteServiceFactory
+public class GrpcRemoteServiceFactory(
+    ILogger<GrpcRemoteServiceFactory> factoryLogger,
+    ILogger<IRemoteService> serviceLogger) : IRemoteServiceFactory
 {
     public async ValueTask<IRemoteService> CreateRemoteService(ServiceOffer offer, CancellationToken token)
     {
@@ -31,13 +34,10 @@ public class GrpcRemoteServiceFactory(ILogger<GrpcRemoteServiceFactory> factoryL
         CancellationTokenRegistration registration = default;
         try
         {
-            if (token != default)
-            {
-                registration = token.Register(() => channel.ShutdownAsync());
-            }
+            if (token != default) registration = token.Register(() => channel.ShutdownAsync());
             serviceLogger.LogTrace("Connecting to {offer}", offer);
             await channel.ConnectAsync();
-            return new GrpcRemoteService(channel, offer, serviceLogger);
+            return new GrpcRemoteService(new RemoteService.RemoteServiceClient(channel), offer, serviceLogger);
         }
         finally
         {

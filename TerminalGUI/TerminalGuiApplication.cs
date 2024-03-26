@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiApplication.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -15,9 +15,9 @@
 
 using System.Reactive.Concurrency;
 using EyeTrackerStreaming.Shared;
+using EyeTrackerStreaming.Shared.Pooling;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Microsoft.Extensions.Logging;
-using ReactiveExample;
 using ReactiveUI;
 using Terminal.Gui;
 
@@ -60,6 +60,8 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
     private TaskCompletionSource WaitForRunFinished { get; } = new();
     private CancellationToken Token { get; set; }
 
+    private DispatcherSynchronizationContext Context { get; set; }
+
     public Task Run(CancellationToken token)
     {
         if ((uint) State.Initialized != Interlocked.CompareExchange(ref _applicationStateBackingField,
@@ -87,12 +89,11 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
     {
         Logger.LogTrace(EventsId.DisposeCall, $"Disposing {nameof(TerminalGuiApplication)}");
         WaitForRunInvoke.TrySetCanceled();
-        Application.Shutdown();
         MainUiThread.Join();
         ApplicationState = State.Disposed;
     }
 
-    public SynchronizationContext Context { get; private set; }
+    SynchronizationContext IUiThreadSynchronizationContext.Context => Context;
 
     /// <summary>
     ///     UI thread implementation.
@@ -101,11 +102,12 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
     /// <exception cref="Exception"></exception>
     private void UiThreadImplementation()
     {
+        Context = new DispatcherSynchronizationContext(Environment.CurrentManagedThreadId);
         // initialize application on Ui managed thread
         try
         {
             Application.Init();
-            Context = SynchronizationContext.Current ?? throw new Exception("Synchronization context is null");
+            SynchronizationContext.SetSynchronizationContext(Context);
             ApplicationState = State.Initialized;
         }
         catch (Exception exception)
@@ -131,11 +133,13 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         var currTaskPoolScheduler = RxApp.TaskpoolScheduler;
         try
         {
-            RxApp.MainThreadScheduler = TerminalScheduler.Default;
+            RxApp.MainThreadScheduler = new ToSynchronizationContextScheduler(Context);
             RxApp.TaskpoolScheduler = TaskPoolScheduler.Default;
             using (Token.Register(static () => Application.Invoke(() => Application.RequestStop())))
             {
+                Application.Iteration += OnEachIteration;
                 Application.Run(Top);
+                Application.Iteration -= OnEachIteration;
             }
         }
         catch (Exception exception)
@@ -151,6 +155,21 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
                 WaitForRunFinished.TrySetCanceled(Token);
             else
                 WaitForRunFinished.TrySetResult();
+            Application.Shutdown();
+            Context.Dispose();
+        }
+    }
+
+    private void OnEachIteration(object? _, IterationEventArgs args)
+    {
+        var workToDo = Context.StealScheduledWorkQueue();
+        try
+        {
+            foreach (var workitem in workToDo) workitem.postCallback.Invoke(workitem.state);
+        }
+        finally
+        {
+            QueuePool<(SendOrPostCallback, object?)>.Shared.Return(workToDo);
         }
     }
 

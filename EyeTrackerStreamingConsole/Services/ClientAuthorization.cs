@@ -1,5 +1,5 @@
-﻿// Module name: Shared
-// File name: Ref.cs
+﻿// Module name: EyeTrackerStreamingConsole
+// File name: ClientAuthorization.cs
 // Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
@@ -13,18 +13,19 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-namespace EyeTrackerStreaming.Shared;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-/// <summary>
-///     Explicitly boxed struct
-/// </summary>
-/// <typeparam name="T">Type of struct to box</typeparam>
-public sealed class Ref<T> where T : struct
+namespace EyeTrackerStreamingConsole.Services;
+
+public class ClientAuthorization : IClientAuthorization
 {
-    public Ref(T initialValue)
+    public bool IsClientAuthorized()
     {
-        Value = initialValue;
+        return true;
     }
 
-    public T Value { get; set; }
+    public Task AuthorizeClient(CancellationToken token)
+    {
+        return Task.CompletedTask;
+    }
 }

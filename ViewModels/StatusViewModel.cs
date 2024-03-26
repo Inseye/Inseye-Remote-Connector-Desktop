@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels
 // File name: StatusViewModel.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -46,6 +46,7 @@ public class StatusViewModel : ReactiveObject, IDisposable
         RemoteService.ServiceStatusStream
             .Where(s => s == RemoteServiceStatus.Disconnected || s == RemoteServiceStatus.Disconnecting)
             .ObserveOn(RxApp.MainThreadScheduler)
+            .Finally(() => OnServiceDisconnected(RemoteServiceStatus.Disconnecting))
             .InvokeCommand(ReactiveCommand.CreateFromTask<RemoteServiceStatus, Unit>(OnServiceDisconnected)
                 .DisposeWith(Disposable))
             .DisposeWith(Disposable);

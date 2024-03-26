@@ -1,6 +1,6 @@
 ﻿// Module name: ClientCommunication
 // File name: NamedPipeServer.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -264,7 +264,7 @@ public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
         private static string GenerateSharedMemoryName(int totalLength)
         {
             var random = Random.Shared;
-            using var sbHandle = SharedStringBuilderObjectPool.GetAutoDisposing();
+            using var sbHandle = StringBuilderPool.Shared.GetAutoDisposing();
             var sb = sbHandle.Object;
             sb.Append("Local\\");
             while (sb.Length < totalLength)

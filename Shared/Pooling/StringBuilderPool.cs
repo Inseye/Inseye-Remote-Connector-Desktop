@@ -1,6 +1,6 @@
-﻿// Module name: EyeTrackerStreamingConsole
-// File name: NullAuthorization.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: Shared
+// File name: StringBuilderPool.cs
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,19 +13,20 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using System.Text;
+using Microsoft.Extensions.ObjectPool;
 
-namespace EyeTrackerStreamingConsole.Services;
+namespace EyeTrackerStreaming.Shared;
 
-public class NullAuthorization : IClientAuthorization
+public static class StringBuilderPool
 {
-    public bool IsClientAuthorized()
-    {
-        return true;
-    }
+    private static readonly IPooledObjectPolicy<StringBuilder> Policy = new StringBuilderPooledObjectPolicy();
 
-    public Task AuthorizeClient(CancellationToken token)
+    public static readonly ObjectPool<StringBuilder> Shared =
+        new DefaultObjectPool<StringBuilder>(Policy);
+
+    public static ObjectPool<StringBuilder> CreateNew()
     {
-        return Task.CompletedTask;
+        return new DefaultObjectPool<StringBuilder>(Policy);
     }
 }

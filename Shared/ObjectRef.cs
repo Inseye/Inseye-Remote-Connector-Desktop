@@ -1,5 +1,5 @@
 ﻿// Module name: Shared
-// File name: Ref.cs
+// File name: ObjectRef.cs
 // Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
@@ -15,16 +15,20 @@
 
 namespace EyeTrackerStreaming.Shared;
 
-/// <summary>
-///     Explicitly boxed struct
-/// </summary>
-/// <typeparam name="T">Type of struct to box</typeparam>
-public sealed class Ref<T> where T : struct
+public sealed class ObjectRef<T> where T : class
 {
-    public Ref(T initialValue)
+    public T Object { get; set; }
+
+    public static explicit operator ObjectRef<T>(T referenced)
     {
-        Value = initialValue;
+        return new ObjectRef<T>
+        {
+            Object = referenced
+        };
     }
 
-    public T Value { get; set; }
+    public static implicit operator T(ObjectRef<T> reference)
+    {
+        return reference.Object;
+    }
 }

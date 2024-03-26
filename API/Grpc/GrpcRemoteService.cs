@@ -1,6 +1,6 @@
 ﻿// Module name: API
 // File name: GrpcRemoteService.cs
-// Last edit: 2024-3-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -27,9 +27,10 @@ using RemoteConnector.Proto;
 
 namespace API.Grpc;
 
-internal class GrpcRemoteService : IRemoteService, IDisposable
+public class GrpcRemoteService : IRemoteService, IDisposable
 {
-    public GrpcRemoteService(Channel openChannel, ServiceOffer offer, ILogger<IRemoteService> serviceLogger)
+    public GrpcRemoteService(RemoteService.RemoteServiceClient remoteServiceClient, ServiceOffer offer,
+        ILogger<IRemoteService> serviceLogger)
     {
         Logger = serviceLogger;
         Logger.LogTrace($"Creating new instance of {nameof(GrpcRemoteService)}");
@@ -38,7 +39,7 @@ internal class GrpcRemoteService : IRemoteService, IDisposable
         var lifetimeBoundedCancellationToke = new CancellationDisposable();
         ObjectLifetimeToken = lifetimeBoundedCancellationToke.Token;
         CompositeDisposable.Add(lifetimeBoundedCancellationToke);
-        RemoteService = new RemoteService.RemoteServiceClient(openChannel);
+        RemoteService = remoteServiceClient;
         CompositeDisposable.Add(RemoteServiceStatusObservable);
         CompositeDisposable.Add(GazeDataSampleSubscriptionTracker =
             new ObservableSubscriptionTracker<GazeDataSample>(GazeDataSampleObservable));
@@ -120,19 +121,19 @@ internal class GrpcRemoteService : IRemoteService, IDisposable
         catch (RpcException rpcException)
         {
             if (rpcException.StatusCode == StatusCode.Unavailable)
-                return new ErrorResult("Calibration failed, Connection with remote service was broken.");
+                return new ErrorResult("Connection with remote service was broken.");
             throw;
         }
 
         if (response is null)
-            return new ErrorResult("Calibration failed. Remote service has not provided any details.");
+            return new ErrorResult("Remote service has not provided any details.");
         Result result = response.Status switch
         {
             CalibrationResponse.Types.Status.Unknown => new ErrorResult(
-                "Calibration failed with unknown reason.".ConcatStrings(response.ErrorMessage)),
+                "Unknown reason.".ConcatStrings(response.ErrorMessage)),
             CalibrationResponse.Types.Status.FinishedSuccessfully => SuccessResult.Default,
             CalibrationResponse.Types.Status.FinishedFailed => new ErrorResult(
-                "Calibration failed.".ConcatStrings(response.ErrorMessage)),
+                response.ErrorMessage),
             CalibrationResponse.Types.Status.MissingSoftware => new ErrorResult(
                 "Calibration application is missing on the headset.".ConcatStrings(response.ErrorMessage)),
             CalibrationResponse.Types.Status.Ongoing => throw new Exception(
@@ -156,7 +157,6 @@ internal class GrpcRemoteService : IRemoteService, IDisposable
                 cancellationToken: ObjectLifetimeToken);
             var token = ObjectLifetimeToken;
             var responseStream = asyncCall.ResponseStream;
-
             while (await responseStream.MoveNext(token).ConfigureAwait(false))
             {
                 var current = responseStream.Current;
@@ -187,21 +187,18 @@ internal class GrpcRemoteService : IRemoteService, IDisposable
                 // service become become unavailable, inform subscribers that eye tracker is unknown and service is broken
                 RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
                 EyeTrackerStatus = EyeTrackerStatus.Unknown;
-                EyeTrackerStatusObservable.Send(EyeTrackerStatus.Unknown);
-                EyeTrackerStatusObservable.Complete();
                 return;
             }
 
-            throw;
+            Logger.LogCritical(rpcException, $"Unhandled RpcException in {nameof(EyeTrackingStatusBackgroundTask)}");
         }
         catch (Exception exception)
         {
-            // TODO: Consider what to do with observers exceptions thrown during 'SendError' invoke
-            EyeTrackerStatusObservable.SendError(exception);
+            Logger.LogCritical(exception, $"Unhandled exception in {nameof(EyeTrackingStatusBackgroundTask)}");
         }
         finally
         {
-            EyeTrackerStatusObservable.Send(EyeTrackerStatus.Unknown);
+            RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
             EyeTrackerStatusObservable.Complete();
         }
     }

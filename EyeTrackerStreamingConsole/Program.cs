@@ -1,6 +1,6 @@
 ﻿// Module name: EyeTrackerStreamingConsole
 // File name: Program.cs
-// Last edit: 2024-3-21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -137,7 +137,7 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
         serviceContainer.Register<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactory>();
         serviceContainer.RegisterDecorator<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactoryWrapper>();
         serviceContainer.Register<NamedPipeServer>(Lifestyle.Scoped);
-        serviceContainer.Register<IClientAuthorization, NullAuthorization>(Lifestyle.Scoped);
+        serviceContainer.Register<IClientAuthorization, ClientAuthorization>(Lifestyle.Scoped);
         serviceContainer.Verify();
         await using var scope = new Scope(serviceContainer);
         scope.GetInstance<RemoteServiceToClientCommunicator>();

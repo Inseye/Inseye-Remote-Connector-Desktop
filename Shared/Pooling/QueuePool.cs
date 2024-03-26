@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
-// File name: StringBuilderObjectPool.cs
-// Last edit: 2024-1-29 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: QueuePool.cs
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,29 +13,35 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using System.Text;
-using EyeTrackerStreaming.Shared.Extensions;
 using Microsoft.Extensions.ObjectPool;
 
-namespace EyeTrackerStreaming.Shared;
+namespace EyeTrackerStreaming.Shared.Pooling;
 
-public static class SharedStringBuilderObjectPool
+public class QueuePool<T>
 {
-    private static readonly ObjectPool<StringBuilder> ObjectPool =
-        new DefaultObjectPool<StringBuilder>(new StringBuilderPooledObjectPolicy());
+    private static readonly IPooledObjectPolicy<Queue<T>> Policy = new PooledQueuePolicy();
 
-    public static StringBuilder Get()
+    public static readonly ObjectPool<Queue<T>> Shared =
+        new DefaultObjectPool<Queue<T>>(Policy, 10);
+
+    public static ObjectPool<Queue<T>> CreateNew()
     {
-        return ObjectPool.Get();
+        return new DefaultObjectPool<Queue<T>>(Policy, 10);
     }
 
-    public static void Return(StringBuilder builder)
+    private class PooledQueuePolicy : IPooledObjectPolicy<Queue<T>>
     {
-        ObjectPool.Return(builder);
-    }
+        public Queue<T> Create()
+        {
+            return new Queue<T>(16);
+        }
 
-    public static ObjectPoolExtensions.PooledObjectHandle<StringBuilder> GetAutoDisposing()
-    {
-        return ObjectPool.GetAutoDisposing();
+        public bool Return(Queue<T> obj)
+        {
+            if (obj.Count > 512)
+                return false;
+            obj.Clear();
+            return true;
+        }
     }
 }

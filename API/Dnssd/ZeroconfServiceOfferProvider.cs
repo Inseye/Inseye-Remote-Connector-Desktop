@@ -1,6 +1,6 @@
 ﻿// Module name: API
-// File name: ZeroconfServiceProvider.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: ZeroconfServiceOfferProvider.cs
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -15,7 +15,6 @@
 
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection.Metadata;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
@@ -27,16 +26,8 @@ namespace API.Dnssd;
 
 public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
 {
-    private DisposeBool _disposped;
     public const string Protocol = "_inseye-et._tcp.local.";
-    private HashSet<ServiceOffer> Offers { get; set; } = new();
-    private ILogger<ZeroconfServiceProvider> Logger { get; }
-    private CancellationTokenSource CancellationTokenSource { get; } = new();
-    private readonly InvokeObservable<IReadOnlyList<ServiceOffer>> _invokeObservable = new();
-
-    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers => !_disposped
-        ? _invokeObservable
-        : throw new ObjectDisposedException(nameof(ZeroconfServiceProvider));
+    private DisposeBool _disposped;
 
     public ZeroconfServiceProvider(ILogger<ZeroconfServiceProvider> logger)
     {
@@ -44,23 +35,38 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
         SynchronizationContextExtensions.RunOnNull(() => ZeroconfLoop(CancellationTokenSource.Token));
     }
 
+    private HashSet<ServiceOffer> Offers { get; set; } = new();
+    private ILogger<ZeroconfServiceProvider> Logger { get; }
+    private CancellationTokenSource CancellationTokenSource { get; } = new();
+    private InvokeObservable<IReadOnlyList<ServiceOffer>> InvokeServiceOffersObservable { get; } = new();
+
+    public void Dispose()
+    {
+        if (!_disposped.PerformDispose()) return;
+        CancellationTokenSource.Cancel();
+        CancellationTokenSource.Dispose();
+        InvokeServiceOffersObservable.Dispose();
+    }
+
+    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers => !_disposped
+        ? InvokeServiceOffersObservable
+        : throw new ObjectDisposedException(nameof(ZeroconfServiceProvider));
+
     private async Task ZeroconfLoop(CancellationToken token)
     {
         HashSet<ServiceOffer> newSet = new();
         while (!token.IsCancellationRequested)
-        {
             try
             {
-                var hosts = await ZeroconfResolver.ResolveAsync(protocol: Protocol, cancellationToken: token);
+                var hosts = await ZeroconfResolver.ResolveAsync(Protocol, cancellationToken: token);
                 newSet.Clear();
                 foreach (var host in hosts)
-                    foreach (var offer in ToServiceOffers(host))
-                        newSet.Add(offer);
+                foreach (var offer in ToServiceOffers(host))
+                    newSet.Add(offer);
                 if (newSet.SetEquals(Offers))
                     continue;
                 (Offers, newSet) = (newSet, Offers);
                 PublishChanges();
-
             }
             catch (OperationCanceledException)
             {
@@ -70,21 +76,13 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
             {
                 Logger.LogError(exception, "Error encountered in ZeroconfLoop");
             }
-        }
-        Logger.LogTrace("Terminating ZeroconfLoop");
-    }
 
-    public void Dispose()
-    {
-        if (!_disposped.PerformDispose()) return;
-        CancellationTokenSource.Cancel();
-        CancellationTokenSource.Dispose();
-        _invokeObservable.Dispose();
+        Logger.LogTrace("Terminating ZeroconfLoop");
     }
 
     private void PublishChanges()
     {
-        _invokeObservable.Send(Offers.ToArray());
+        InvokeServiceOffersObservable.Send(Offers.ToArray());
     }
 
     private IEnumerable<ServiceOffer> ToServiceOffers(IZeroconfHost host)
@@ -101,9 +99,7 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
             {
                 var version = new Version(0, 0, 0, "unknown");
                 foreach (var dict in service.Value.Properties)
-                {
                     if (dict.TryGetValue("version", out var toParse))
-                    {
                         try
                         {
                             version = Version.Parse(toParse);
@@ -115,11 +111,9 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
                                 "Failed to parse remote service version {version}, exception message: {message}",
                                 "version", exception.Message);
                         }
-                    }
-                }
+
                 yield return new ServiceOffer(host.DisplayName, address, service.Value.Port, version);
             }
         }
     }
-
 }
