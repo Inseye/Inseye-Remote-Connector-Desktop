@@ -1,6 +1,6 @@
-﻿// Module name: ClientCommunication
-// File name: IClientAuthorizationProcess.cs
-// Last edit: 2024-3-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: EyeTrackerStreamingConsole
+// File name: ClientAuthorization.cs
+// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -14,14 +14,24 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.Authorization;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
+namespace EyeTrackerStreamingConsole.Services;
 
-/// <summary>
-/// Interface for service that authorizes client desktop application
-/// </summary>
-public interface IClientAuthorization
+public class UserAuthorization : IClientAuthorization
 {
-    bool IsClientAuthorized(AuthorizedClient client);
-    Task<bool> AuthorizeClient(AuthorizedClient client, CancellationToken token);
+    public UserAuthorization(IUserAuthorizationRequestHandler userAuthorizationRequestHandler)
+    {
+        
+    }
+    
+    public bool IsClientAuthorized(AuthorizedClient client)
+    {
+        return true;
+    }
+
+    public Task<bool> AuthorizeClient(AuthorizedClient client, CancellationToken token)
+    {
+        return Task.FromResult(true);
+    }
 }

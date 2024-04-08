@@ -29,7 +29,7 @@ namespace TerminalGUI;
 
 public class TerminalGuiRouter : IRouter, IDisposable
 {
-    private readonly Dictionary<Route, Func<IServiceProvider, View>> _viewResolver =
+    private static readonly Dictionary<Route, Func<IServiceProvider, View>> ViewResolver =
         new()
         {
             {
@@ -43,11 +43,6 @@ public class TerminalGuiRouter : IRouter, IDisposable
             {
                 Route.Calibration,
                 serviceProvider => new CalibrationView(serviceProvider.GetServiceRequired<CalibrationViewModel>())
-            },
-            {
-                Route.ClientAuthorization,
-                serviceProvider =>
-                    new AuthorizationView(serviceProvider.GetServiceRequired<ClientAuthorizationViewModel>())
             }
         };
 
@@ -60,6 +55,14 @@ public class TerminalGuiRouter : IRouter, IDisposable
         Logger = logger;
         ServiceProvider = serviceProvider;
         TerminalGuiApplication = terminalGuiApplication;
+        ForegroundView = new View
+        {
+            Width = Dim.Fill(),
+            Height = Dim.Fill(),
+            BorderStyle = LineStyle.None,
+            // ColorScheme = new ColorScheme(new Attribute(ColorName.Black, ColorName.Cyan))
+        };
+        TerminalGuiApplication.Add(ForegroundView);
     }
 
     private InvokeObservable<bool> CanNavigateBackInvokeObservable { get; } = new();
@@ -68,6 +71,10 @@ public class TerminalGuiRouter : IRouter, IDisposable
 
     private IServiceProvider ServiceProvider { get; }
     private TerminalGuiApplication TerminalGuiApplication { get; }
+    /// <summary>
+    /// Container for the main view of the application.
+    /// </summary>
+    private View ForegroundView { get; }
 
     public void Dispose()
     {
@@ -170,15 +177,15 @@ public class TerminalGuiRouter : IRouter, IDisposable
         var disposable = TerminalScheduler.Default.Schedule(
             new
             {
-                Router = this, Route = route, Task = tcs, Token = token, TerminalGuiApplication = TerminalGuiApplication
+                Router = this, Route = route, Task = tcs, Token = token
             }, static (_, state) =>
             {
                 try
                 {
                     state.Token.ThrowIfCancellationRequested();
-                    var view = state.Router._viewResolver[state.Route].Invoke(state.Router.ServiceProvider);
-                    state.TerminalGuiApplication.RemoveAll();
-                    state.TerminalGuiApplication.Add(view);
+                    var view = ViewResolver[state.Route].Invoke(state.Router.ServiceProvider);
+                    state.Router.ForegroundView.RemoveAll();
+                    state.Router.ForegroundView.Add(view);
                     state.Task.TrySetResult(view);
                 }
                 catch (Exception exc)

@@ -1,6 +1,6 @@
-﻿// Module name: ViewModels
-// File name: ClientAuthorizationViewModel.cs
-// Last edit: 2024-3-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+﻿// Module name: Shared
+// File name: ChangeList.cs
+// Last edit: 2024-4-3 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,11 +13,18 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using ReactiveUI;
 
-namespace EyeTrackingStreaming.ViewModels;
+namespace EyeTrackerStreaming.Shared;
 
-public class ClientAuthorizationViewModel : ReactiveObject
+public sealed class ChangeList : List<(object obj, ChangeList.Change change)>
 {
-    
+    public ChangeList(int capacity) : base(capacity)
+    {
+        
+    }
+    public enum Change
+    {
+        Added,
+        Removed
+    }
 }

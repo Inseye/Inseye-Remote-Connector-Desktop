@@ -14,11 +14,14 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.Extensions;
+using EyeTrackerStreaming.Shared.Pooling;
 
 namespace EyeTrackerStreaming.Shared.Utility;
 
 public class InvokeObservable<T> : IObservable<T>, IDisposable
 {
+    private ChangeList? _changeList;
+    private bool _isIterating;
     private readonly HashSet<IObserver<T>> _observers = new();
     private bool _isFinished;
 
@@ -45,7 +48,11 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
                 return default;
             }
 
-            _observers.Add(observer);
+            if (_isIterating)
+                GetChangeList().Add((observer, ChangeList.Change.Added));
+            else
+                _observers.Add(observer);
+
             return new InvokeObservableSubscriptionDisposer(this, observer);
         }
     }
@@ -56,7 +63,16 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
             throw new ObjectDisposedException(nameof(InvokeObservable<T>));
         lock (_observers)
         {
-            _observers.ForEachAggregateException((observer, val) => observer.OnNext(val), value);
+            try
+            {
+                _isIterating = true;
+                _observers.ForEachAggregateException((observer, val) => observer.OnNext(val), value);
+            }
+            finally
+            {
+                CheckChangeList();
+                _isIterating = false;
+            }
         }
     }
 
@@ -67,6 +83,8 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
         lock (_observers)
         {
             _observers.ForEachAggregateException((observer, val) => observer.OnError(val), exception);
+            _observers.Clear();
+            ClearChangeList();
         }
     }
 
@@ -81,11 +99,14 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
             _isFinished = true;
             try
             {
+                _isIterating = true;
                 _observers.ForEachAggregateException(observer => observer.OnCompleted());
             }
             finally
             {
+                _isIterating = false;
                 _observers.Clear();
+                ClearChangeList();
             }
         }
     }
@@ -96,8 +117,40 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
             return;
         lock (_observers)
         {
-            _observers.Remove(subscriber);
+            if (_isIterating)
+                GetChangeList().Add((subscriber, ChangeList.Change.Removed));
+            else
+                _observers.Remove(subscriber);
         }
+    }
+
+    private void CheckChangeList()
+    {
+        if (_changeList == null)
+            return;
+
+        foreach (var change in _changeList)
+        {
+            if (change.change == ChangeList.Change.Added)
+                _observers.Add((IObserver<T>) change.obj);
+            else
+                _observers.Remove((IObserver<T>) change.obj);
+        }
+        ChangeListPool.Shared.Return(_changeList);
+        _changeList = null;
+    }
+
+    private ChangeList GetChangeList()
+    {
+        return _changeList ??= ChangeListPool.Shared.Get();
+    }
+    
+    private void ClearChangeList()
+    {
+        if(_changeList == null)
+            return;
+        ChangeListPool.Shared.Return(_changeList);
+        _changeList = null;
     }
 
     public struct InvokeObservableSubscriptionDisposer : IDisposable

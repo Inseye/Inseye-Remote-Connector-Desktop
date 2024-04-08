@@ -24,7 +24,7 @@ using Terminal.Gui;
 
 namespace TerminalGUI.Views;
 
-public sealed class StatusView : DisposingView<StatusViewModel>
+internal sealed class StatusView : DisposingView<StatusViewModel>
 {
     public StatusView(StatusViewModel viewModel) : base(viewModel)
     {

@@ -24,7 +24,7 @@ using Terminal.Gui;
 
 namespace TerminalGUI.Views;
 
-public sealed class SearchView : DisposingView<SearchViewModel>
+internal sealed class SearchView : DisposingView<SearchViewModel>
 {
     private readonly ListView _listView;
 

@@ -182,7 +182,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         }
         catch (RpcException rpcException)
         {
-            if (rpcException.Status.StatusCode == StatusCode.Unavailable)
+            if (rpcException.Status.StatusCode is StatusCode.Unavailable or StatusCode.Cancelled or StatusCode.DeadlineExceeded)
             {
                 // service become become unavailable, inform subscribers that eye tracker is unknown and service is broken
                 RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;

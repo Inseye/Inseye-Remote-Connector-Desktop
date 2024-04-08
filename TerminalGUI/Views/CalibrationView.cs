@@ -24,7 +24,7 @@ using Terminal.Gui;
 
 namespace TerminalGUI.Views;
 
-public sealed class CalibrationView : DisposingView<CalibrationViewModel>
+internal sealed class CalibrationView : DisposingView<CalibrationViewModel>
 {
     private readonly View _buttonContainer;
     private readonly Button _cancelButton;

@@ -55,19 +55,21 @@ internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
 
     public async Task NavigateTo(Route route, CancellationToken token)
     {
-        var oldScope = _stackScopes.Pop();
+        var poppedScope = _stackScopes.TryPop(out var oldScope);
         var currentScope = new Scope(Container);
         _stackScopes.Push(currentScope);
         try
         {
             await Router.NavigateTo(route, token);
-            await oldScope.DisposeAsync();
+            if (poppedScope)
+                await oldScope!.DisposeAsync();
         }
         catch
         {
             await currentScope.DisposeAsync();
             _stackScopes.Pop();
-            _stackScopes.Push(oldScope);
+            if (poppedScope)
+                _stackScopes.Push(oldScope!);
             throw;
         }
     }

@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
-// File name: QueuePool.cs
-// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: ChangeListPool.cs
+// Last edit: 2024-4-3 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -17,26 +17,26 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace EyeTrackerStreaming.Shared.Pooling;
 
-public static class QueuePool<T>
+public static class ChangeListPool
 {
-    private static readonly IPooledObjectPolicy<Queue<T>> Policy = new PooledQueuePolicy();
+    private static readonly IPooledObjectPolicy<ChangeList> Policy = new PooledChangeListPolicy();
 
-    public static readonly ObjectPool<Queue<T>> Shared =
-        new DefaultObjectPool<Queue<T>>(Policy, 10);
+    public static readonly ObjectPool<ChangeList> Shared =
+        new DefaultObjectPool<ChangeList>(Policy, 10);
 
-    public static ObjectPool<Queue<T>> CreateNew()
+    public static ObjectPool<ChangeList> CreateNew()
     {
-        return new DefaultObjectPool<Queue<T>>(Policy, 10);
+        return new DefaultObjectPool<ChangeList>(Policy, 10);
     }
 
-    private class PooledQueuePolicy : IPooledObjectPolicy<Queue<T>>
+    private class PooledChangeListPolicy : IPooledObjectPolicy<ChangeList>
     {
-        public Queue<T> Create()
+        public ChangeList Create()
         {
-            return new Queue<T>(16);
+            return new ChangeList(16);
         }
 
-        public bool Return(Queue<T> obj)
+        public bool Return(ChangeList obj)
         {
             if (obj.Count > 512)
                 return false;

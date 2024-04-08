@@ -1,5 +1,5 @@
-﻿// Module name: ClientCommunication
-// File name: IClientAuthorizationProcess.cs
+﻿// Module name: TerminalGUI
+// File name: AuthorizationView.cs
 // Last edit: 2024-3-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
@@ -14,14 +14,19 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.Authorization;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
+namespace TerminalGUI.Views;
 
-/// <summary>
-/// Interface for service that authorizes client desktop application
-/// </summary>
-public interface IClientAuthorization
+public class TerminalUiUserAuthorizationRequestHandler : IUserAuthorizationRequestHandler
 {
-    bool IsClientAuthorized(AuthorizedClient client);
-    Task<bool> AuthorizeClient(AuthorizedClient client, CancellationToken token);
+    public TerminalUiUserAuthorizationRequestHandler(TerminalGuiRouter terminalGuiRouter)
+    {
+        
+    }
+
+    public Task<bool> PromptUserForAuthorization(AuthorizedClient client, CancellationToken token)
+    {
+        return Task.FromResult(true);
+    }
 }

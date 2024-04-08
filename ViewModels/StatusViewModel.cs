@@ -85,6 +85,10 @@ public class StatusViewModel : ReactiveObject, IDisposable
         {
             await CalibrationHandler.CalibrationHandler(RemoteService, LifeBoundedSource.Token);
         }
+        catch (TaskCanceledException)
+        {
+            
+        }
         catch (Exception exception)
         {
             Logger.LogCritical(exception, "Failed to perform calibration.");

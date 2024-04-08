@@ -137,7 +137,8 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
         serviceContainer.Register<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactory>();
         serviceContainer.RegisterDecorator<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactoryWrapper>();
         serviceContainer.Register<NamedPipeServer>(Lifestyle.Scoped);
-        serviceContainer.Register<IClientAuthorization, ClientAuthorization>(Lifestyle.Scoped);
+        serviceContainer.Register<IClientAuthorization, UserAuthorization>(Lifestyle.Scoped);
+        serviceContainer.Register<IUserAuthorizationRequestHandler, NullUserAuthorizationRequestHandler>(Lifestyle.Singleton); // TODO: Remove me 
         serviceContainer.Verify();
         await using var scope = new Scope(serviceContainer);
         scope.GetInstance<RemoteServiceToClientCommunicator>();
