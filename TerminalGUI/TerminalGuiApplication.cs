@@ -138,6 +138,7 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
             using (Token.Register(static () => Application.Invoke(() => Application.RequestStop())))
             {
                 Application.Iteration += OnEachIteration;
+                Application.AddTimeout(TimeSpan.FromMilliseconds(15), () => true);
                 Application.Run(Top);
                 Application.Iteration -= OnEachIteration;
             }

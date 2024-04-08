@@ -175,7 +175,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                     EyeTrackerAvailability.Types.Status.Unavailable => EyeTrackerStatus.Unknown,
                     _ => throw new ArgumentOutOfRangeException()
                 };
-                // TODO: consider pushing this in async manner
+                Logger.LogTrace("Status: {status}", status);
                 EyeTrackerStatus = status;
                 EyeTrackerStatusObservable.Send(status);
             }

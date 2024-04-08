@@ -21,7 +21,7 @@ using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
 using EyeTrackingStreaming.ViewModels;
 using Microsoft.Extensions.Logging;
-using ReactiveExample;
+using ReactiveUI;
 using Terminal.Gui;
 using TerminalGUI.Views;
 
@@ -174,7 +174,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
     {
         var tcs = new TaskCompletionSource<View>();
         CancellationTokenRegistration registration = default;
-        var disposable = TerminalScheduler.Default.Schedule(
+        var disposable = RxApp.MainThreadScheduler.Schedule(
             new
             {
                 Router = this, Route = route, Task = tcs, Token = token
