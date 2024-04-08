@@ -167,7 +167,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                     EyeTrackerAvailability.Types.Status.Available =>
                         GazeDataSampleSubscriptionTracker.SubscribersCount > 0
                             ? EyeTrackerStatus.StreamingGazeData
-                            : EyeTrackerStatus.Connected,
+                            : EyeTrackerStatus.ReadyForStreaming,
                     EyeTrackerAvailability.Types.Status.Unknown => EyeTrackerStatus.Unknown,
                     EyeTrackerAvailability.Types.Status.Disconnected => EyeTrackerStatus.Disconnected,
                     EyeTrackerAvailability.Types.Status.NotCalibrated => EyeTrackerStatus.NotCalibrated,

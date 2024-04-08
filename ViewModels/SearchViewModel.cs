@@ -49,10 +49,12 @@ public class SearchViewModel : ReactiveObject, IDisposable
             .DisposeWith(Disposable);
         ConnectTo = ReactiveCommand
             .CreateFromTask<ServiceOffer, Unit>(
-                arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg))
+                arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg), CanConnectionInterationBeStarted)
             .DisposeWith(Disposable);
+        CanConnectionInterationBeStarted.Value = true;
     }
 
+    private ObservableValue<bool> CanConnectionInterationBeStarted { get; } = new(false);
     private CancellationDisposable Cts { get; }
     private CompositeDisposable Disposable { get; } = new();
 
@@ -76,6 +78,7 @@ public class SearchViewModel : ReactiveObject, IDisposable
 
     private async Task<Unit> ConnectToHandler(ServiceOffer serviceOffer)
     {
+        CanConnectionInterationBeStarted.Value = false;
         try
         {
             Logger.LogTrace("ConnectToHandlerCalled");
@@ -83,9 +86,17 @@ public class SearchViewModel : ReactiveObject, IDisposable
             Publisher.Publish(service);
             await Router.NavigateTo(Route.ConnectionStatus, Cts.Token);
         }
+        catch (TimeoutException)
+        {
+            throw;
+        }
         catch (Exception exception)
         {
             Logger.LogCritical(exception, "Failed to connect to service offer: {@serviceOffer}", serviceOffer);
+        }
+        finally
+        {
+            CanConnectionInterationBeStarted.Value = true;
         }
 
         return default;

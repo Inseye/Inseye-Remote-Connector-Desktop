@@ -15,6 +15,7 @@
 
 namespace EyeTrackerStreaming.Shared;
 
+[Serializable]
 public readonly struct ServiceOffer : IEquatable<ServiceOffer>
 {
     public readonly string ServiceName;

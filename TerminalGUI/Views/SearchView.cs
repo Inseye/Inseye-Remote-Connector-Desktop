@@ -61,6 +61,10 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(x => ApplyOffers(x.Value ?? Array.Empty<ServiceOffer>()))
             .DisposeWith(Disposable);
+        ViewModel.ConnectTo.ThrownExceptions
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .Subscribe(HandleConnectToException)
+            .DisposeWith(Disposable);
         _listView
             .Events()
             .OpenSelectedItem
@@ -80,5 +84,10 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
         DisplayedOffers.AddRange(offers);
         _listView.SetSource(DisplayedOffers);
         _listView.SelectedItem = Math.Min(DisplayedOffers.Count - 1, selected);
+    }
+
+    private void HandleConnectToException(Exception exception)
+    {
+        ErrorWindow.ShowError(this, exception.Message).DisposeWith(Disposable);
     }
 }

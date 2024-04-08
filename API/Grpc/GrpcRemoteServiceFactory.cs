@@ -36,7 +36,14 @@ public class GrpcRemoteServiceFactory(
         {
             if (token != default) registration = token.Register(() => channel.ShutdownAsync());
             serviceLogger.LogTrace("Connecting to {offer}", offer);
-            await channel.ConnectAsync();
+            try
+            {
+                await channel.ConnectAsync(DateTime.UtcNow.AddSeconds(5));
+            }
+            catch (TaskCanceledException tcs)
+            {
+                throw new TimeoutException($"Failed to connect to {offer.ToString()}", tcs);
+            }
             return new GrpcRemoteService(new RemoteService.RemoteServiceClient(channel), offer, serviceLogger);
         }
         finally
