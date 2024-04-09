@@ -17,40 +17,53 @@ using Terminal.Gui;
 
 namespace TerminalGUI.Views;
 
-public class ErrorWindow : Window
+public sealed class ErrorWindow : Window
 {
-    private ErrorWindow() {}
-
-    public static IDisposable ShowError(View container, string message)
+    private View Parent { get; }
+    private Label ErrorTextField { get; }
+    
+    private ErrorWindow(View parent)
     {
-        var windDialog = new ErrorWindow
-        {
-            Width = Dim.Percent(75),
-            Height = Dim.Percent(75),
-            X = Pos.Center(),
-            Y = Pos.Center(),
-            ColorScheme = new ColorScheme(Terminal.Gui.Attribute.Default)
-        };
-        windDialog.Title = "Error";
-        var label = new Label
+        Width = Dim.Percent(75);
+        Height = Dim.Percent(75);
+        X = Pos.Center();
+        Y = Pos.Center();
+        ColorScheme = new ColorScheme(Terminal.Gui.Attribute.Default);
+        Title = "Error";
+        Parent = parent;
+        ErrorTextField = new Label
         {
             X = Pos.Center(),
             Y = Pos.Center(),
         };
-        label.Text = message;
-        windDialog.Add(label);
+        Add(ErrorTextField);
         var button = new Button
         {
             X = Pos.Center(),
             Y = Pos.AnchorEnd(2),
             Text = "Close"
         };
-        button.Clicked += (_, __) => windDialog.Dispose();
-        windDialog.Add(button);
-        
-        container.Add(windDialog);
-        windDialog.SuperView.BringSubviewToFront (windDialog);
-        windDialog.SetFocus ();
-        return windDialog;
+        button.Clicked += Close;
+        Add(button);
+        Parent.Add(this);
+        SuperView.BringSubviewToFront(this);
+        SetFocus();
     }
+
+    public static IDisposable ShowError(View container, string message)
+    {
+
+        var errorBox =  new ErrorWindow(container);
+        errorBox.ErrorTextField.Text = message;
+        return errorBox;
+    }
+
+    private void Close(object? _, EventArgs __)
+    {
+        Parent.SetFocus();
+        Parent.Remove(this);
+        Dispose();
+    }
+    
+    
 }
