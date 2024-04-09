@@ -69,10 +69,31 @@ internal sealed class StatusView : DisposingView<StatusViewModel>
             .BindTo(eyeTrackerStatusDisplay, x => x.Text)
             .DisposeWith(Disposable);
         Add(eyeTrackerStatusDisplay);
+        var buttonContainer = new View
+        {
+            X = Pos.Center(),
+            Y = Pos.Bottom(eyeTrackerStatusDisplay) + 1,
+            Width = Dim.Percent(80),
+            Height = 5
+        };
+        Add(buttonContainer);
+        var beginCalibrationButtonContainer = new View
+        {
+            Width = Dim.Percent(50),
+            Height = Dim.Percent(100)
+        };
+        buttonContainer.Add(beginCalibrationButtonContainer);
+        var disconnectButtonContainer = new View
+        {
+            X = Pos.Right(beginCalibrationButtonContainer),
+            Width = Dim.Percent(50),
+            Height = Dim.Percent(100)
+        };
+        buttonContainer.Add(disconnectButtonContainer);
         var beginCalibrationButton = new Button
         {
-            X = Pos.Percent(100.0f / 3),
-            Y = Pos.Bottom(eyeTrackerStatusDisplay) + 1,
+            X = Pos.Center(),
+            Y = Pos.Center(),
             Text = "Start calibration"
         };
         beginCalibrationButton
@@ -81,11 +102,11 @@ internal sealed class StatusView : DisposingView<StatusViewModel>
             .Select(_ => Unit.Default)
             .InvokeCommand(ViewModel, x => x.BeginCalibration)
             .DisposeWith(Disposable);
-        Add(beginCalibrationButton);
+        beginCalibrationButtonContainer.Add(beginCalibrationButton);
         var disconnectButton = new Button
         {
-            X = Pos.Percent(200.0f / 3),
-            Y = Pos.Bottom(eyeTrackerStatusDisplay) + 1,
+            X = Pos.Center(),
+            Y = Pos.Center(),
             Text = "Disconnect"
         };
         disconnectButton
@@ -94,6 +115,6 @@ internal sealed class StatusView : DisposingView<StatusViewModel>
             .Select(_ => Unit.Default)
             .InvokeCommand(ViewModel, x => x.Disconnect)
             .DisposeWith(Disposable);
-        Add(disconnectButton);
+        disconnectButtonContainer.Add(disconnectButton);
     }
 }

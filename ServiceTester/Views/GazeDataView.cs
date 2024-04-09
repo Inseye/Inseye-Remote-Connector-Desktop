@@ -59,6 +59,7 @@ public sealed class GazeDataView : View, IDisposable
         }
         _logger.LogInformation("Subscribing to gaze data stream");
         _gazeDataSubscriber = remoteService.GazeDataStream
+            .Retry()
             .Sample(TimeSpan.FromMilliseconds(500))
             .ObserveOn(RxApp.MainThreadScheduler)
             .Subscribe(HandleGazeDataSample);

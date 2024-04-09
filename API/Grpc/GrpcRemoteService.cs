@@ -17,7 +17,6 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using API.Extensions;
 using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Results;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Utility;
@@ -122,7 +121,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         {
             if (rpcException.StatusCode == StatusCode.Unavailable)
                 return new ErrorResult("Connection with remote service was broken.");
-            throw;
+            return new ErrorResult($"Connection error. StatusCode: {rpcException.StatusCode:G}");
         }
 
         if (response is null)
@@ -130,12 +129,12 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         Result result = response.Status switch
         {
             CalibrationResponse.Types.Status.Unknown => new ErrorResult(
-                "Unknown reason.".ConcatStrings(response.ErrorMessage)),
+                $"Unknown reason. {response.ErrorMessage}"),
             CalibrationResponse.Types.Status.FinishedSuccessfully => SuccessResult.Default,
             CalibrationResponse.Types.Status.FinishedFailed => new ErrorResult(
                 response.ErrorMessage),
             CalibrationResponse.Types.Status.MissingSoftware => new ErrorResult(
-                "Calibration application is missing on the headset.".ConcatStrings(response.ErrorMessage)),
+                $"Calibration application is missing on the headset. {response.ErrorMessage}"),
             CalibrationResponse.Types.Status.Ongoing => throw new Exception(
                 "Ongoing state after finishing calibration."),
             _ => throw new ArgumentOutOfRangeException()
@@ -248,15 +247,11 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                 return;
             }
 
-            throw;
+            GazeDataSampleObservable.SendError(rpcException);
         }
         catch (Exception exception)
         {
             GazeDataSampleObservable.SendError(exception);
-        }
-        finally
-        {
-            GazeDataSampleObservable.Complete();
         }
     }
 }

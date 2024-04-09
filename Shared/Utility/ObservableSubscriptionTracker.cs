@@ -13,6 +13,8 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
+using EyeTrackerStreaming.Shared.Structs;
+
 namespace EyeTrackerStreaming.Shared.Utility;
 
 public sealed class ObservableSubscriptionTracker<T> : IObservable<T>, IDisposable

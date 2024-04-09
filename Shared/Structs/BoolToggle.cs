@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
-// File name: ActionDisposable.cs
-// Last edit: 2024-2-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// File name: BoolToggle.cs
+// Last edit: 2024-4-9 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc. - All rights reserved.
 // 
 // All information contained herein is, and remains the property of
@@ -13,26 +13,27 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
-using EyeTrackerStreaming.Shared.Structs;
+namespace EyeTrackerStreaming.Shared.Structs;
 
-namespace EyeTrackerStreaming.Shared;
-
-public sealed class CallbackDisposable : IDisposable
+/// <summary>
+/// When constructed switches flag to opposite value.
+/// </summary>
+public readonly ref struct BoolToggle
 {
-    private DisposeBool _dispose;
-    private readonly Action _actionToInvokeOnDispose;
-
-    public CallbackDisposable(Action actionToInvokeOnDispose)
+    private readonly ref bool _flag;
+    private readonly bool _initialValue;
+    public BoolToggle(ref bool flag)
     {
-        ArgumentNullException.ThrowIfNull(actionToInvokeOnDispose, nameof(actionToInvokeOnDispose));
-        _actionToInvokeOnDispose = actionToInvokeOnDispose;
+        _initialValue = flag;
+        _flag = ref flag;
+        _flag = !_flag;
     }
-
+    
+    /// <summary>
+    /// Switches flag back to original value.
+    /// </summary>
     public void Dispose()
     {
-        if(_dispose.PerformDispose())
-            _actionToInvokeOnDispose.Invoke();
+        _flag = _initialValue;
     }
-
-    public static explicit operator CallbackDisposable(Action action) => new(action);
 }

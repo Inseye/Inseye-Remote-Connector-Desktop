@@ -15,7 +15,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace EyeTrackerStreaming.Shared;
+namespace EyeTrackerStreaming.Shared.Structs;
 
 public struct DisposeBool : IEquatable<bool>
 {

@@ -55,6 +55,8 @@ internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
 
     public async Task NavigateTo(Route route, CancellationToken token)
     {
+        if(route == CurrentRoute)
+            return;
         var poppedScope = _stackScopes.TryPop(out var oldScope);
         var currentScope = new Scope(Container);
         _stackScopes.Push(currentScope);
@@ -76,6 +78,8 @@ internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
 
     public async Task NavigateToStack(Route route, CancellationToken token)
     {
+        if(route == CurrentRoute)
+            return;
         var currentScope = new Scope(Container);
         _stackScopes.Push(currentScope);
         try

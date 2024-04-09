@@ -16,6 +16,7 @@
 using ClientCommunication.ServiceInterfaces;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 
 namespace EyeTrackerStreamingConsole.Services;
 

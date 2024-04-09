@@ -15,6 +15,7 @@
 
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
 using Microsoft.Extensions.Logging;
 using SimpleInjector;

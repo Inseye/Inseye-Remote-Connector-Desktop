@@ -21,6 +21,7 @@ using ClientCommunication.ServiceInterfaces;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;

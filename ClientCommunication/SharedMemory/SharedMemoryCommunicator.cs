@@ -19,6 +19,7 @@ using ClientCommunication.ServiceInterfaces;
 using ClientCommunication.SharedMemory.Internal;
 using ClientCommunication.Utility;
 using EyeTrackerStreaming.Shared;
+using EyeTrackerStreaming.Shared.Structs;
 using Microsoft.Extensions.Logging;
 
 namespace ClientCommunication.SharedMemory;

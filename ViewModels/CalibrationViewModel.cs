@@ -116,7 +116,7 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
             }
             catch (Exception exception)
             {
-                result = WrapResult(new ErrorResult("Exception:".ConcatStrings(exception.Message)));
+                result = WrapResult(new ErrorResult($"Exception: {exception.Message}"));
             }
             finally
             {
@@ -154,7 +154,7 @@ public class CalibrationViewModel : ReactiveObject, IDisposable
         if (result.Success)
             CalibrationStateDescription = "Calibration finished successfully";
         else if (result.Failure && result is ErrorResult error)
-            CalibrationStateDescription = "Calibration failed.".ConcatStrings(error.ErrorMessage);
+            CalibrationStateDescription = $"Calibration failed. {error.ErrorMessage}";
         else
             CalibrationStateDescription = "Calibration failed.";
         return result;

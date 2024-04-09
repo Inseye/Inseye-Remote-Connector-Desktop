@@ -14,10 +14,10 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using System.Reactive.Disposables;
-using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
 using EyeTrackingStreaming.ViewModels;
 using Microsoft.Extensions.Logging;

@@ -42,6 +42,7 @@ public class GrpcRemoteServiceFactory(
             }
             catch (TaskCanceledException tcs)
             {
+                await channel.ShutdownAsync();
                 throw new TimeoutException($"Failed to connect to {offer.ToString()}", tcs);
             }
             return new GrpcRemoteService(new RemoteService.RemoteServiceClient(channel), offer, serviceLogger);

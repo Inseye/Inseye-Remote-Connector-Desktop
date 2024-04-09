@@ -15,6 +15,7 @@
 
 using System.Dynamic;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 
 namespace EyeTrackerStreaming.Shared.Utility;
 

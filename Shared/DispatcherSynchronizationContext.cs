@@ -14,6 +14,7 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.Pooling;
+using EyeTrackerStreaming.Shared.Structs;
 
 namespace EyeTrackerStreaming.Shared;
 

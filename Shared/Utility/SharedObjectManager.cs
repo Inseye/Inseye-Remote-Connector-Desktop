@@ -14,6 +14,7 @@
 // Non-disclosure agreements explicitly covering such access.
 
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 
 namespace EyeTrackerStreaming.Shared.Utility;
 

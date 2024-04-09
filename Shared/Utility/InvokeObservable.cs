@@ -15,6 +15,7 @@
 
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Pooling;
+using EyeTrackerStreaming.Shared.Structs;
 
 namespace EyeTrackerStreaming.Shared.Utility;
 
@@ -23,14 +24,20 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
     private ChangeList? _changeList;
     private bool _isIterating;
     private readonly HashSet<IObserver<T>> _observers = new();
-    private bool _isFinished;
+    private DisposeBool _disposed;
 
 
     public void Dispose()
     {
-        if (_isFinished)
+        if (_disposed.PerformDispose())
             return;
         Complete();
+        if (_changeList != null)
+        {
+            ChangeListPool.Shared.Return(_changeList);
+            _changeList = null;
+        }
+        _observers.Clear();
     }
 
     IDisposable IObservable<T>.Subscribe(IObserver<T> observer)
@@ -40,14 +47,9 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
 
     public InvokeObservableSubscriptionDisposer Subscribe(IObserver<T> observer)
     {
+        ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_observers)
         {
-            if (_isFinished)
-            {
-                observer.OnCompleted();
-                return default;
-            }
-
             if (_isIterating)
                 GetChangeList().Add((observer, ChangeList.Change.Added));
             else
@@ -59,61 +61,59 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
 
     public void Send(T value)
     {
-        if (_isFinished)
-            throw new ObjectDisposedException(nameof(InvokeObservable<T>));
+        ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_observers)
         {
-            try
-            {
-                _isIterating = true;
-                _observers.ForEachAggregateException((observer, val) => observer.OnNext(val), value);
-            }
-            finally
-            {
-                CheckChangeList();
-                _isIterating = false;
-            }
+            using (new BoolToggle(ref _isIterating))
+                try
+                {
+                    _observers.ForEachAggregateException((observer, val) => observer.OnNext(val), value);
+                }
+                finally
+                {
+                    CheckChangeList();
+                }
         }
     }
 
     public void SendError(Exception exception)
     {
-        if (_isFinished)
+        if (_disposed)
             throw new ObjectDisposedException(nameof(InvokeObservable<T>));
         lock (_observers)
         {
-            _observers.ForEachAggregateException((observer, val) => observer.OnError(val), exception);
-            _observers.Clear();
-            ClearChangeList();
+            using (new BoolToggle(ref _isIterating))
+                try
+                {
+                    _observers.ForEachAggregateException((observer, val) => observer.OnError(val), exception);
+                }
+                finally
+                {
+                    CheckChangeList();
+                }
         }
     }
 
     public void Complete()
     {
-        if (_isFinished)
-            return;
+        ObjectDisposedException.ThrowIf(_disposed, this);
         lock (_observers)
         {
-            if (_isFinished)
-                return;
-            _isFinished = true;
-            try
-            {
-                _isIterating = true;
-                _observers.ForEachAggregateException(observer => observer.OnCompleted());
-            }
-            finally
-            {
-                _isIterating = false;
-                _observers.Clear();
-                ClearChangeList();
-            }
+            using (new BoolToggle(ref _isIterating))
+                try
+                {
+                    _observers.ForEachAggregateException(observer => observer.OnCompleted());
+                }
+                finally
+                {
+                    CheckChangeList();
+                }
         }
     }
 
     private void RemoveSubscriber(IObserver<T> subscriber)
     {
-        if (_isFinished)
+        if (_disposed)
             return;
         lock (_observers)
         {
@@ -126,6 +126,8 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
 
     private void CheckChangeList()
     {
+        if(_disposed)
+            return;
         if (_changeList == null)
             return;
 
@@ -136,6 +138,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
             else
                 _observers.Remove((IObserver<T>) change.obj);
         }
+
         ChangeListPool.Shared.Return(_changeList);
         _changeList = null;
     }
@@ -143,14 +146,6 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
     private ChangeList GetChangeList()
     {
         return _changeList ??= ChangeListPool.Shared.Get();
-    }
-    
-    private void ClearChangeList()
-    {
-        if(_changeList == null)
-            return;
-        ChangeListPool.Shared.Return(_changeList);
-        _changeList = null;
     }
 
     public struct InvokeObservableSubscriptionDisposer : IDisposable
