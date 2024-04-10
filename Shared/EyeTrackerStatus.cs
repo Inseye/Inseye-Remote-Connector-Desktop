@@ -25,3 +25,11 @@ public enum EyeTrackerStatus
     Calibrating = ReadyForStreaming | 1 << 3,
     Unknown = -1
 }
+
+public static class EyeTrackerStatusExtensions
+{
+    public static bool ShouldStreamGazeData(this EyeTrackerStatus status)
+    {
+        return status == EyeTrackerStatus.ReadyForStreaming || status == EyeTrackerStatus.StreamingGazeData;
+    }
+}

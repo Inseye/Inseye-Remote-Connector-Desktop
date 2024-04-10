@@ -15,6 +15,7 @@
 
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using System.Reactive.Threading.Tasks;
 using API.Extensions;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Results;
@@ -33,7 +34,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
     {
         Logger = serviceLogger;
         Logger.LogTrace($"Creating new instance of {nameof(GrpcRemoteService)}");
-        CompositeDisposable.Add(EyeTrackerStatusObservable = new InvokeObservable<EyeTrackerStatus>());
+        CompositeDisposable.Add(EyeTrackerStatusObservableValue = new ObservableValue<EyeTrackerStatus>(EyeTrackerStatus.Unknown));
         CompositeDisposable.Add(GazeDataSampleObservable = new InvokeObservable<GazeDataSample>());
         var lifetimeBoundedCancellationToke = new CancellationDisposable();
         ObjectLifetimeToken = lifetimeBoundedCancellationToke.Token;
@@ -58,7 +59,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                 }
             }));
         CompositeDisposable.Add((CallbackDisposable) (() => EyeTrackingBackgroundTaskTokenSource.Dispose()));
-        CompositeDisposable.Add(EyeTrackerStatusObservable.Subscribe(status =>
+        CompositeDisposable.Add(EyeTrackerStatusObservableValue.Subscribe(status =>
             Logger.LogInformation("Eye tracker status: {status}", status)));
         CompositeDisposable.Add(RemoteServiceStatusObservable.Subscribe(status =>
             Logger.LogInformation("Remote service status: {status}", status)));
@@ -70,7 +71,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
 
     private ILogger<IRemoteService> Logger { get; }
     private RemoteService.RemoteServiceClient RemoteService { get; }
-    private InvokeObservable<EyeTrackerStatus> EyeTrackerStatusObservable { get; }
+    private ObservableValue<EyeTrackerStatus> EyeTrackerStatusObservableValue { get; }
     private InvokeObservable<GazeDataSample> GazeDataSampleObservable { get; }
     private CancellationToken ObjectLifetimeToken { get; }
     private CompositeDisposable CompositeDisposable { get; } = new();
@@ -91,10 +92,10 @@ public class GrpcRemoteService : IRemoteService, IDisposable
     public IObservable<RemoteServiceStatus> ServiceStatusStream => RemoteServiceStatusObservable;
     public ServiceOffer HostInfo { get; }
     public RemoteServiceStatus ServiceStatus => RemoteServiceStatusObservable.Value;
-    public EyeTrackerStatus EyeTrackerStatus { get; private set; }
+    public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatusObservableValue.Value;
 
     public IObservable<GazeDataSample> GazeDataStream => GazeDataSampleSubscriptionTracker;
-    public IObservable<EyeTrackerStatus> EyeTrackerStatusStream => EyeTrackerStatusObservable;
+    public IObservable<EyeTrackerStatus> EyeTrackerStatusStream => EyeTrackerStatusObservableValue;
 
     public async Task<Result> PerformCalibration(CancellationToken userToken = default)
     {
@@ -175,8 +176,7 @@ public class GrpcRemoteService : IRemoteService, IDisposable
                     _ => throw new ArgumentOutOfRangeException()
                 };
                 Logger.LogTrace("Status: {status}", status);
-                EyeTrackerStatus = status;
-                EyeTrackerStatusObservable.Send(status);
+                EyeTrackerStatusObservableValue.Value = status;
             }
         }
         catch (RpcException rpcException)
@@ -185,7 +185,6 @@ public class GrpcRemoteService : IRemoteService, IDisposable
             {
                 // service become become unavailable, inform subscribers that eye tracker is unknown and service is broken
                 RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
-                EyeTrackerStatus = EyeTrackerStatus.Unknown;
                 return;
             }
 
@@ -198,7 +197,6 @@ public class GrpcRemoteService : IRemoteService, IDisposable
         finally
         {
             RemoteServiceStatusObservable.Value = RemoteServiceStatus.Disconnected;
-            EyeTrackerStatusObservable.Complete();
         }
     }
 
@@ -225,33 +223,45 @@ public class GrpcRemoteService : IRemoteService, IDisposable
 
     private async Task EyeTrackingGazeDataBackgroundTask(CancellationToken token)
     {
-        try
+        while (!token.IsCancellationRequested)
         {
-            var asyncCall = RemoteService.OpenGazeStream(new GazeDataRequest(), cancellationToken: token);
-            var responseStream = asyncCall.ResponseStream;
-
-            while (await responseStream.MoveNext(token).ConfigureAwait(false))
+            if (!EyeTrackerStatusObservableValue.Value.ShouldStreamGazeData())
             {
-                var current = responseStream.Current;
-                if (current == null)
-                    continue;
-                GazeDataSampleObservable.Send(current.ToGazeDataSample());
-            }
-        }
-        catch (RpcException rpcException)
-        {
-            if (rpcException.Status.StatusCode == StatusCode.Unavailable)
-            {
-                // service become become unavailable, inform subscribers that eye tracker has finished
-                GazeDataSampleObservable.Complete();
-                return;
+                await EyeTrackerStatusObservableValue.FirstAsync(status => status.ShouldStreamGazeData()).ToTask(token);
             }
 
-            GazeDataSampleObservable.SendError(rpcException);
+            try
+            {
+                var asyncCall = RemoteService.OpenGazeStream(new GazeDataRequest(), cancellationToken: token);
+                var responseStream = asyncCall.ResponseStream;
+                Logger.LogInformation("Opened gaze stream with remote service.");
+                while (await responseStream.MoveNext(token).ConfigureAwait(false))
+                {
+                    var current = responseStream.Current;
+                    if (current == null)
+                        continue;
+                    GazeDataSampleObservable.Send(current.ToGazeDataSample());
+                }
+            }
+            catch (RpcException rpcException)
+            {
+                if (rpcException.Status.StatusCode == StatusCode.Unavailable)
+                {
+                    // service become become unavailable, inform subscribers that eye tracker has finished
+                    return;
+                }
+
+                GazeDataSampleObservable.SendError(rpcException);
+            }
+            catch (Exception exception)
+            {
+                GazeDataSampleObservable.SendError(exception);
+            }
+            finally
+            {
+                Logger.LogInformation("Closed gaze stream with remote service.");
+            }
         }
-        catch (Exception exception)
-        {
-            GazeDataSampleObservable.SendError(exception);
-        }
+        GazeDataSampleObservable.Complete();
     }
 }
