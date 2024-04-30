@@ -1,23 +1,16 @@
-﻿// Module name: Shared.DependencyInjection
+﻿// Module name: Shared
 // File name: ConsoleProgram.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
-
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 namespace EyeTrackerStreaming.Shared;
 
 /// <summary>
-/// Helper class that runs console main body in safe context 
+///     Helper class that runs console main body in safe context
 /// </summary>
 public class ConsoleProgram
 {
@@ -29,9 +22,9 @@ public class ConsoleProgram
         }
         catch (OperationCanceledException operationCanceledException)
         {
-           if (operationCanceledException.CancellationToken == token)
-               return;
-           HandleException(operationCanceledException);
+            if (operationCanceledException.CancellationToken == token)
+                return;
+            HandleException(operationCanceledException);
         }
         catch (Exception exception)
         {
@@ -89,11 +82,12 @@ public class ConsoleProgram
                 Console.Clear();
                 currentLineInWindow = 0;
             }
-            
         }
         else
+        {
             Console.SetWindowSize(width, height);
-        
+        }
+
         Console.Write(stringifiedException);
         Console.WriteLine("\nPress enter to close the window...");
         Console.ReadLine();

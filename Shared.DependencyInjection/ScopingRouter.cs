@@ -1,17 +1,11 @@
 ﻿// Module name: Shared.DependencyInjection
 // File name: ScopingRouter.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 using EyeTrackerStreaming.Shared.Routing;
 using Microsoft.Extensions.Logging;
@@ -21,20 +15,22 @@ using SimpleInjector;
 namespace Shared.DependencyInjection;
 
 /// <summary>
-/// Router that keeps each navigation path in separate 
+///     Router that keeps each navigation path in separate
 /// </summary>
 /// <typeparam name="T"></typeparam>
 internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
     where T : class, IRouter
 {
     private readonly Stack<Scope> _stackScopes = new();
-    private ILogger Logger { get; }
+
     public ScopingRouter(Container container, ILogger<ScopingRouter<T>> logger)
     {
         Container = container;
         _stackScopes.Push(new Scope(container));
         Logger = logger;
     }
+
+    private ILogger Logger { get; }
 
     private IRouter Router => _stackScopes.Peek().GetInstance<T>();
     private Container Container { get; }
@@ -55,7 +51,7 @@ internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
 
     public async Task NavigateTo(Route route, CancellationToken token)
     {
-        if(route == CurrentRoute)
+        if (route == CurrentRoute)
             return;
         var poppedScope = _stackScopes.TryPop(out var oldScope);
         var currentScope = new Scope(Container);
@@ -78,7 +74,7 @@ internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
 
     public async Task NavigateToStack(Route route, CancellationToken token)
     {
-        if(route == CurrentRoute)
+        if (route == CurrentRoute)
             return;
         var currentScope = new Scope(Container);
         _stackScopes.Push(currentScope);

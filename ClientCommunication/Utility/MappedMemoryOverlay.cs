@@ -1,17 +1,11 @@
 ﻿// Module name: ClientCommunication
-// File name: Overlay.cs
-// Last edit: 2024-1-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// File name: MappedMemoryOverlay.cs
+// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 using System.IO.MemoryMappedFiles;
 using System.Runtime.CompilerServices;
@@ -31,8 +25,18 @@ internal sealed unsafe class MappedMemoryOverlay : IDisposable
         view.SafeMemoryMappedViewHandle.AcquirePointer(ref _pointer);
     }
 
-    public void Dispose() => _view.SafeMemoryMappedViewHandle.ReleasePointer();
+    public void Dispose()
+    {
+        _view.SafeMemoryMappedViewHandle.ReleasePointer();
+    }
 
-    public ref T As<T>() where T : struct => ref Unsafe.AsRef<T>(_pointer);
-    public ref T As<T>(long offset) where T : struct => ref Unsafe.AsRef<T>(_pointer + offset);
+    public ref T As<T>() where T : struct
+    {
+        return ref Unsafe.AsRef<T>(_pointer);
+    }
+
+    public ref T As<T>(long offset) where T : struct
+    {
+        return ref Unsafe.AsRef<T>(_pointer + offset);
+    }
 }

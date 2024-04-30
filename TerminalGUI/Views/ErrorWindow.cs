@@ -1,17 +1,11 @@
 ﻿// Module name: TerminalGUI
 // File name: ErrorWindow.cs
-// Last edit: 2024-4-8 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 using Terminal.Gui;
 
@@ -19,9 +13,6 @@ namespace TerminalGUI.Views;
 
 public sealed class ErrorWindow : Window
 {
-    private View Parent { get; }
-    private Label ErrorTextField { get; }
-    
     private ErrorWindow(View parent)
     {
         Width = Dim.Percent(75);
@@ -34,7 +25,7 @@ public sealed class ErrorWindow : Window
         ErrorTextField = new Label
         {
             X = Pos.Center(),
-            Y = Pos.Center(),
+            Y = Pos.Center()
         };
         Add(ErrorTextField);
         var button = new Button
@@ -50,10 +41,12 @@ public sealed class ErrorWindow : Window
         SetFocus();
     }
 
+    private View Parent { get; }
+    private Label ErrorTextField { get; }
+
     public static IDisposable ShowError(View container, string message)
     {
-
-        var errorBox =  new ErrorWindow(container);
+        var errorBox = new ErrorWindow(container);
         errorBox.ErrorTextField.Text = message;
         return errorBox;
     }
@@ -64,6 +57,4 @@ public sealed class ErrorWindow : Window
         Parent.Remove(this);
         Dispose();
     }
-    
-    
 }

@@ -1,17 +1,11 @@
 ﻿// Module name: Shared
 // File name: InvokeObservable.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Pooling;
@@ -21,10 +15,10 @@ namespace EyeTrackerStreaming.Shared.Utility;
 
 public class InvokeObservable<T> : IObservable<T>, IDisposable
 {
-    private ChangeList? _changeList;
-    private bool _isIterating;
     private readonly HashSet<IObserver<T>> _observers = new();
+    private ChangeList? _changeList;
     private DisposeBool _disposed;
+    private bool _isIterating;
 
 
     public void Dispose()
@@ -37,6 +31,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
             ChangeListPool.Shared.Return(_changeList);
             _changeList = null;
         }
+
         _observers.Clear();
     }
 
@@ -65,6 +60,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
         lock (_observers)
         {
             using (new BoolToggle(ref _isIterating))
+            {
                 try
                 {
                     _observers.ForEachAggregateException((observer, val) => observer.OnNext(val), value);
@@ -73,6 +69,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
                 {
                     CheckChangeList();
                 }
+            }
         }
     }
 
@@ -83,6 +80,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
         lock (_observers)
         {
             using (new BoolToggle(ref _isIterating))
+            {
                 try
                 {
                     _observers.ForEachAggregateException((observer, val) => observer.OnError(val), exception);
@@ -91,6 +89,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
                 {
                     CheckChangeList();
                 }
+            }
         }
     }
 
@@ -100,6 +99,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
         lock (_observers)
         {
             using (new BoolToggle(ref _isIterating))
+            {
                 try
                 {
                     _observers.ForEachAggregateException(observer => observer.OnCompleted());
@@ -108,6 +108,7 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
                 {
                     CheckChangeList();
                 }
+            }
         }
     }
 
@@ -126,18 +127,16 @@ public class InvokeObservable<T> : IObservable<T>, IDisposable
 
     private void CheckChangeList()
     {
-        if(_disposed)
+        if (_disposed)
             return;
         if (_changeList == null)
             return;
 
         foreach (var change in _changeList)
-        {
             if (change.change == ChangeList.Change.Added)
                 _observers.Add((IObserver<T>) change.obj);
             else
                 _observers.Remove((IObserver<T>) change.obj);
-        }
 
         ChangeListPool.Shared.Return(_changeList);
         _changeList = null;

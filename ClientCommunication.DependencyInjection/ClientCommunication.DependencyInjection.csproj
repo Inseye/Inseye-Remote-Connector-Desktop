@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\ClientCommunication\ClientCommunication.csproj" />
+        <ProjectReference Include="..\ClientCommunication\ClientCommunication.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="SimpleInjector" Version="5.4.4" />
+        <PackageReference Include="SimpleInjector" Version="5.4.4"/>
     </ItemGroup>
 
 </Project>

@@ -15,7 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Internal\" />
+        <Folder Include="Internal\"/>
     </ItemGroup>
 
 </Project>

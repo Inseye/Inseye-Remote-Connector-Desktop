@@ -1,19 +1,12 @@
 // Module name: Shared.DependencyInjection
 // File name: ManagedObject.cs
-// Last edit: 2024-2-20 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
-using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
@@ -23,14 +16,16 @@ using SimpleInjector;
 namespace Shared.DependencyInjection.CrossScopedObject;
 
 internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable, IProvider<TInterface>,
-    IPublisher<TConcrete> where TConcrete : class, TInterface where TVerification: TInterface, new()
+    IPublisher<TConcrete> where TConcrete : class, TInterface where TVerification : TInterface, new()
 {
-    private readonly ScopedObjectManager<TInterface, TConcrete> _scopedObjectManager;
-    private InvokeObservable<TInterface> _stream = new();
-    private DisposeBool _disposed;
     private readonly bool _isVerifying;
     private readonly ILogger<ManagedObject<TInterface, TConcrete, TVerification>> _logger;
-    public ManagedObject(ScopedObjectManager<TInterface, TConcrete> scopedObjectManager, Scope scope, ILogger<ManagedObject<TInterface, TConcrete, TVerification>> logger)
+    private readonly ScopedObjectManager<TInterface, TConcrete> _scopedObjectManager;
+    private DisposeBool _disposed;
+    private readonly InvokeObservable<TInterface> _stream = new();
+
+    public ManagedObject(ScopedObjectManager<TInterface, TConcrete> scopedObjectManager, Scope scope,
+        ILogger<ManagedObject<TInterface, TConcrete, TVerification>> logger)
     {
         _scopedObjectManager = scopedObjectManager;
         scopedObjectManager.IncrementCounter();
@@ -72,9 +67,12 @@ internal class ManagedObject<TInterface, TConcrete, TVerification> : IDisposable
         return instance;
     }
 
-    IObservable<TInterface?> IProvider<TInterface>.ChangesStream() => _disposed
-        ? throw new ObjectDisposedException(nameof(IProvider<TInterface>))
-        : _scopedObjectManager.ChangesStream;
+    IObservable<TInterface?> IProvider<TInterface>.ChangesStream()
+    {
+        return _disposed
+            ? throw new ObjectDisposedException(nameof(IProvider<TInterface>))
+            : _scopedObjectManager.ChangesStream;
+    }
 
 
     void IPublisher<TConcrete>.Publish(TConcrete value)

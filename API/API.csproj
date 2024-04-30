@@ -14,7 +14,7 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="System.Reactive.Linq" Version="6.0.0"/>
-        <PackageReference Include="Zeroconf" Version="3.6.11" />
+        <PackageReference Include="Zeroconf" Version="3.6.11"/>
     </ItemGroup>
     <ItemGroup>
         <Protobuf Include="**/*.proto" ProtoRoot="proto"/>

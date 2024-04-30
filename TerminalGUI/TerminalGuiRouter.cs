@@ -1,17 +1,11 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiRouter.cs
-// Last edit: 2024-3-26 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 using System.Reactive.Disposables;
 using EyeTrackerStreaming.Shared.Extensions;
@@ -59,7 +53,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
         {
             Width = Dim.Fill(),
             Height = Dim.Fill(),
-            BorderStyle = LineStyle.None,
+            BorderStyle = LineStyle.None
             // ColorScheme = new ColorScheme(new Attribute(ColorName.Black, ColorName.Cyan))
         };
         TerminalGuiApplication.Add(ForegroundView);
@@ -71,8 +65,9 @@ public class TerminalGuiRouter : IRouter, IDisposable
 
     private IServiceProvider ServiceProvider { get; }
     private TerminalGuiApplication TerminalGuiApplication { get; }
+
     /// <summary>
-    /// Container for the main view of the application.
+    ///     Container for the main view of the application.
     /// </summary>
     private View ForegroundView { get; }
 

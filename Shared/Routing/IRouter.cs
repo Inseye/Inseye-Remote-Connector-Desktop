@@ -1,17 +1,11 @@
 ﻿// Module name: Shared
 // File name: IRouter.cs
-// Last edit: 2024-1-31 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
 namespace EyeTrackerStreaming.Shared.Routing;
 
@@ -22,8 +16,8 @@ public interface IRouter
     public Route CurrentRoute { get; }
 
     /// <summary>
-    /// Navigates to selected destination.
-    /// Clears navigation stack.
+    ///     Navigates to selected destination.
+    ///     Clears navigation stack.
     /// </summary>
     /// <param name="route">Destination route</param>
     /// <param name="token">Operation cancellation token.</param>
@@ -31,8 +25,8 @@ public interface IRouter
     public Task NavigateTo(Route route, CancellationToken token);
 
     /// <summary>
-    /// Navigates to selected destination.
-    /// Keeps previous path on a stack and all related context.
+    ///     Navigates to selected destination.
+    ///     Keeps previous path on a stack and all related context.
     /// </summary>
     /// <param name="route">Destination route.</param>
     /// <param name="token">Operation cancellation token.</param>
@@ -40,7 +34,7 @@ public interface IRouter
     public Task NavigateToStack(Route route, CancellationToken token);
 
     /// <summary>
-    /// Navigates back to last destination pushed to stack.
+    ///     Navigates back to last destination pushed to stack.
     /// </summary>
     /// <param name="token">Operation cancellation token.</param>
     /// <returns></returns>

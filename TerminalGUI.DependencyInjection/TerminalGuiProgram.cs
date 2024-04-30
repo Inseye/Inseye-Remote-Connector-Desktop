@@ -1,19 +1,12 @@
 ﻿// Module name: TerminalGUI.DependencyInjection
 // File name: TerminalGuiProgram.cs
-// Last edit: 2024-2-13 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
-// Copyright (c) Inseye Inc. - All rights reserved.
+// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Copyright (c) Inseye Inc.
 // 
-// All information contained herein is, and remains the property of
-// Inseye Inc. The intellectual and technical concepts contained herein are
-// proprietary to Inseye Inc. and may be covered by U.S. and Foreign Patents, patents
-// in process, and are protected by trade secret or copyright law. Dissemination
-// of this information or reproduction of this material is strictly forbidden
-// unless prior written permission is obtained from Inseye Inc. Access to the source
-// code contained herein is hereby forbidden to anyone except current Inseye Inc.
-// employees, managers or contractors who have executed Confidentiality and
-// Non-disclosure agreements explicitly covering such access.
+// This file is part of Inseye Software Development Kit subject to Inseye SDK License
+// See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
+// All other rights reserved.
 
-using System.Reflection.Metadata;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -26,29 +19,28 @@ namespace TerminalGUI.DependencyInjection;
 
 public static class TerminalGuiProgram
 {
-    private sealed class PWindow : Window
+    public static Task Run(Action<Container> config, CancellationToken token = default)
     {
-        public PWindow()
-        {
-            BorderStyle = LineStyle.None;
-        }
+        return Run<PWindow>(config, token);
     }
 
-    public static Task Run(Action<Container> config, CancellationToken token = default) => Run<PWindow>(config, token);
-
-    public static Task Run<TTop>(Action<Container> config, CancellationToken token = default) where TTop : Toplevel =>
-        ConsoleProgram.Run(RunUnsafe<TTop>(config, token));
+    public static Task Run<TTop>(Action<Container> config, CancellationToken token = default) where TTop : Toplevel
+    {
+        return ConsoleProgram.Run(RunUnsafe<TTop>(config, token));
+    }
 
     /// <summary>
-    /// Runs terminal application but doesn't handle top level exceptions in graceful way.  
+    ///     Runs terminal application but doesn't handle top level exceptions in graceful way.
     /// </summary>
     /// <param name="config">Dependency injection container configuration</param>
     /// <param name="token">GUI application cancellation token</param>
-    public static Task RunUnsafe(Action<Container> config, CancellationToken token = default) =>
-        RunUnsafe<PWindow>(config, token);
+    public static Task RunUnsafe(Action<Container> config, CancellationToken token = default)
+    {
+        return RunUnsafe<PWindow>(config, token);
+    }
 
     /// <summary>
-    /// Runs terminal application but doesn't handle top level exceptions in graceful way.  
+    ///     Runs terminal application but doesn't handle top level exceptions in graceful way.
     /// </summary>
     /// <param name="config">Dependency injection container configuration</param>
     /// <param name="token">GUI application cancellation token</param>
@@ -74,6 +66,14 @@ public static class TerminalGuiProgram
         {
             if (!tokenSource.IsCancellationRequested)
                 await tokenSource.CancelAsync();
+        }
+    }
+
+    private sealed class PWindow : Window
+    {
+        public PWindow()
+        {
+            BorderStyle = LineStyle.None;
         }
     }
 }
