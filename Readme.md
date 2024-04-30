@@ -2,6 +2,11 @@
 
 This project contains source code for Windows application (service) used to obtain gaze data from [Android service](https://github.com/Inseye/Inseye-Android-Service) and provide the data to any desktop application that needs it.
 
+# License
+
+This repository is part of Inseye Software Development Kit.
+By using content of this repository you agree to SDK [License](./UnityPackage/LICENSE).
+
 # Dependencies
 
 This project requires .NET 8.0 SDK.
