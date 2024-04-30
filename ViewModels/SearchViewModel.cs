@@ -88,6 +88,7 @@ public class SearchViewModel : ReactiveObject, IDisposable
         }
         catch (TimeoutException)
         {
+            Logger.LogWarning("Failed to connect to service due to timeout, offer {serviceOffer}", serviceOffer);
             throw;
         }
         catch (Exception exception)

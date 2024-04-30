@@ -2,7 +2,6 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=20A5A482_002DC4DD_002D420C_002D8E7A_002DB519318A9047_002Ff_003AProgram_002Ecs/@EntryIndexedValue">ExplicitlyExcluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=B75A1355_002DC27E_002D4988_002D8E50_002D6EFD4F203829_002Fd_003AViews_002Ff_003ADataView_002Ecs/@EntryIndexedValue">ExplicitlyExcluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=F761E456_002D8C63_002D43F9_002D801D_002D4A94C450CBD2_002Fd_003ADdns_002Ff_003AZeroconfServiceProvider_002Ecs/@EntryIndexedValue">ExplicitlyExcluded</s:String>
-	
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=24ceecdf_002D1c5b_002D46de_002D8b7c_002D754c6df62f20/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" Name="TestSharedMemoryName" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
   &lt;Project Location="C:\Users\Mateusz\git\EyeTrackerStreaming\Tests" Presentation="&amp;lt;Tests&amp;gt;" /&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
