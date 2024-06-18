@@ -1,6 +1,6 @@
 ﻿// Module name: Shared
 // File name: ChangeListPool.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -18,9 +18,9 @@ public static class ChangeListPool
     public static readonly ObjectPool<ChangeList> Shared =
         new DefaultObjectPool<ChangeList>(Policy, 10);
 
-    public static ObjectPool<ChangeList> CreateNew()
+    public static ObjectPool<ChangeList> CreateNew(int maxRetained = 10)
     {
-        return new DefaultObjectPool<ChangeList>(Policy, 10);
+        return new DefaultObjectPool<ChangeList>(Policy, maxRetained);
     }
 
     private class PooledChangeListPolicy : IPooledObjectPolicy<ChangeList>

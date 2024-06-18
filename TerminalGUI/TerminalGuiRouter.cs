@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiRouter.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -14,6 +14,7 @@ using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
 using EyeTrackingStreaming.ViewModels;
+using EyeTrackingStreaming.ViewModels.Interfaces;
 using Microsoft.Extensions.Logging;
 using ReactiveUI;
 using Terminal.Gui;
@@ -32,7 +33,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
             },
             {
                 Route.ConnectionStatus,
-                serviceProvider => new StatusView(serviceProvider.GetServiceRequired<StatusViewModel>())
+                serviceProvider => new StatusView(serviceProvider.GetServiceRequired<IStatusViewModel>())
             },
             {
                 Route.Calibration,
@@ -54,7 +55,6 @@ public class TerminalGuiRouter : IRouter, IDisposable
             Width = Dim.Fill(),
             Height = Dim.Fill(),
             BorderStyle = LineStyle.None
-            // ColorScheme = new ColorScheme(new Attribute(ColorName.Black, ColorName.Cyan))
         };
         TerminalGuiApplication.Add(ForegroundView);
     }

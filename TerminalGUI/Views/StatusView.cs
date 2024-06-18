@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: StatusView.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -11,16 +11,17 @@ using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using DynamicData.Binding;
-using EyeTrackingStreaming.ViewModels;
+using EyeTrackingStreaming.ViewModels.Interfaces;
 using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
 using Terminal.Gui;
+using Attribute = Terminal.Gui.Attribute;
 
 namespace TerminalGUI.Views;
 
-internal sealed class StatusView : DisposingView<StatusViewModel>
+internal sealed class StatusView : DisposingView<IStatusViewModel>
 {
-    public StatusView(StatusViewModel viewModel) : base(viewModel)
+    public StatusView(IStatusViewModel viewModel) : base(viewModel)
     {
         Title = viewModel.HostName;
         var serviceStatusLabel = new Label("Remote service status:")
@@ -110,5 +111,82 @@ internal sealed class StatusView : DisposingView<StatusViewModel>
             .InvokeCommand(ViewModel, x => x.Disconnect)
             .DisposeWith(Disposable);
         disconnectButtonContainer.Add(disconnectButton);
+        // VR Chat module controls
+        var vrChatControlsContainer = InitializeVrChatModuleView(ViewModel, Disposable);
+        vrChatControlsContainer.X = Pos.Center();
+        vrChatControlsContainer.Y = Pos.Bottom(buttonContainer) + 1;
+        vrChatControlsContainer.Width = Dim.Percent(100);
+        vrChatControlsContainer.Height = 10;
+        Add(vrChatControlsContainer);
+    }
+
+    private static View InitializeVrChatModuleView(IStatusViewModel viewModel, CompositeDisposable disposable)
+    {
+        var vrChatControlsContainer = new View
+        {
+            Title = "VRChat Module",
+            BorderStyle = LineStyle.Single,
+            Margin = {Thickness = new Thickness(1)}
+        };
+        var vrChatModuleCheckbox = new CheckBox("Enable VRChat module", viewModel.VrChatConnectorEnabled);
+        vrChatControlsContainer.Add(vrChatModuleCheckbox);
+        viewModel
+            .WhenPropertyChanged(x => x.VrChatConnectorEnabled)
+            .Select(prop => prop.Value)
+            .ObserveOn(RxApp.MainThreadScheduler)
+            .BindTo(vrChatModuleCheckbox, box => box.Checked)
+            .DisposeWith(disposable);
+        vrChatModuleCheckbox
+            .Events()
+            .Toggled
+            .Subscribe(args =>
+            {
+                if (args.NewValue != null) viewModel.VrChatConnectorEnabled = args.NewValue.Value;
+            })
+            .DisposeWith(disposable);
+        var vrChatAddressLabel = new Label
+        {
+            Text = "VRChat OSC Address",
+            Width = 20,
+            Y = Pos.Bottom(vrChatModuleCheckbox) + 1
+        };
+        vrChatControlsContainer.Add(vrChatAddressLabel);
+        var vrChatAddressTextField = new TextField
+        {
+            Text = viewModel.VrChatEndpoint.Address.ToString(),
+            Width = 15,
+            X = Pos.Right(vrChatAddressLabel),
+            Y = Pos.Bottom(vrChatModuleCheckbox) + 1,
+            // ReadOnly = true,
+            // CanFocus = false,
+            ColorScheme = new ColorScheme
+            {
+                Focus = new Attribute(Color.White, Color.DarkGray)
+            }
+        };
+        vrChatControlsContainer.Add(vrChatAddressTextField);
+        var vrChatPortLabel = new Label
+        {
+            Text = "VRChat OSC Port",
+            Width = 20,
+            X = 0,
+            Y = Pos.Bottom(vrChatAddressLabel) + 1
+        };
+        vrChatControlsContainer.Add(vrChatPortLabel);
+        var vrChatPortTextField = new TextField
+        {
+            Text = viewModel.VrChatEndpoint.Port.ToString(),
+            Width = 15,
+            X = Pos.Right(vrChatPortLabel),
+            Y = Pos.Bottom(vrChatAddressLabel) + 1,
+            // ReadOnly = true,
+            // CanFocus = false,
+            ColorScheme = new ColorScheme
+            {
+                Focus = new Attribute(Color.White, Color.DarkGray)
+            }
+        };
+        vrChatControlsContainer.Add(vrChatPortTextField);
+        return vrChatControlsContainer;
     }
 }

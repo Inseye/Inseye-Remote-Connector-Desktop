@@ -1,6 +1,6 @@
 ﻿// Module name: TerminalGUI
 // File name: TerminalGuiApplication.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -31,6 +31,14 @@ public class TerminalGuiApplication : IApplication, IDisposable, IUiThreadSynchr
         MainUiThread.Name = "MainUiThread";
         MainUiThread.Start();
         ApplicationState = State.Initializing;
+        // top.ColorScheme = new ColorScheme
+        // {
+        //     Disabled = new Attribute (Color.Red, Color.Black),
+        //     Focus = new Attribute (Color.White, Color.BrightBlue),
+        //     HotFocus = new Attribute (Color.Yellow, Color.Yellow),
+        //     HotNormal = new Attribute (Color.Yellow, Color.Black),
+        //     Normal = new Attribute (Color.Green, Color.Black)
+        // };
         while (ApplicationState == State.Initializing)
         {
             // spin wait for MainUiThread

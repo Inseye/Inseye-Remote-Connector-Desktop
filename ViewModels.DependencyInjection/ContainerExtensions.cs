@@ -1,6 +1,6 @@
 ﻿// Module name: ViewModels.DependencyInjection
 // File name: ContainerExtensions.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -9,6 +9,7 @@
 
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackingStreaming.ViewModels;
+using EyeTrackingStreaming.ViewModels.Interfaces;
 using SimpleInjector;
 
 namespace ViewModels.DependencyInjection;
@@ -18,7 +19,7 @@ public static class ContainerExtensions
     public static Container RegisterAllViewModels(this Container container)
     {
         container.Register<SearchViewModel>(Lifestyle.Scoped);
-        container.Register<StatusViewModel>(Lifestyle.Scoped);
+        container.Register<IStatusViewModel, StatusViewModel>(Lifestyle.Scoped);
         container.Register<CalibrationViewModel>(Lifestyle.Scoped);
         container.Register<ICalibrationHandler, RoutingCalibrationHandler>(Lifestyle.Scoped);
         return container;

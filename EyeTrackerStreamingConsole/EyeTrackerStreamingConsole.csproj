@@ -15,6 +15,7 @@
         <ProjectReference Include="..\TerminalGUI.DependencyInjection\TerminalGUI.DependencyInjection.csproj"/>
         <ProjectReference Include="..\TerminalGUI\TerminalGUI.csproj"/>
         <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj"/>
     </ItemGroup>
 
     <ItemGroup>

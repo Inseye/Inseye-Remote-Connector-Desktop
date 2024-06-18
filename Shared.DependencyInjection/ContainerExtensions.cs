@@ -1,16 +1,18 @@
 ﻿// Module name: Shared.DependencyInjection
 // File name: ContainerExtensions.cs
-// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.Decorators;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Shared.DependencyInjection.CrossScopedObject;
 using Shared.DependencyInjection.Interfaces;
 using SimpleInjector;
@@ -116,6 +118,12 @@ public static class ContainerExtensions
             container.ContainerScope.RegisterForDisposal(scope);
             return scope.GetInstance<TService>();
         }, container), ctx => ctx.HasConsumer && ctx.Consumer.ImplementationType == typeof(TSingleton));
+        return container;
+    }
+
+    public static Container AddOptions<T>(this Container container, T value) where T : class
+    {
+        container.RegisterInstance<IOptions<T>>(new ConstOption<T>(value));
         return container;
     }
 }

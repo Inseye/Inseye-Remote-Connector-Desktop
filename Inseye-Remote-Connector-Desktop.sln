@@ -34,6 +34,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTester", "ServiceTes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRChatConnector", "VRChatConnector\VRChatConnector.csproj", "{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VrChatConnector.DependencyInjection", "VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj", "{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,5 +112,13 @@ Global
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}.Release|Any CPU.Build.0 = Release|Any CPU
+		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

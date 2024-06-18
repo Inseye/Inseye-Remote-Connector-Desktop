@@ -1,6 +1,6 @@
 ﻿// Module name: EyeTrackerStreamingConsole
 // File name: Program.cs
-// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-06-18 16:12 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
@@ -14,6 +14,7 @@ using ClientCommunication.NamedPipes;
 using ClientCommunication.ServiceInterfaces;
 using ClientCommunication.Utility;
 using EyeTrackerStreaming.Shared;
+using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.NullObjects;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreamingConsole;
@@ -26,6 +27,7 @@ using SimpleInjector;
 using TerminalGUI.DependencyInjection;
 using TerminalGUI.DependencyInjection.Extensions;
 using ViewModels.DependencyInjection;
+using VrChatConnector.DependencyInjection;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 
@@ -105,6 +107,9 @@ static Task GuiTask(Container masterContainer, CancellationToken token)
         container
             .RegisterCrossContainer<IProvider<IRemoteService>>(masterContainer, Lifestyle.Scoped)
             .RegisterCrossContainer<IPublisher<IRemoteService>>(masterContainer, Lifestyle.Scoped);
+        // VRChat
+        container.RegisterVrChatConnector();
+        container.AddOptions(new OscClientConfiguration("127.0.0.1", 9000));
         // view models
         container.RegisterAllViewModels();
     }, token);
@@ -154,7 +159,7 @@ static async Task WrapParallelTasks(Task[] tasks, Action onFirstFinished)
     try
     {
         var finishedTask = await Task.WhenAny(tasks);
-        if (finishedTask.Exception is AggregateException aggregateException)
+        if (finishedTask.Exception is { } aggregateException)
             exceptions.AddRange(aggregateException.InnerExceptions);
         else if (finishedTask.Exception != null) exceptions.Add(finishedTask.Exception);
     }

@@ -7,6 +7,7 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.NullObjects;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using gRPC.DependencyInjection;
@@ -17,6 +18,7 @@ using SimpleInjector;
 using TerminalGUI.DependencyInjection;
 using TerminalGUI.DependencyInjection.Extensions;
 using ViewModels.DependencyInjection;
+using VrChatConnector.DependencyInjection;
 
 await TerminalGuiProgram.Run<MasterWindow>(container =>
 {
@@ -29,6 +31,9 @@ await TerminalGuiProgram.Run<MasterWindow>(container =>
     container.Register<GazeDataView>(Lifestyle.Singleton);
     // circuit breaker
     container.AddLoggerCircuitBreaker();
+    // VRChat
+    container.RegisterVrChatConnector();
+    container.AddOptions(new OscClientConfiguration("127.0.0.1", 9000));
     // logging
     container.AddLogging(config =>
     {
