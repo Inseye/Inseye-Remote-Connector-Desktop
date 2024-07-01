@@ -26,7 +26,7 @@ static void NewMain()
 {
     var factory = new SharedMemoryFactory(SimpleConsoleLogger<ISharedMemoryCommunicator>.Instance);
     var pipeServer = new NamedPipeServer(factory, SimpleConsoleLogger<NamedPipeServer>.Instance);
-    pipeServer.WaitForServeLoopClose().Wait();
+    pipeServer.WaitForServerLoopClose().Wait();
 }
 
 static void OldMain()

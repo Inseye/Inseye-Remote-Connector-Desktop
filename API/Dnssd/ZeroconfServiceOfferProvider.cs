@@ -53,7 +53,7 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
         while (!token.IsCancellationRequested)
             try
             {
-                var hosts = await ZeroconfResolver.ResolveAsync(Protocol, cancellationToken: token);
+                var hosts = await ZeroconfResolver.ResolveAsync(Protocol, scanTime: TimeSpan.FromSeconds(3), retries: Int32.MaxValue, cancellationToken: token);
                 newSet.Clear();
                 foreach (var host in hosts)
                 foreach (var offer in ToServiceOffers(host))

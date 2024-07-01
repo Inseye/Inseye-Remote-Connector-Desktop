@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- ability to send gaze data to VR Chat through OSC protocol
+- ability to send gaze data and eye openness to VR Chat through OSC protocol
 
 ## [0.1.0] - 2024-04-30
 

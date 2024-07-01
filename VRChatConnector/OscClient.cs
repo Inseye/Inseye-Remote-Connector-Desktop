@@ -7,11 +7,13 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Pooling;
 using EyeTrackerStreaming.Shared.Structs;
+using EyeTrackerStreaming.Shared.ValueTaskTools;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using VRChatConnector.DataStructures;
@@ -26,7 +28,6 @@ public class OscClient : IDisposable
     private readonly ObjectPool<byte[]> _smallArrayObjectPool =
         new DefaultObjectPool<byte[]>(
             new EyeTrackerStreaming.Shared.PooledObjectPolicy<byte[]>(() => new byte[128], _ => true), 10);
-
     private DisposeBool _disposed;
 
     private CancellationTokenSource? _tokenSource;
@@ -34,7 +35,6 @@ public class OscClient : IDisposable
     public OscClient(ILogger<OscClient> clientLogger)
     {
         Logger = clientLogger;
-        // SetEndpoint(oscClientConfiguration.Address, oscClientConfiguration.Port);
         UdpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
         _tokenSource = null;
     }
@@ -56,8 +56,8 @@ public class OscClient : IDisposable
     ///     This function is thread safe.
     /// </summary>
     /// <param name="sample">Gaze data to send.</param>
-    /// <param name="endpoint">Endpoint to which data is send.</param>
-    public void SendGazeData(GazeDataSample sample, IPEndPoint endpoint)
+    /// <param name="endpoint">Endpoint to which data is sent.</param>
+    public async void SendGazeData(GazeDataSample sample, IPEndPoint endpoint)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
         var vector4 = new VrChatVector4(
@@ -70,13 +70,39 @@ public class OscClient : IDisposable
         var oldTcs = Interlocked.Exchange(ref _tokenSource, newTcs);
         if (oldTcs != null)
         {
-            oldTcs.Cancel();
+            await oldTcs.CancelAsync();
             oldTcs.Dispose();
         }
-
-        var buffer = _smallArrayObjectPool.Get();
-        var span = new OscDatagramBuilder(buffer).Create("/tracking/eye/LeftRightPitchYaw", vector4);
-        SendAsync(endpoint, buffer, span.Length, newTcs); // fire and forget
+        var openess = sample.GazeEvent == GazeEvent.BothEyeBlinkedOrClosed ? 1.0f : 0.0f;
+        var gazeDataBuffer = _smallArrayObjectPool.Get();
+        var gazeEventBuffer = _smallArrayObjectPool.Get();
+        var gazePositionLength = new OscDatagramBuilder(gazeDataBuffer).Create("/tracking/eye/LeftRightPitchYaw", vector4).Length;
+        var gazeEventLength = new OscDatagramBuilder(gazeEventBuffer).Create("/tracking/eye/EyesClosedAmount", openess).Length;
+        try
+        {
+            newTcs.Token.ThrowIfCancellationRequested();
+            await (UdpSocket.SendToAsync(new ArraySegment<byte>(gazeDataBuffer, 0, gazePositionLength), endpoint,
+                    newTcs.Token),
+                UdpSocket.SendToAsync(new ArraySegment<byte>(gazeEventBuffer, 0, gazeEventLength), endpoint,
+                    newTcs.Token)).WhenAll();
+            Interlocked.CompareExchange(ref _tokenSource, null, newTcs);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch (AggregateException aggregateException) when (aggregateException.InnerExceptions.All(exc => exc is ObjectDisposedException or OperationCanceledException))
+        {
+        }
+        catch (Exception unhandledException)
+        {
+            Logger.LogError(unhandledException, "Unhandled exception occured while sending data to VRChat");
+        }
+        finally
+        {
+            CancellationTokenSourcePool.Shared.Return(newTcs);
+            _smallArrayObjectPool.Return(gazeDataBuffer);
+            _smallArrayObjectPool.Return(gazeEventBuffer);
+        }
     }
 
     private async void SendAsync(IPEndPoint endpoint, byte[] data, int length,

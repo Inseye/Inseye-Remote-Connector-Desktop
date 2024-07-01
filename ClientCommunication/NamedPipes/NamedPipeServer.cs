@@ -108,7 +108,7 @@ public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
     /// </summary>
     /// <param name="token">Cancellation token that breaks waiting operation.</param>
     /// <returns>Task that is finished when main loop ends</returns>
-    public Task WaitForServeLoopClose(CancellationToken token = default)
+    public Task WaitForServerLoopClose(CancellationToken token = default)
     {
         token.ThrowIfCancellationRequested();
         if (!token.CanBeCanceled || BackgroundTask.IsCompleted)
