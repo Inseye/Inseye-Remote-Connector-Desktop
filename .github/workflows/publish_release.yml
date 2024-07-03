@@ -27,6 +27,8 @@ jobs:
           echo "This workflow can be only run on main branch: ${{ github.ref }}"
           exit 1
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Format changelog and build release message
         run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
       - name: Bump .csproj version
