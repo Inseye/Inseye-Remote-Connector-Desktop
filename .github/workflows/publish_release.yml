@@ -30,7 +30,7 @@ jobs:
       - name: Format changelog and build release message
         run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
       - name: Bump .csproj version
-        run: python ${{ github.workspace }}/.github/bump_version_csproj.py -f ${{ github.workspace }}/DotnetActions/DotnetActions.csproj -v ${{ github.event.inputs.version }}
+        run: python ${{ github.workspace }}/.github/bump_version_csproj.py -f ${{ github.workspace }}/EyeTrackerStreamingConsole/EyeTrackerStreamingConsole.csproj -v ${{ github.event.inputs.version }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
