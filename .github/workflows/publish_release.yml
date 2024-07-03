@@ -42,7 +42,7 @@ jobs:
       - name: Test # depends on setup-dotnet
         run: dotnet test --no-restore --verbosity normal
       - name: Publish windows # depends on setup-dotnet
-        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o eyeTrackingStreamingConsolePublish .\EyeTrackerStreamingConsole\EyeTrackerStreamingConsole.csproj
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o eyeTrackingStreamingConsolePublish ./EyeTrackerStreamingConsole/EyeTrackerStreamingConsole.csproj
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[Auto] Version bumped to ${{ github.event.inputs.version }}"
