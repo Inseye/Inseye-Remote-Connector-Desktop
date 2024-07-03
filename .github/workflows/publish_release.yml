@@ -1,0 +1,53 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version"
+        required: true
+env:
+  RELEASE_MESSAGE: release_message.md
+jobs:
+  prepare_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check semver
+        shell: python
+        run: |
+          import re
+          semver_regex = re.compile(
+              r"^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
+          
+          if semver_regex.match("${{ github.event.inputs.version }}") is None:
+              raise Exception("Argument ${{ github.event.inputs.version }} is not a semver")
+      - name: Break on invalid branch
+        if: ${{ github.ref != 'refs/heads/main' }}
+        run: |
+          echo "This workflow can be only run on main branch: ${{ github.ref }}"
+          exit 1
+      - name: Format changelog and build release message # depends on setup-python
+        run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
+      - uses: actions/checkout@v4
+      - name: Bump .csproj version # depends on setup-python
+        run: python ${{ github.workspace }}/.github/bump_version_csproj.py -f ${{ github.workspace }}/DotnetActions/DotnetActions.csproj -v ${{ github.event.inputs.version }}
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies # depends on setup-dotnet
+        run: dotnet restore
+      - name: Test # depends on setup-dotnet
+        run: dotnet test --no-restore --verbosity normal
+      - name: Publish windows # depends on setup-dotnet
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o eyeTrackingStreamingConsolePublish .\EyeTrackerStreamingConsole\EyeTrackerStreamingConsole.csproj
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: "[Auto] Version bumped to ${{ github.event.inputs.version }}"
+          file_pattern: ":(exclude)${{ env.RELEASE_MESSAGE }} :(exclude)*eyeTrackingStreamingConsolePublish"
+      - uses: ncipollo/release-action@v1
+        with:
+          tag: "${{ github.event.inputs.version }}"
+          draft: true
+          bodyFile: "${{ env.RELEASE_MESSAGE }}"
+          artifacts: "./eyeTrackingStreamingConsolePublish/EyeTrackerStreamingConsole.exe"
