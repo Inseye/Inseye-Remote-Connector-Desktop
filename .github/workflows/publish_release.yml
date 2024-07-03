@@ -26,10 +26,10 @@ jobs:
         run: |
           echo "This workflow can be only run on main branch: ${{ github.ref }}"
           exit 1
-      - name: Format changelog and build release message # depends on setup-python
-        run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
       - uses: actions/checkout@v4
-      - name: Bump .csproj version # depends on setup-python
+      - name: Format changelog and build release message
+        run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
+      - name: Bump .csproj version
         run: python ${{ github.workspace }}/.github/bump_version_csproj.py -f ${{ github.workspace }}/DotnetActions/DotnetActions.csproj -v ${{ github.event.inputs.version }}
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
