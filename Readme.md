@@ -9,7 +9,7 @@ By using content of this repository you agree to SDK [License](./UnityPackage/LI
 
 # Dependencies
 
-This project requires .NET 8.0 SDK.
+This project requires [.NET 8.0.x SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0).
 
 # Project structure
 
@@ -31,6 +31,16 @@ Solution is split into multiple `.csproj` projects.
 + `TerminalGUI.Mock` - program that implements desktop service with UI from `TerminalGUI` and services from `Mock`
 + `ViewModels` - library with view models responsible for application behaviour, deeply based on [reactive programming](https://reactivex.io/) paradigm 
 + `ViewModels.DependencyInjection` - library with helper classes that register services implemented in `ViewModels` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
+
+## Building project
+
+Update all submodule with `git submodule update --init -r .`.
+
+Run main application with `dotnet run --project ./EyeTrackerStreamingConsole`.
+
+Run mock application with `dotnet run --project ./TerminalGUI.Mock`
+
+
 
 ## ServiceTester
 
