@@ -38,6 +38,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRChatConnector", "VRChatCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VrChatConnector.DependencyInjection", "VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj", "{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EyeTrackerStreamingAvalonia", "EyeTrackerStreamingAvalonia\EyeTrackerStreamingAvalonia.csproj", "{048DC285-C7AA-452A-8A68-AEE1A0438B2D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -120,5 +122,9 @@ Global
 		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{95477E8F-3AFB-4FAF-8FF9-39CE5CE7B72D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{048DC285-C7AA-452A-8A68-AEE1A0438B2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{048DC285-C7AA-452A-8A68-AEE1A0438B2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{048DC285-C7AA-452A-8A68-AEE1A0438B2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{048DC285-C7AA-452A-8A68-AEE1A0438B2D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
