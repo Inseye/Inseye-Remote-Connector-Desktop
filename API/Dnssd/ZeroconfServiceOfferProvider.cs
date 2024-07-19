@@ -7,8 +7,11 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Sockets;
+using DynamicData;
+using DynamicData.Binding;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreaming.Shared.Structs;
@@ -26,25 +29,27 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
 
     public ZeroconfServiceProvider(ILogger<ZeroconfServiceProvider> logger)
     {
+        ReadOnlyObservableCollection = new ReadOnlyObservableCollection<ServiceOffer>(ServiceOffersObservable);
         Logger = logger;
-        SynchronizationContextExtensions.RunOnNull(() => ZeroconfLoop(CancellationTokenSource.Token));
+        Task.Run(() => ZeroconfLoop(CancellationTokenSource.Token));
     }
 
     private HashSet<ServiceOffer> Offers { get; set; } = new();
     private ILogger<ZeroconfServiceProvider> Logger { get; }
     private CancellationTokenSource CancellationTokenSource { get; } = new();
-    private InvokeObservable<IReadOnlyList<ServiceOffer>> InvokeServiceOffersObservable { get; } = new();
+    private ObservableCollectionExtended<ServiceOffer> ServiceOffersObservable { get; } = new();
+    private ReadOnlyObservableCollection<ServiceOffer> ReadOnlyObservableCollection { get; }
 
     public void Dispose()
     {
         if (!_disposped.PerformDispose()) return;
         CancellationTokenSource.Cancel();
         CancellationTokenSource.Dispose();
-        InvokeServiceOffersObservable.Dispose();
+        ServiceOffersObservable.Clear();
     }
 
-    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers => !_disposped
-        ? InvokeServiceOffersObservable
+    public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers => !_disposped
+        ? ReadOnlyObservableCollection
         : throw new ObjectDisposedException(nameof(ZeroconfServiceProvider));
 
     private async Task ZeroconfLoop(CancellationToken token)
@@ -61,7 +66,7 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
                 if (newSet.SetEquals(Offers))
                     continue;
                 (Offers, newSet) = (newSet, Offers);
-                PublishChanges();
+                ServiceOffersObservable.Load(Offers);
             }
             catch (OperationCanceledException)
             {
@@ -73,11 +78,6 @@ public class ZeroconfServiceProvider : IRemoteServiceOffersProvider, IDisposable
             }
 
         Logger.LogTrace("Terminating ZeroconfLoop");
-    }
-
-    private void PublishChanges()
-    {
-        InvokeServiceOffersObservable.Send(Offers.ToArray());
     }
 
     private IEnumerable<ServiceOffer> ToServiceOffers(IZeroconfHost host)

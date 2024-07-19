@@ -30,14 +30,13 @@ public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
 
     public NamedPipeServer(IFactory<ISharedMemoryCommunicator, string> communicatorFactory,
         ILogger<NamedPipeServer> logger) : this(communicatorFactory, logger,
-        DefaultOptions, null!)
+        DefaultOptions)
     {
     }
 
     private NamedPipeServer(IFactory<ISharedMemoryCommunicator, string> communicatorFactory,
-        ILogger<NamedPipeServer> logger, NamedPipeServerOptions options, IClientAuthorization authorization)
+        ILogger<NamedPipeServer> logger, NamedPipeServerOptions options)
     {
-        ClientAuthorization = authorization;
         Options = options;
         LifetimeBoundedCancellable = new CancellationDisposable();
         Logger = logger;
@@ -66,7 +65,6 @@ public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
     private NamedPipeServerOptions Options { get; }
     private List<Task> ServerTasks { get; } = new();
     private SynchronizedSharedObjectManager<ISharedMemoryCommunicator> SharedMemoryCommunicatorManager { get; }
-    private IClientAuthorization ClientAuthorization { get; }
 
     /// <summary>
     ///     Stops the server and waits for cleanup and final termination
@@ -94,12 +92,6 @@ public sealed class NamedPipeServer : IDisposable, IAsyncDisposable
     public void Dispose()
     {
         DisposeAsync().AsTask().Wait();
-    }
-
-    public static NamedPipeServer CreateWithOptions(IFactory<ISharedMemoryCommunicator, string> communicatorFactory,
-        ILogger<NamedPipeServer> logger, NamedPipeServerOptions options, IClientAuthorization authorization)
-    {
-        return new NamedPipeServer(communicatorFactory, logger, options, authorization);
     }
 
     /// <summary>

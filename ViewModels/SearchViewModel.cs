@@ -32,18 +32,10 @@ public class SearchViewModel : ReactiveObject, IDisposable
         Router = router;
         Cts = new CancellationDisposable()
             .DisposeWith(Disposable);
-        ReadOnlyObservableCollection<ServiceOffer> serviceOffers;
-        Offers = offersProvider.ServiceOffers
-            .Select(x => x.ToArray())
-            .ToProperty(this, x => x.ServiceOffers)
-            .DisposeWith(Disposable);
-        ServiceUpdates = offersProvider.ServiceOffers
-            .Scan(0, (prev, _) => prev + 1)
-            .ToProperty(this, x => x.Updates)
-            .DisposeWith(Disposable);
+        ServiceOffers = offersProvider.ServiceOffers;
         ConnectTo = ReactiveCommand
             .CreateFromTask<ServiceOffer, Unit>(
-                arg => SynchronizationContextExtensions.RunOnNull(ConnectToHandler, arg),
+                offer => Task.Run(() => ConnectToHandler(offer), Cts.Token),
                 CanConnectionInterationBeStarted)
             .DisposeWith(Disposable);
         CanConnectionInterationBeStarted.Value = true;
@@ -57,11 +49,9 @@ public class SearchViewModel : ReactiveObject, IDisposable
     private IPublisher<IRemoteService> Publisher { get; }
     private IRemoteServiceFactory RemoteServiceFactory { get; }
     private IRouter Router { get; }
-    private ObservableAsPropertyHelper<int> ServiceUpdates { get; }
     private ILogger<SearchViewModel> Logger { get; }
 
-    public IReadOnlyList<ServiceOffer> ServiceOffers => Offers.Value;
-    public int Updates => ServiceUpdates.Value;
+    public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
 
     public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
 

@@ -8,6 +8,7 @@
 // All other rights reserved.
 
 using System.Reactive.Disposables;
+using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -95,7 +96,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
             return;
         }
 
-        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context;
         if (_disposed)
         {
             LogRouteAborted(route);
@@ -120,7 +121,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
             return;
         }
 
-        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context;
         if (_disposed)
         {
             LogRouteAborted(route);
@@ -145,7 +146,7 @@ public class TerminalGuiRouter : IRouter, IDisposable
             return;
         }
 
-        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context.SwitchTo();
+        await ((IUiThreadSynchronizationContext) TerminalGuiApplication).Context;
         if (_disposed)
         {
             Logger.LogTrace("Navigation back was aborted because router was disposed.");

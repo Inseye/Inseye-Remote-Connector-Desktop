@@ -7,9 +7,11 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using System.Collections.ObjectModel;
+
 namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
 
 public interface IRemoteServiceOffersProvider
 {
-    public IObservable<IReadOnlyList<ServiceOffer>> ServiceOffers { get; }
+    public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
 }

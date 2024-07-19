@@ -7,10 +7,11 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
+using System.ComponentModel;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
+using DynamicData;
 using DynamicData.Binding;
-using EyeTrackerStreaming.Shared;
 using EyeTrackingStreaming.ViewModels;
 using ReactiveMarbles.ObservableEvents;
 using ReactiveUI;
@@ -22,23 +23,9 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
 {
     private readonly ListView _listView;
 
-
     public SearchView(SearchViewModel searchViewModel) : base(searchViewModel)
     {
         Title = "Eye tracking devices in your network";
-        var updatesCounter = new Label
-        {
-            X = 0,
-            Y = 0,
-            Text = "Updates: 0"
-        };
-        ViewModel
-            .WhenValueChanged(x => x.Updates)
-            .Select(x => $"Updates: {x}")
-            .ObserveOn(RxApp.MainThreadScheduler)
-            .BindTo(updatesCounter, x => x.Text)
-            .DisposeWith(Disposable);
-        // Add(updatesCounter);
         _listView = new ListView
         {
             X = 0,
@@ -49,11 +36,16 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
             AllowsMultipleSelection = false
         };
 
-
-        ViewModel
-            .WhenPropertyChanged(x => x.ServiceOffers)
+        ViewModel.ServiceOffers.ToObservableChangeSet()
+            .Transform((offer, index) => $"{index} {offer.ServiceName} {offer.Address}:{offer.Port} version: {offer.Version.ToString()}")
+            .Bind(DisplayedOffers)
             .ObserveOn(RxApp.MainThreadScheduler)
-            .Subscribe(x => ApplyOffers(x.Value ?? Array.Empty<ServiceOffer>()))
+            .Subscribe(_ =>
+            {
+                var selected = _listView.SelectedItem;
+                _listView.SetSource(DisplayedOffers);
+                _listView.SelectedItem = Math.Min(DisplayedOffers.Count-1, selected);
+            })
             .DisposeWith(Disposable);
         ViewModel.ConnectTo.ThrownExceptions
             .ObserveOn(RxApp.MainThreadScheduler)
@@ -68,18 +60,7 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
         Add(_listView);
     }
 
-    private List<string> DisplayedOffers { get; set; } = new();
-
-    private void ApplyOffers(IEnumerable<ServiceOffer> offerss)
-    {
-        var offers = offerss.Select((offer, index) =>
-            $"{index} {offer.ServiceName} {offer.Address}:{offer.Port} version: {offer.Version.ToString()}");
-        var selected = _listView.SelectedItem;
-        DisplayedOffers.Clear();
-        DisplayedOffers.AddRange(offers);
-        _listView.SetSource(DisplayedOffers);
-        _listView.SelectedItem = Math.Min(DisplayedOffers.Count - 1, selected);
-    }
+    private BindingList<string> DisplayedOffers { get; set; } = new();
 
     private void HandleConnectToException(Exception exception)
     {
