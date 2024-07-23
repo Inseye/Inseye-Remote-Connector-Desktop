@@ -23,7 +23,7 @@ sealed class Program
     // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
     // yet and stuff might break.
     [STAThread]
-    public static void Main(string[] args)
+    public static int Main(string[] args)
     {
         var initializer = new SimpleInjectorInitializer();
         Locator.SetLocator(initializer);
@@ -54,9 +54,8 @@ sealed class Program
         // avalonia router
         container.RegisterScopingRouterFor<AvaloniaRouter>(Lifestyle.Singleton);
         container.Register<MainWindowViewModel>();
-        container.Verify();
-        var app = BuildAvaloniaApp();
-        app.StartWithClassicDesktopLifetime(args);
+        // container.Verify();
+        return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 
     // Avalonia configuration, don't remove; also used by visual designer.
