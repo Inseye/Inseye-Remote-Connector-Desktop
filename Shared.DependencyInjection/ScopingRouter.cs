@@ -1,107 +1,108 @@
 ﻿// Module name: Shared.DependencyInjection
 // File name: ScopingRouter.cs
-// Last edit: 2024-04-30 12:21 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-07-25 09:04 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
-// All other rights reserved.
+// All other rights reserved.ed.
 
 using EyeTrackerStreaming.Shared.Routing;
 using Microsoft.Extensions.Logging;
-using Shared.DependencyInjection.Interfaces;
 using SimpleInjector;
 
 namespace Shared.DependencyInjection;
 
 /// <summary>
-///     Router that keeps each navigation path in separate
+///     Router that keeps each navigation path in separate scope
 /// </summary>
 /// <typeparam name="T"></typeparam>
-internal class ScopingRouter<T> : IScopingRouter, IDisposable, IServiceProvider
-    where T : class, IRouter
+internal class ScopingRouter<T> : IRouter, IDisposable
+	where T : class, IRouter
 {
-    private readonly Stack<Scope> _stackScopes = new();
+	private readonly Stack<Scope> _stackScopes = new();
 
-    public ScopingRouter(Container container, ILogger<ScopingRouter<T>> logger)
-    {
-        Container = container;
-        _stackScopes.Push(new Scope(container));
-        Logger = logger;
-    }
+	public ScopingRouter(Container container, ILogger<ScopingRouter<T>> logger)
+	{
+		Container = container;
+		_stackScopes.Push(new Scope(container));
+		Logger = logger;
+	}
 
-    private ILogger Logger { get; }
+	private ILogger Logger { get; }
 
-    private IRouter Router => _stackScopes.Peek().GetInstance<T>();
-    private Container Container { get; }
+	private IRouter Router => _stackScopes.Peek().GetInstance<T>();
+	private Container Container { get; }
 
-    public void Dispose()
-    {
-        while (_stackScopes.Count > 0)
-        {
-            var scope = _stackScopes.Pop();
-            scope.Dispose();
-        }
-    }
 
-    public bool CanNavigateBack => Router.CanNavigateBack;
-    public IObservable<bool> CanNavigateBackObservable => Router.CanNavigateBackObservable;
-    public Route CurrentRoute => Router.CurrentRoute;
-    public Scope CurrentRouteScope => _stackScopes.Peek();
+	public Scope CurrentRouteScope => _stackScopes.Peek();
 
-    public async Task NavigateTo(Route route, CancellationToken token)
-    {
-        if (route == CurrentRoute)
-            return;
-        var poppedScope = _stackScopes.TryPop(out var oldScope);
-        var currentScope = new Scope(Container);
-        _stackScopes.Push(currentScope);
-        try
-        {
-            await Router.NavigateTo(route, token);
-            if (poppedScope)
-                await oldScope!.DisposeAsync();
-        }
-        catch
-        {
-            await currentScope.DisposeAsync();
-            _stackScopes.Pop();
-            if (poppedScope)
-                _stackScopes.Push(oldScope!);
-            throw;
-        }
-    }
+	public void Dispose()
+	{
+		while (_stackScopes.Count > 0)
+		{
+			var scope = _stackScopes.Pop();
+			scope.Dispose();
+		}
+	}
 
-    public async Task NavigateToStack(Route route, CancellationToken token)
-    {
-        if (route == CurrentRoute)
-            return;
-        var currentScope = new Scope(Container);
-        _stackScopes.Push(currentScope);
-        try
-        {
-            await Router.NavigateToStack(route, token);
-        }
-        catch
-        {
-            await currentScope.DisposeAsync();
-            _stackScopes.Pop();
-            throw;
-        }
-    }
+	public bool CanNavigateBack => Router.CanNavigateBack;
+	public IObservable<bool> CanNavigateBackObservable => Router.CanNavigateBackObservable;
+	public Route CurrentRoute => Router.CurrentRoute;
 
-    public async Task NavigateBack(CancellationToken token)
-    {
-        if (!CanNavigateBack)
-            throw new Exception("Can't navigate back");
-        var currentScope = _stackScopes.Pop();
-        await currentScope.DisposeAsync();
-        await Router.NavigateBack(token);
-        await currentScope.DisposeAsync();
-    }
+	public async Task NavigateTo(Route route, CancellationToken token, object context = null)
+	{
+		if (route == CurrentRoute)
+			return;
+		var poppedScope = _stackScopes.TryPop(out var oldScope);
+		var currentScope = new Scope(Container);
+		_stackScopes.Push(currentScope);
+		try
+		{
+			await Router.NavigateTo(route, token);
+			if (poppedScope)
+				await oldScope!.DisposeAsync();
+		}
+		catch
+		{
+			await currentScope.DisposeAsync();
+			_stackScopes.Pop();
+			if (poppedScope)
+				_stackScopes.Push(oldScope!);
+			throw;
+		}
+	}
 
-    public object? GetService(Type serviceType)
-    {
-        return ((IServiceProvider) _stackScopes.Peek()).GetService(serviceType);
-    }
+	public async Task NavigateToStack(Route route, CancellationToken token, object context = null)
+	{
+		if (route == CurrentRoute)
+			return;
+		var currentScope = new Scope(Container);
+		_stackScopes.Push(currentScope);
+		try
+		{
+			await Router.NavigateToStack(route, token);
+		}
+		catch
+		{
+			await currentScope.DisposeAsync();
+			_stackScopes.Pop();
+			throw;
+		}
+	}
+
+	public async Task NavigateBack(CancellationToken token, object context = null)
+	{
+		if (!CanNavigateBack)
+			throw new Exception("Can't navigate back");
+		var currentScope = _stackScopes.Pop();
+		await currentScope.DisposeAsync();
+		await Router.NavigateBack(token);
+		await currentScope.DisposeAsync();
+	}
+
+	public object? GetService(Type serviceType)
+	{
+		return ((IServiceProvider)_stackScopes.Peek()).GetService(serviceType);
+	}
 }

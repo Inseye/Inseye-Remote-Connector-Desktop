@@ -11,6 +11,7 @@
     <ItemGroup>
         <Folder Include="Models\"/>
         <AvaloniaResource Include="Assets\**"/>
+        <Folder Include="ViewModels\Design\"/>
     </ItemGroup>
 
 
@@ -22,17 +23,17 @@
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.6"/>
         <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.6"/>
-        <PackageReference Include="Serilog" Version="4.0.0" />
-        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
-        <PackageReference Include="Splat.SimpleInjector" Version="15.1.1" />
+        <PackageReference Include="Serilog" Version="4.0.0"/>
+        <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
+        <PackageReference Include="Splat.SimpleInjector" Version="15.1.1"/>
     </ItemGroup>
 
 
     <ItemGroup>
-      <ProjectReference Include="..\API.DependencyInjection\API.DependencyInjection.csproj" />
-      <ProjectReference Include="..\Shared.DependencyInjection\Shared.DependencyInjection.csproj" />
-      <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj" />
-      <ProjectReference Include="..\VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj" />
+        <ProjectReference Include="..\API.DependencyInjection\API.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\Shared.DependencyInjection\Shared.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj"/>
     </ItemGroup>
 </Project>
