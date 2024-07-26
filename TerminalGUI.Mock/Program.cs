@@ -19,7 +19,7 @@ using VrChatConnector.DependencyInjection;
 
 await TerminalGuiProgram.Run(container =>
 {
-    container.RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>()
+    container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService())
         .RegisterAllMocks()
         .RegisterAllViewModels()
         .RegisterVrChatConnector()

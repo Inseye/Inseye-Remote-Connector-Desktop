@@ -40,7 +40,7 @@ await ConsoleProgram.Run(async token =>
     try
     {
         masterContainer
-            .RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>();
+            .RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
         masterContainer.AddLogging(config =>
         {
             var serilogLogger = new LoggerConfiguration()
@@ -131,7 +131,7 @@ static async Task ClientService(Container masterContainer, CancellationToken tok
         serviceContainer
             .RegisterCrossContainer<IProvider<IRemoteService>>(masterContainer, Lifestyle.Scoped);
         serviceContainer
-            .RegisterCrossScopeManagedService<IGazeDataSink, NullGazeDataSink>();
+            .RegisterCrossScopeManagedService<IGazeDataSink>(() => new NullGazeDataSink());
         serviceContainer.Register<RemoteServiceToClientCommunicator>(Lifestyle.Scoped);
         serviceContainer.Register<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactory>();
         serviceContainer.RegisterDecorator<IFactory<ISharedMemoryCommunicator, string>, SharedMemoryFactoryWrapper>();

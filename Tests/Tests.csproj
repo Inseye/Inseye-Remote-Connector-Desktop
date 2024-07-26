@@ -21,6 +21,7 @@
     <ItemGroup>
         <ProjectReference Include="..\ClientCommunication\ClientCommunication.csproj"/>
         <ProjectReference Include="..\Mocks\Mocks.csproj"/>
+        <ProjectReference Include="..\Shared.DependencyInjection\Shared.DependencyInjection.csproj" />
         <ProjectReference Include="..\ViewModels\ViewModels.csproj"/>
     </ItemGroup>
 

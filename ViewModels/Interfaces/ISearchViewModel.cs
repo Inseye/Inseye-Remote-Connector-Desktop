@@ -13,11 +13,17 @@
 // employees, managers or contractors who have executed Confidentiality and
 // Non-disclosure agreements explicitly covering such access.
 
+using System.Collections.ObjectModel;
+using System.Reactive;
+using EyeTrackerStreaming.Shared;
 using EyeTrackerStreamingAvalonia.ViewModels;
+using ReactiveUI;
 
 namespace EyeTrackingStreaming.ViewModels.Interfaces;
 
 public interface ISearchViewModel : IViewModel
 {
+	public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
+	public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
 	
 }

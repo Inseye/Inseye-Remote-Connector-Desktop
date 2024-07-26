@@ -60,11 +60,14 @@ public class OscClient : IDisposable
     public async void SendGazeData(GazeDataSample sample, IPEndPoint endpoint)
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
-        var vector4 = new VrChatVector4(
-            -sample.LeftEyeY * MathHelpers.RadToDeg,
-            sample.LeftEyeX * MathHelpers.RadToDeg,
-            -sample.RightEyeY * MathHelpers.RadToDeg,
-            sample.RightEyeX * MathHelpers.RadToDeg);
+        var y = -sample.LeftEyeY + -sample.RightEyeY / 2 * MathHelpers.RadToDeg;
+        var x = sample.LeftEyeX + sample.RightEyeX / 2 * MathHelpers.RadToDeg;
+        var vector4 = new VrChatVector4(y, x, y, x);
+        // var vector4 = new VrChatVector4(
+        //     -sample.LeftEyeY * MathHelpers.RadToDeg,
+        //     sample.LeftEyeX * MathHelpers.RadToDeg,
+        //     -sample.RightEyeY * MathHelpers.RadToDeg,
+        //     sample.RightEyeX * MathHelpers.RadToDeg);
         var newTcs = CancellationTokenSourcePool.Shared.Get();
         // abort current write operation because it's not containing latest gaze data
         var oldTcs = Interlocked.Exchange(ref _tokenSource, newTcs);

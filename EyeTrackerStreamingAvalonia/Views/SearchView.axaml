@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vmAbstract="using:EyeTrackingStreaming.ViewModels.Interfaces"
+             xmlns:vmd="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
+             mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
+             x:DataType="vmAbstract:ISearchViewModel"
+             x:Class="EyeTrackerStreamingAvalonia.Views.SearchView">
+    <Design.DataContext>
+        <vmd:SearchViewModel/>
+    </Design.DataContext>
+    <Design.DesignStyle>
+        <StyleInclude Source="/Styling/CustomStyles.axaml" />
+    </Design.DesignStyle>
+        <DockPanel LastChildFill="True">
+            <DockPanel DockPanel.Dock="Top" Classes="element-padding" Background="Aqua">
+                    <TextBlock Classes="primary-typography-header" FontFamily="Silka" FontSize="39" FontWeight="700"
+                               Background="Red">
+                        Hello
+                    </TextBlock>    
+                
+            </DockPanel>
+            <DockPanel DockPanel.Dock="Bottom"></DockPanel>
+        </DockPanel>
+</UserControl>

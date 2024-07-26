@@ -9,12 +9,16 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.NullObjects;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreamingAvalonia.Services;
 using EyeTrackerStreamingAvalonia.ViewModels;
 using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
 using gRPC.DependencyInjection;
@@ -39,13 +43,12 @@ internal sealed class Program
 		var initializer = new SimpleInjectorInitializer();
 		Locator.SetLocator(initializer);
 		var container = new Container().SetDefaultOptions();
-		// container.RegisterInstance(container);
 		container.Register<IServiceProvider>(() => Lifestyle.Scoped.GetCurrentScope(container)!, Lifestyle.Scoped);
 		container.UseSimpleInjectorDependencyResolver(initializer);
 		// standard services
 		container.RegisterGrpcApi();
 		container.RegisterZeroconfServiceOfferProvider();
-		container.RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>();
+		container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
 		// logging
 		container.AddLogging(config =>
 		{
@@ -67,11 +70,18 @@ internal sealed class Program
 		container.RegisterAllViewModels();
 		// avalonia only view models
 		container.Register<IMainWindowViewModel, MainWindowViewModel>(Lifestyle.Singleton);
-		container.Register<IRouter, MainWindowViewModel>();
-		var app = BuildAvaloniaApp();
+		container.Register<IRouter, MainWindowViewModel>(Lifestyle.Singleton);
+		container.Register<IUiThreadSynchronizationContext, AvaloniaSynchronizationContextResolver>(Lifestyle.Singleton);
 		container.Verify();
-		return app.StartWithClassicDesktopLifetime(args);
+		return BuildAvaloniaApp()
+			.StartWithClassicDesktopLifetime(args);
 	}
+
+	private class Wrapper : IUiThreadSynchronizationContext
+	{
+		public SynchronizationContext Context { get; } = new();
+	}
+	
 
 	// Avalonia configuration, don't remove; also used by visual designer.
 	public static AppBuilder BuildAvaloniaApp()

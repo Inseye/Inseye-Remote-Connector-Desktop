@@ -1,6 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:vm="using:EyeTrackerStreamingAvalonia.ViewModels"
+        xmlns:vmd="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
         xmlns:vmAbstract="using:EyeTrackerStreamingAvalonia.ViewModels.Abstract"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,8 +13,28 @@
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
              to set the actual DataContext for runtime, set the DataContext property in code (look at App.axaml.cs) -->
-        <vm:MainWindowViewModel />
+        <vmd:MainWindowViewModel />
     </Design.DataContext>
-    <TransitioningContentControl Content="{Binding CurrentViewModel}" />
+    <DockPanel LastChildFill="True">
+        <DockPanel Height="32" DockPanel.Dock="Top" Name="TitleBar">
+            <Panel Margin="4 0 0 0" DockPanel.Dock="Left">
+                <DockPanel Name="TitleBarTitleBarIconTitleGroup">
+                    <Panel Name="Icon" DockPanel.Dock="Left"></Panel>
+                    <DockPanel DockPanel.Dock="Left" Name="TextContainer" Margin="12 8 8 0">
+                        <TextBlock DockPanel.Dock="Left" FontSize="12" FontWeight="400" FontFamily="Segoe UI" Foreground="#FFF">Inseye Windows Service</TextBlock>
+                        <TextBlock Margin="8, 0 0 0" FontStyle="Italic" FontWeight="400" LineHeight="16" FontSize="12"  FontFamily="Segoe UI" Foreground="#CCFFFFFF">
+                            Preview
+                        </TextBlock>
+                    </DockPanel>
+                </DockPanel>
+            </Panel>
+            <Panel Width="138" DockPanel.Dock="Right" Name="TitleBarCaptionControlGroup"></Panel>
+            <Panel Name="TitleBarSearch"></Panel>
+        </DockPanel>
+        <Panel>
+            <TransitioningContentControl Content="{Binding CurrentViewModel}" />
+        </Panel>
+    </DockPanel>
+
 
 </Window>

@@ -15,6 +15,7 @@ using Avalonia.Threading;
 using DynamicData.Binding;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Routing;
+using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
 using EyeTrackingStreaming.ViewModels.Interfaces;
 using ReactiveUI;
@@ -26,21 +27,21 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 {
 	private bool _canNavigateBack;
 	private IViewModel? _currentViewModel;
+	private IUiThreadSynchronizationContext UiThreadSynchronizationContext { get; }
 
-	public MainWindowViewModel(Container masterContainer)
+	public MainWindowViewModel(Container masterContainer, IUiThreadSynchronizationContext uiSynchronizationContext)
 	{
 		MasterContainer = masterContainer;
 		CurrentScope = new Scope(MasterContainer);
 		CurrentViewModel = null;
 		CurrentRoute = Route.None;
 		CanNavigateBackObservable = this.WhenValueChanged(obj => obj.CanNavigateBack, true, () => false);
+		UiThreadSynchronizationContext = uiSynchronizationContext;
 	}
 
 	private Stack<Route> RoutesStack { get; } = new();
 	private Scope CurrentScope { get; set; }
 	private Container MasterContainer { get; }
-
-	private AvaloniaSynchronizationContext AvaloniaSynchronizationContext { get; } = new();
 
 	public IViewModel? CurrentViewModel
 	{
@@ -63,7 +64,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 		if (route == CurrentRoute)
 			return;
 		token.ThrowIfCancellationRequested();
-		await AvaloniaSynchronizationContext;
+		await UiThreadSynchronizationContext.Context;
 		token.ThrowIfCancellationRequested();
 		await CurrentScope.DisposeAsync();
 		CurrentScope = new Scope(MasterContainer);
@@ -77,7 +78,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 		if (route == CurrentRoute)
 			return;
 		token.ThrowIfCancellationRequested();
-		await AvaloniaSynchronizationContext;
+		await UiThreadSynchronizationContext.Context;
 		token.ThrowIfCancellationRequested();
 		CurrentViewModel = GetViewModelForRoute(route);
 		RoutesStack.Push(CurrentRoute);
@@ -88,7 +89,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 	public async Task NavigateBack(CancellationToken token, object? context = null)
 	{
 		token.ThrowIfCancellationRequested();
-		await AvaloniaSynchronizationContext;
+		await UiThreadSynchronizationContext.Context;
 		token.ThrowIfCancellationRequested();
 		if (RoutesStack.Count == 0)
 			throw new InvalidOperationException("There is nowhere to navigate back");

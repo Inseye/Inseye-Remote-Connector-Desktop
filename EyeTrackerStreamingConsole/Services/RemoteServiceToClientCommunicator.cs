@@ -88,7 +88,8 @@ public class RemoteServiceToClientCommunicator : IDisposable, IObserver<GazeData
             GazeDataSink = gazeDataSink;
             if (GazeDataSink != null && GazeStreamSubscription == null)
             {
-                if (RemoteServiceProvider.TryGet(out var service))
+                var service = RemoteServiceProvider.Get();
+                if (service != null)
                     ConnectToGazeStream(service);
                 else
                     Logger.LogTrace("Gaze data sink waiting for remote service with gaze data.");

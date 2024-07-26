@@ -32,27 +32,33 @@ public static class ContainerExtensions
 		container.Options.DefaultScopedLifestyle = ScopedLifestyle.Flowing;
 		return container;
 	}
-
-	public static Container RegisterCrossScopeManagedService<TService, TValidationType>(this Container container)
-		where TService : class where TValidationType : class, TService, new()
-	{
-		return container.RegisterCrossScopeManagedService<TService, TService, TValidationType>();
-	}
-
-	public static Container RegisterCrossScopeManagedService<TService, TImplementation, TValidationType>(
-		this Container container)
-		where TService : class
-		where TImplementation : class, TService
-		where TValidationType : class, TService, new()
-	{
-		container.Register<TValidationType>(Lifestyle.Singleton);
-		container.Register<ScopedObjectManager<TService, TImplementation>>(Lifestyle.Singleton);
-		container.Register<IProvider<TService>, ManagedObject<TService, TImplementation, TValidationType>>(
-			Lifestyle.Scoped);
-		container.Register<IPublisher<TImplementation>, ManagedObject<TService, TImplementation, TValidationType>>(
-			Lifestyle.Scoped);
-		return container;
-	}
+    
+    /// <summary>
+    /// Registers service in container so it can be accessed between scopes safely.
+    /// Service can be changed by requesting <c>IPublisher&lt;TService></c> singleton service.
+    /// Serivce can be retrieved from shared cache with <c>IProvider&lt;TService></c> or requrest as scped service by directly requesting &lt;TService>.
+    /// </summary>
+    /// <param name="container">Container used to register service</param>
+    /// <param name="validationInitializer">Optional factory method used to create proxy/mock object during container verfication</param>
+    /// <typeparam name="TService">Service type.</typeparam>
+    /// <returns></returns>
+    public static Container RegisterCrossScopeManagedService<TService>(
+        this Container container, Func<TService>? validationInitializer = null)
+        where TService : class
+    {
+        container.Register<CrossScopedObjectManager<TService>>(Lifestyle.Singleton);
+        container.Register<IProvider<TService>, CrossScopedObjectManager<TService>>(
+            Lifestyle.Singleton);
+        container.Register<IPublisher<TService>, CrossScopedObjectManager<TService>>(Lifestyle.Singleton);
+        container.Register(() => container.GetInstance<CrossScopedObjectManager<TService>>().Get()!, CrossScopedLifetime.Instance);
+        if(validationInitializer != null)
+            container.RegisterInitializer<IPublisher<TService>>(obj =>
+            {
+                if (container.IsVerifying)
+                    obj.Publish(validationInitializer());
+            });
+        return container;
+    }
 
 	public static Container RegisterCrossContainer<TService>(this Container targetContainer,
 		Container sourceContainer, Lifestyle lifestyle) where TService : class

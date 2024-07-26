@@ -25,7 +25,7 @@ await TerminalGuiProgram.Run<MasterWindow>(container =>
     // standard services
     container.RegisterGrpcApi();
     container.RegisterZeroconfServiceOfferProvider();
-    container.RegisterCrossScopeManagedService<IRemoteService, NullRemoteService>();
+    container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
     container.RegisterAllViewModels();
     // custom data view
     container.Register<GazeDataView>(Lifestyle.Singleton);

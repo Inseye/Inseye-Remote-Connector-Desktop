@@ -9,9 +9,8 @@
 
 namespace EyeTrackerStreaming.Shared.ServiceInterfaces;
 
-public interface IProvider<T>
+public interface IProvider<out T> where T : class
 {
-    bool TryGet(out T value);
-    T Get();
+    T? Get();
     IObservable<T?> ChangesStream();
 }
