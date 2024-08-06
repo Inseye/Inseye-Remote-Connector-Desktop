@@ -3,24 +3,67 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vmAbstract="using:EyeTrackingStreaming.ViewModels.Interfaces"
-             xmlns:vmd="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
+             xmlns:vmDesign="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
+             xmlns:views="using:EyeTrackerStreamingAvalonia.Views"
+             xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:DataType="vmAbstract:ISearchViewModel"
-             x:Class="EyeTrackerStreamingAvalonia.Views.SearchView">
+             x:Class="EyeTrackerStreamingAvalonia.Views.SearchView"
+             Name="SearchViewControl">
     <Design.DataContext>
-        <vmd:SearchViewModel/>
+        <vmDesign:SearchViewModelDesign />
     </Design.DataContext>
     <Design.DesignStyle>
-        <StyleInclude Source="/Styling/CustomStyles.axaml" />
+        <Style Selector="DockPanel">
+            <Setter Property="Background">
+                <SolidColorBrush Color="Blue"></SolidColorBrush>
+            </Setter>
+        </Style>
+        
     </Design.DesignStyle>
-        <DockPanel LastChildFill="True">
-            <DockPanel DockPanel.Dock="Top" Classes="element-padding" Background="Aqua">
-                    <TextBlock Classes="primary-typography-header" FontFamily="Silka" FontSize="39" FontWeight="700"
-                               Background="Red">
-                        Hello
-                    </TextBlock>    
-                
+
+
+    <DockPanel LastChildFill="True" Name="RootPanel">
+        <TextBlock FontFamily="{StaticResource Poppins}" FontSize="39" FontWeight="700"
+                   Foreground="{StaticResource --primary-typography-header}"
+                   ap:DynamicMarginAndPadding.DynamicMargin="--canvas-paddingX --element-paddingY" DockPanel.Dock="Top">
+            Hello
+        </TextBlock>
+        <Grid Name="Content"
+              ap:DynamicMarginAndPadding.DynamicMargin="--canvas-paddingX 0 --canvas-paddingX --canvas-paddingBottom"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" MaxHeight="120" />
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="614"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                <TextBlock FontFamily="{StaticResource Poppins}" FontSize="24" FontStyle="Normal" FontWeight="700"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center">
+                    Eye tracking devices in your local network
+                </TextBlock>
             </DockPanel>
-            <DockPanel DockPanel.Dock="Bottom"></DockPanel>
-        </DockPanel>
+            <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1" Grid.IsSharedSizeScope="True">
+                <Border HorizontalAlignment="Stretch" CornerRadius="{StaticResource --roundedLarge}"
+                        Background="{StaticResource --Dark-Background-Fill-Color-Smoke-Default}"
+                         VerticalAlignment="Stretch" ap:DynamicMarginAndPadding.DynamicPadding="--element-paddingY --element-paddingX">
+                    <ItemsControl Name="ItemsControl" ItemsSource="{Binding ServiceOffers}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <views:ServiceOfferView Command="{Binding ElementName=SearchViewControl, Path= ((vmAbstract:ISearchViewModel)DataContext).ConnectTo}" CommandParameter="{Binding ServiceOffer}"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+            </DockPanel>
+        </Grid>
+
+    </DockPanel>
 </UserControl>

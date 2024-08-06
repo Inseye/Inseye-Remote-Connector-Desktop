@@ -10,7 +10,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
-using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
+using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using EyeTrackerStreamingAvalonia.Views;
 using Splat;
 
@@ -32,6 +32,7 @@ public class App : Application
 			{
 				DataContext = vm
 			};
+			vm!.LoadInitialView();
 		}
 
 		base.OnFrameworkInitializationCompleted();

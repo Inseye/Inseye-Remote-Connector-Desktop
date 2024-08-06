@@ -10,6 +10,9 @@
 using System.Collections.ObjectModel;
 using System.Reactive;
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
+using DynamicData;
+using DynamicData.Binding;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -22,69 +25,94 @@ namespace EyeTrackingStreaming.ViewModels;
 
 public class SearchViewModel : ReactiveObject, ISearchViewModel, IDisposable
 {
-	public SearchViewModel(
-		IPublisher<IRemoteService> publisher, IRemoteServiceFactory remoteServiceFactory,
-		IRemoteServiceOffersProvider offersProvider, IRouter router, ILogger<SearchViewModel> logger)
-	{
-		Logger = logger;
-		RemoteServiceFactory = remoteServiceFactory;
-		Publisher = publisher;
-		Router = router;
-		Cts = new CancellationDisposable()
-			.DisposeWith(Disposable);
-		ServiceOffers = offersProvider.ServiceOffers;
-		ConnectTo = ReactiveCommand
-			.CreateFromTask<ServiceOffer, Unit>(
-				offer => Task.Run(() => ConnectToHandler(offer), Cts.Token),
-				CanConnectionInterationBeStarted)
-			.DisposeWith(Disposable);
-		CanConnectionInterationBeStarted.Value = true;
-	}
+    private SourceList<IServiceOfferViewModel> SourceList { get; }
+    public SearchViewModel(
+        IPublisher<IRemoteService> publisher, IRemoteServiceFactory remoteServiceFactory,
+        IRemoteServiceOffersProvider offersProvider, IRouter router, ILogger<SearchViewModel> logger)
+    {
+        var source = offersProvider.ServiceOffers;
+        SourceList = new SourceList<IServiceOfferViewModel>(source.ToObservableChangeSet()
+            .Transform(serviceOffer => (IServiceOfferViewModel) new ServiceOfferViewModel(serviceOffer, source.Count > 0 && source[^1].Equals(serviceOffer), 
+                true  // TODO: Insert information about pariring here
+                )));
+        SourceList.DisposeWith(Disposable);
+        SourceList.Connect().ObserveOn(RxApp.MainThreadScheduler).Bind(out _serviceOfferViewModels).Subscribe(UpdateLast).DisposeWith(Disposable);
+        Logger = logger;
+        RemoteServiceFactory = remoteServiceFactory;
+        Publisher = publisher;
+        Router = router;
+        Cts = new CancellationDisposable()
+            .DisposeWith(Disposable);
+        ConnectTo = ReactiveCommand
+            .CreateFromTask<ServiceOffer, Unit>(
+                offer => Task.Run(() => ConnectToHandler(offer), Cts.Token),
+                CanConnectionInterationBeStarted)
+            .DisposeWith(Disposable);
+        CanConnectionInterationBeStarted.Value = true;
+    }
 
-	private ObservableValue<bool> CanConnectionInterationBeStarted { get; } = new(false);
-	private CancellationDisposable Cts { get; }
-	private CompositeDisposable Disposable { get; } = new();
+    private ServiceOfferViewModel? _lastOfferViewModel = null;
 
-	private ObservableAsPropertyHelper<IReadOnlyList<ServiceOffer>> Offers { get; }
-	private IPublisher<IRemoteService> Publisher { get; }
-	private IRemoteServiceFactory RemoteServiceFactory { get; }
-	private IRouter Router { get; }
-	private ILogger<SearchViewModel> Logger { get; }
+    private ObservableValue<bool> CanConnectionInterationBeStarted { get; } = new(false);
+    private CancellationDisposable Cts { get; }
+    private CompositeDisposable Disposable { get; } = new();
+    
+    private IPublisher<IRemoteService> Publisher { get; }
+    private IRemoteServiceFactory RemoteServiceFactory { get; }
+    private IRouter Router { get; }
+    private ILogger<SearchViewModel> Logger { get; }
+    private readonly ReadOnlyObservableCollection<IServiceOfferViewModel> _serviceOfferViewModels;
+    public ReadOnlyObservableCollection<IServiceOfferViewModel> ServiceOffers => _serviceOfferViewModels;
 
-	public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
+    public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
 
-	public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
+    public void Dispose()
+    {
+        Logger.LogTrace($"Disposing {nameof(SearchViewModel)}");
+        Disposable.Dispose();
+    }
 
-	public void Dispose()
-	{
-		Logger.LogTrace($"Disposing {nameof(SearchViewModel)}");
-		Disposable.Dispose();
-	}
+    private async Task<Unit> ConnectToHandler(ServiceOffer serviceOffer)
+    {
+        CanConnectionInterationBeStarted.Value = false;
+        try
+        {
+            Logger.LogTrace("ConnectToHandlerCalled");
+            var service = await RemoteServiceFactory.CreateRemoteService(serviceOffer, Cts.Token);
+            Publisher.Publish(service);
+            await Router.NavigateTo(Route.ConnectionStatus, Cts.Token);
+        }
+        catch (TimeoutException)
+        {
+            Logger.LogWarning("Failed to connect to service due to timeout, offer {serviceOffer}", serviceOffer);
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Logger.LogCritical(exception, "Failed to connect to service offer: {@serviceOffer}", serviceOffer);
+        }
+        finally
+        {
+            CanConnectionInterationBeStarted.Value = true;
+        }
 
-	private async Task<Unit> ConnectToHandler(ServiceOffer serviceOffer)
-	{
-		CanConnectionInterationBeStarted.Value = false;
-		try
-		{
-			Logger.LogTrace("ConnectToHandlerCalled");
-			var service = await RemoteServiceFactory.CreateRemoteService(serviceOffer, Cts.Token);
-			Publisher.Publish(service);
-			await Router.NavigateTo(Route.ConnectionStatus, Cts.Token);
-		}
-		catch (TimeoutException)
-		{
-			Logger.LogWarning("Failed to connect to service due to timeout, offer {serviceOffer}", serviceOffer);
-			throw;
-		}
-		catch (Exception exception)
-		{
-			Logger.LogCritical(exception, "Failed to connect to service offer: {@serviceOffer}", serviceOffer);
-		}
-		finally
-		{
-			CanConnectionInterationBeStarted.Value = true;
-		}
+        return default;
+    }
 
-		return default;
-	}
+    private void UpdateLast(object _)
+    {
+        if (ServiceOffers.Count == 0)
+        {
+            _lastOfferViewModel = null;
+            return;
+        }
+        if (ServiceOffers[^1] == _lastOfferViewModel)
+            return;
+        if (_lastOfferViewModel != null)
+            _lastOfferViewModel.IsLastItem = false;
+        _lastOfferViewModel = (ServiceOfferViewModel) ServiceOffers[^1];
+        _lastOfferViewModel.IsLastItem = true;
+
+    }
+    
 }

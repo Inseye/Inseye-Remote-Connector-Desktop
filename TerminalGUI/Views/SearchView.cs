@@ -37,7 +37,8 @@ internal sealed class SearchView : DisposingView<SearchViewModel>
 		};
 		ViewModel.ServiceOffers.ToObservableChangeSet()
 			.Transform((offer, index) =>
-				$"{index} {offer.ServiceName} {offer.Address}:{offer.Port} version: {offer.Version.ToString()}")
+				offer.ToString() ?? string.Empty // TODO: Fix me
+				) 
 			.Bind(DisplayedOffers)
 			.ObserveOn(RxApp.MainThreadScheduler)
 			.Subscribe(_ =>

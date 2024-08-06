@@ -8,6 +8,7 @@
 // All other rights reserved.ed.
 
 using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Controls.Templates;
 using EyeTrackerStreamingAvalonia.ViewModels;
@@ -21,8 +22,9 @@ public class ViewLocator : IDataTemplate
 		if (data is null)
 			return null;
 
-		var name = data.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-		var type = Type.GetType(name);
+		var name = data.GetType().Name.Replace("ViewModel", "View", StringComparison.Ordinal);
+		var viewName = $"EyeTrackerStreamingAvalonia.Views.{name}";
+		var type = Type.GetType(viewName);
 
 		if (type != null)
 		{

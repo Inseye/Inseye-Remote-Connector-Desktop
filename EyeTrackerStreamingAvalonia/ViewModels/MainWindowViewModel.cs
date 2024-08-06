@@ -16,7 +16,7 @@ using DynamicData.Binding;
 using EyeTrackerStreaming.Shared.Extensions;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
+using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using EyeTrackingStreaming.ViewModels.Interfaces;
 using ReactiveUI;
 using SimpleInjector;
@@ -33,10 +33,16 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 	{
 		MasterContainer = masterContainer;
 		CurrentScope = new Scope(MasterContainer);
-		CurrentViewModel = null;
 		CurrentRoute = Route.None;
+		CurrentViewModel = GetViewModelForRoute(CurrentRoute);
 		CanNavigateBackObservable = this.WhenValueChanged(obj => obj.CanNavigateBack, true, () => false);
 		UiThreadSynchronizationContext = uiSynchronizationContext;
+	}
+
+	public void LoadInitialView()
+	{
+		CurrentViewModel = GetViewModelForRoute(Route.AndroidServiceSearch);
+		CurrentRoute = Route.AndroidServiceSearch;
 	}
 
 	private Stack<Route> RoutesStack { get; } = new();

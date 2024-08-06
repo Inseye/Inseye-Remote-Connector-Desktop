@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="DynamicData" Version="9.0.1" />
         <PackageReference Include="ReactiveUI" Version="19.5.39"/>
     </ItemGroup>
 

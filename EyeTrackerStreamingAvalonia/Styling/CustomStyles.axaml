@@ -1,12 +1,21 @@
 <Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Design.PreviewWith>
-        <Border Padding="20">
-            <!-- Add Controls for Previewer Here -->
-        </Border>
-    </Design.PreviewWith>
-
-    <!-- Add Styles Here -->
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        x:Class="EyeTrackerStreamingAvalonia.Styling.CustomStyles">
+    <Styles.Resources>
+        <system:Double x:Key="--canvas-paddingX">36.0</system:Double>
+        <system:Double x:Key="--element-paddingX">16.0</system:Double>
+        <system:Double x:Key="--element-paddingY">16.0</system:Double>
+        <system:Double x:Key="--element-paddingX-large">32.0</system:Double>
+        <system:Double x:Key="--canvas-paddingBottom">48.0</system:Double>
+        <system:Double x:Key="--element-gap">12.0</system:Double>
+        <SolidColorBrush x:Key="--primary-typography-body" Color="#F6F6F9"/>
+        <CornerRadius x:Key="--roundedSmall">6</CornerRadius>
+        <CornerRadius x:Key="--roundedLarge">16</CornerRadius>
+        <Color x:Key="--primary-typography-header">#EEEBFC</Color>
+        <Color x:Key="--Dark-Background-Fill-Color-Smoke-Default">rgba(0, 0, 0, 0.30)</Color>
+        <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
+    </Styles.Resources>
     <Style Selector=":is(Window)">
         <Setter Property="TransparencyLevelHint" Value="Mica"/>
         <!-- <Setter Property="Background" Value="rgba(32, 32, 32, 0.8)"/> -->
@@ -21,8 +30,5 @@
     </Style>
     <Style Selector=":is(Control).element-padding">
         <Setter Property="Margin" Value="36 16 "/>
-    </Style>
-    <Style Selector="TextBlock.primary-typography-header">
-        <Setter Property="Foreground" Value="#EEEBFC"/>
     </Style>
 </Styles>

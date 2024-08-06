@@ -23,7 +23,7 @@ namespace EyeTrackingStreaming.ViewModels.Interfaces;
 
 public interface ISearchViewModel : IViewModel
 {
-	public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
+	public ReadOnlyObservableCollection<IServiceOfferViewModel> ServiceOffers { get; }
 	public ReactiveCommand<ServiceOffer, Unit> ConnectTo { get; }
 	
 }

@@ -15,14 +15,17 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="11.0.6"/>
-        <PackageReference Include="Avalonia.Desktop" Version="11.0.6"/>
-        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.6"/>
-        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.0.6"/>
+        <PackageReference Include="Avalonia" Version="11.1.1" />
+        <PackageReference Include="Avalonia.Desktop" Version="11.1.1" />
+        <PackageReference Include="Avalonia.Svg.Skia" Version="11.1.0" />
+        <PackageReference Include="Avalonia.Themes.Fluent" Version="11.1.1" />
+        <PackageReference Include="Avalonia.Fonts.Inter" Version="11.1.1" />
         <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
         <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.6"/>
-        <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.6"/>
-        <PackageReference Include="Serilog" Version="4.0.0"/>
+        <PackageReference Include="Avalonia.ReactiveUI" Version="11.1.1" />
+        <PackageReference Include="Avalonia.Xaml.Behaviors" Version="11.1.0" />
+        <PackageReference Include="Avalonia.Xaml.Interactions" Version="11.1.0" />
+        <PackageReference Include="Serilog" Version="4.0.1" />
         <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0"/>
         <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
         <PackageReference Include="Splat.SimpleInjector" Version="15.1.1"/>
@@ -31,8 +34,113 @@
 
     <ItemGroup>
         <ProjectReference Include="..\API.DependencyInjection\API.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\Mocks\Mocks.csproj" />
         <ProjectReference Include="..\Shared.DependencyInjection\Shared.DependencyInjection.csproj"/>
         <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj"/>
         <ProjectReference Include="..\VrChatConnector.DependencyInjection\VrChatConnector.DependencyInjection.csproj"/>
+    </ItemGroup>
+
+
+    <ItemGroup>
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_18pt-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_24pt-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\static\Inter_28pt-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\Inter-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-ExtraBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-ExtraBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-ExtraLight.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-ExtraLightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Medium.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-MediumItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-SemiBold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-SemiBoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Inter\InterDisplay-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Black.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-BlackItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Bold.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-BoldItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Italic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Light.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-LightItalic.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Regular.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Thin.ttf" />
+      <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-ThinItalic.ttf" />
     </ItemGroup>
 </Project>

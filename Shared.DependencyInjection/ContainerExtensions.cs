@@ -30,6 +30,7 @@ public static class ContainerExtensions
     public static Container SetDefaultOptions(this Container container)
 	{
 		container.Options.DefaultScopedLifestyle = ScopedLifestyle.Flowing;
+		container.Options.EnableAutoVerification = false;
 		return container;
 	}
     

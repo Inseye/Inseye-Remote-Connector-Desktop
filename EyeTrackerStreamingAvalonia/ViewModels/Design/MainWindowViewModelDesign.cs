@@ -7,12 +7,16 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
-using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
+using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using ReactiveUI;
 
 namespace EyeTrackerStreamingAvalonia.ViewModels.Design;
 
-public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel
+public class MainWindowViewModelDesign : ReactiveObject, IMainWindowViewModel
 {
     public IViewModel CurrentViewModel => EmptyPageViewModel.Instance;
+    public void LoadInitialView()
+    {
+        
+    }
 }

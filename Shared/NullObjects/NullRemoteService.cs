@@ -14,7 +14,7 @@ namespace EyeTrackerStreaming.Shared.NullObjects;
 
 public sealed class NullRemoteService : IRemoteService
 {
-    public ServiceOffer HostInfo { get; } = default;
+    public ServiceOffer HostInfo { get; } = new("NullService", "127.0.0.1", 1234, new Version(0, 0, 1));
     public RemoteServiceStatus ServiceStatus { get; } = default;
     public EyeTrackerStatus EyeTrackerStatus { get; } = default;
     public IObservable<RemoteServiceStatus> ServiceStatusStream { get; } = new NullObservable<RemoteServiceStatus>();

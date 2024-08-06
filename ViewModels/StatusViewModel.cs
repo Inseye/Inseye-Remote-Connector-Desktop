@@ -25,7 +25,7 @@ using VRChatConnector;
 
 namespace EyeTrackingStreaming.ViewModels;
 
-public class StatusViewModel : ReactiveObject, IViewModel, IStatusViewModel, IDisposable
+public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 {
 	private bool _isVrChatConnectorEnabledEnabled;
 

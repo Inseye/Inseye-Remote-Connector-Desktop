@@ -1,0 +1,101 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vmd="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
+             xmlns:vmAbstract="using:EyeTrackingStreaming.ViewModels.Interfaces"
+             mc:Ignorable="d" d:DesignWidth="582" d:DesignHeight="74"
+             x:DataType="vmAbstract:IServiceOfferViewModel"
+             x:Class="EyeTrackerStreamingAvalonia.Views.ServiceOfferView">
+    <Design.DataContext>
+        <vmd:ServiceOfferViewModelDesign />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <StyleInclude Source="/Styling/CustomStyles.axaml" />
+        <Style Selector="TextBlock.standard-text">
+            <Setter Property="Foreground" Value="{StaticResource --primary-typography-body}" />
+            <Setter Property="FontWeight" Value="700" />
+            <Setter Property="FontSize" Value="16" />
+            <Setter Property="FontFamily" Value="Inter" />
+        </Style>
+        <Style Selector="TextBlock.header-text">
+            <Setter Property="Foreground">
+                <Setter.Value>
+                    <SolidColorBrush Color="#fbfefe" Opacity="0.25" />
+                </Setter.Value>
+            </Setter>
+            <Setter Property="FontWeight" Value="700" />
+            <Setter Property="FontSize" Value="9" />
+            <Setter Property="FontFamily" Value="Inter" />
+        </Style>
+    </UserControl.Styles>
+    <DockPanel >
+        <Border DockPanel.Dock="Top" PointerPressed="OnPointerPressed" PointerReleased="OnPointerReleased" PointerExited="OnPointerExited" 
+                CornerRadius="{StaticResource --roundedSmall}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Border.Styles>
+                <Style Selector="Border:pointerover">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Color="#fbfbfe" Opacity="0.1"/>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style Selector="Border">
+                    <Setter Property="Background">
+                        <Setter.Value>
+                            <SolidColorBrush Opacity="0"></SolidColorBrush>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Border.Styles>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition Width="*" MinWidth="100" />
+                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="DeviceAddress" />
+                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MinWidth="40" MaxWidth="80" Width="Auto" SharedSizeGroup="ETVer" />
+                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition Width="Auto" SharedSizeGroup="Paired" />
+                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition MaxHeight="{StaticResource --element-paddingY}" Height="*" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="Headers" />
+                    <RowDefinition Height="Auto" SharedSizeGroup="Content" />
+                    <RowDefinition MaxHeight="{StaticResource --element-paddingY}" Height="*" />
+                    <!-- Extra spacer -->
+                    <RowDefinition
+                        Height="{Binding IsLastItem, Converter = {x:Static vmd:ServiceOfferViewModelDesign.DistanceHeightConverter}}" />
+                </Grid.RowDefinitions>
+
+
+                <TextBlock Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Bottom"
+                           MaxWidth="200"
+                           MinWidth="100" Text="{Binding DeviceName}" Classes="standard-text" />
+
+                <TextBlock Grid.Column="3" Grid.Row="1" Text="DEVICE ADDRESS"
+                           Classes="header-text" />
+                <TextBlock Grid.Column="3" Grid.Row="2" Text="{Binding IpAddressWithPort}"
+                           Classes="standard-text" />
+                <TextBlock Grid.Column="5" Grid.Row="1" Text="ET VER."
+                           Classes="header-text" />
+                <TextBlock Grid.Column="5" Grid.Row="2" Text="{Binding ProtocolVersion}"
+                           Classes="standard-text" />
+                <TextBlock Grid.Column="7" Grid.Row="1" Text="PAIRED"
+                           TextAlignment="Center"
+                           Classes="header-text" />
+                <Svg Grid.Column="7" Grid.Row="2"
+                     Path="{Binding IsPaired, Converter={x:Static vmd:ServiceOfferViewModelDesign.IsPairedToSVGPathConverter}}" />
+                <!-- Top padding -->
+                <Panel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="9" Height="{StaticResource --element-paddingY}" />
+                <!-- Bottom padding -->
+                <Panel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="9" Height="{StaticResource --element-paddingY}" />
+            </Grid>
+        </Border>
+        <!-- Item gap -->
+        <Panel
+            Height="{Binding IsLastItem, Converter = {x:Static vmd:ServiceOfferViewModelDesign.DistanceHeightConverter}}" />
+    </DockPanel>
+</UserControl>

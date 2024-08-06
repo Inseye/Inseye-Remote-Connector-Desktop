@@ -9,10 +9,7 @@
 
 using System;
 using System.IO;
-using System.Threading;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.ReactiveUI;
 using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.NullObjects;
@@ -20,8 +17,9 @@ using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreamingAvalonia.Services;
 using EyeTrackerStreamingAvalonia.ViewModels;
-using EyeTrackerStreamingAvalonia.ViewModels.Abstract;
+using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using gRPC.DependencyInjection;
+using Mocks;
 using Serilog;
 using Shared.DependencyInjection;
 using SimpleInjector;
@@ -34,62 +32,58 @@ namespace EyeTrackerStreamingAvalonia;
 
 internal sealed class Program
 {
-	// Initialization code. Don't use any Avalonia, third-party APIs or any
-	// SynchronizationContext-reliant code before AppMain is called: things aren't initialized
-	// yet and stuff might break.
-	[STAThread]
-	public static int Main(string[] args)
-	{
-		var initializer = new SimpleInjectorInitializer();
-		Locator.SetLocator(initializer);
-		var container = new Container().SetDefaultOptions();
-		container.Register<IServiceProvider>(() => Lifestyle.Scoped.GetCurrentScope(container)!, Lifestyle.Scoped);
-		container.UseSimpleInjectorDependencyResolver(initializer);
-		// standard services
-		container.RegisterGrpcApi();
-		container.RegisterZeroconfServiceOfferProvider();
-		container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
-		// logging
-		container.AddLogging(config =>
-		{
-			var serilogLogger = new LoggerConfiguration()
-				.MinimumLevel.Verbose()
-				.Enrich.FromLogContext()
-				.WriteTo.File(
-					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
-						"desktop_service.log"))
-				.CreateLogger();
-			config.AddSerilog(serilogLogger);
-		});
-		container.Register<ILogManager, LogManager>(Lifestyle.Singleton);
+    // Initialization code. Don't use any Avalonia, third-party APIs or any
+    // SynchronizationContext-reliant code before AppMain is called: things aren't initialized
+    // yet and stuff might break.
+    [STAThread]
+    public static int Main(string[] args)
+    {
+        var initializer = new SimpleInjectorInitializer();
+        Locator.SetLocator(initializer);
+        var container = new Container().SetDefaultOptions();
+        container.Register<IServiceProvider>(() => Lifestyle.Scoped.GetCurrentScope(container)!, Lifestyle.Scoped);
+        container.UseSimpleInjectorDependencyResolver(initializer);
+        // standard services
+        container.RegisterGrpcApi();
+        // container.RegisterZeroconfServiceOfferProvider();
+        container.Register<IRemoteServiceOffersProvider, RemoteServiceOffersProviderMock>(Lifestyle.Singleton);
+        container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
+        // logging
+        container.AddLogging(config =>
+        {
+            var serilogLogger = new LoggerConfiguration()
+                .MinimumLevel.Verbose()
+                .Enrich.FromLogContext()
+                .WriteTo.File(
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                        "desktop_service.log"))
+                .CreateLogger();
+            config.AddSerilog(serilogLogger);
+        });
+        container.Register<ILogManager, LogManager>(Lifestyle.Singleton);
 
-		// VRChat
-		container.RegisterVrChatConnector();
-		container.AddOptions(new OscClientConfiguration("127.0.0.1", 9000));
-		// View Models
-		container.RegisterAllViewModels();
-		// avalonia only view models
-		container.Register<IMainWindowViewModel, MainWindowViewModel>(Lifestyle.Singleton);
-		container.Register<IRouter, MainWindowViewModel>(Lifestyle.Singleton);
-		container.Register<IUiThreadSynchronizationContext, AvaloniaSynchronizationContextResolver>(Lifestyle.Singleton);
-		container.Verify();
-		return BuildAvaloniaApp()
-			.StartWithClassicDesktopLifetime(args);
-	}
+        // VRChat
+        container.RegisterVrChatConnector();
+        container.AddOptions(new OscClientConfiguration("127.0.0.1", 9000));
+        // View Models
+        container.RegisterAllViewModels();
+        // avalonia only view models
+        container.Register<IMainWindowViewModel, MainWindowViewModel>(Lifestyle.Singleton);
+        container.Register<IRouter, MainWindowViewModel>(Lifestyle.Singleton);
+        container.Register<IUiThreadSynchronizationContext, AvaloniaSynchronizationContextResolver>(Lifestyle.Singleton);
+        return BuildAvaloniaApp()
+            .AfterPlatformServicesSetup(_ => container.Verify())
+            .StartWithClassicDesktopLifetime(args);
+    }
 
-	private class Wrapper : IUiThreadSynchronizationContext
-	{
-		public SynchronizationContext Context { get; } = new();
-	}
-	
 
-	// Avalonia configuration, don't remove; also used by visual designer.
-	public static AppBuilder BuildAvaloniaApp()
-	{
-		return AppBuilder.Configure<App>()
-			.UsePlatformDetect()
-			.WithInterFont()
-			.LogToTrace()
-			.UseReactiveUI();
-	}
+    // Avalonia configuration, don't remove; also used by visual designer.
+    public static AppBuilder BuildAvaloniaApp()
+    {
+        return AppBuilder.Configure<App>()
+            .UsePlatformDetect()
+            .WithInterFont()
+            .LogToTrace()
+            .UseReactiveUI();
+    }
 }
