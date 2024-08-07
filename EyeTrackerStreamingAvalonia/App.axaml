@@ -2,7 +2,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="EyeTrackerStreamingAvalonia.App"
              xmlns:local="using:EyeTrackerStreamingAvalonia"
-             xmlns:system="clr-namespace:System;assembly=System.Runtime"
              RequestedThemeVariant="Dark">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
     <Application.DataTemplates>
@@ -10,14 +9,15 @@
     </Application.DataTemplates>
     <Application.Resources>
         <ResourceDictionary>
-            <system:Double x:Key="MyDouble">20.0</system:Double>
             <ResourceDictionary.MergedDictionaries>
-                    <StyleInclude Source="/Styling/CustomStyles.axaml"/>
+                <StyleInclude Source="/Styling/CustomStyles.axaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="/Styling/CustomStyles.axaml" />
+        <StyleInclude Source="/Components/CustomButton.axaml" />
+        <StyleInclude Source="/Components/TopBar.axaml" />
     </Application.Styles>
 </Application>

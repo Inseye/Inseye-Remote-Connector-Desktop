@@ -1,0 +1,26 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:EyeTrackerStreamingAvalonia.Components"
+        xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties">
+    <Design.PreviewWith>
+        <Panel Width="1282" Height="88">
+            <controls:TopBar />
+        </Panel>
+    </Design.PreviewWith>
+
+    <Style Selector="controls|TopBar">
+        <!-- Set Defaults -->
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX --element-paddingY">
+                    <DockPanel>
+                        <controls:CustomButton>
+                            <Svg Path="/Assets/Svg/backArrow.svg"/>
+                        </controls:CustomButton>
+                        <TextBlock Text="Templated Control" />
+                    </DockPanel>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+</Styles>

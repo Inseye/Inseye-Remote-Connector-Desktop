@@ -6,6 +6,7 @@
              xmlns:vmDesign="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
              xmlns:views="using:EyeTrackerStreamingAvalonia.Views"
              xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
+             xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
              mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
              x:DataType="vmAbstract:ISearchViewModel"
              x:Class="EyeTrackerStreamingAvalonia.Views.SearchView"

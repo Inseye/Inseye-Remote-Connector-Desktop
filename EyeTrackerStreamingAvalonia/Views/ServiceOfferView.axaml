@@ -29,7 +29,7 @@
             <Setter Property="FontFamily" Value="Inter" />
         </Style>
     </UserControl.Styles>
-    <DockPanel >
+    <DockPanel>
         <Border DockPanel.Dock="Top" PointerPressed="OnPointerPressed" PointerReleased="OnPointerReleased" PointerExited="OnPointerExited" 
                 CornerRadius="{StaticResource --roundedSmall}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Border.Styles>
@@ -83,11 +83,12 @@
                            Classes="header-text" />
                 <TextBlock Grid.Column="5" Grid.Row="2" Text="{Binding ProtocolVersion}"
                            Classes="standard-text" />
-                <TextBlock Grid.Column="7" Grid.Row="1" Text="PAIRED"
-                           TextAlignment="Center"
-                           Classes="header-text" />
-                <Svg Grid.Column="7" Grid.Row="2"
-                     Path="{Binding IsPaired, Converter={x:Static vmd:ServiceOfferViewModelDesign.IsPairedToSVGPathConverter}}" />
+                <!-- Information about if this connection is paired -->
+                <!-- <TextBlock Grid.Column="7" Grid.Row="1" Text="PAIRED" -->
+                <!--            TextAlignment="Center" -->
+                <!--            Classes="header-text" /> -->
+                <!-- <Svg Grid.Column="7" Grid.Row="2" -->
+                <!--      Path="{Binding IsPaired, Converter={x:Static vmd:ServiceOfferViewModelDesign.IsPairedToSVGPathConverter}}" /> -->
                 <!-- Top padding -->
                 <Panel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="9" Height="{StaticResource --element-paddingY}" />
                 <!-- Bottom padding -->
