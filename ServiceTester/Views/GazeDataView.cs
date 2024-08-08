@@ -77,7 +77,7 @@ public sealed class GazeDataView : View, IDisposable
     private void HandleGazeDataSample(GazeDataSample sample)
     {
         var stringSample =
-            $"{sample.MillisecondsUTC}, {sample.LeftEyeX}, {sample.LeftEyeY}, {sample.RightEyeX}, {sample.RightEyeY}, {sample.GazeEvent:G}";
+            $"{sample.MillisecondsUTC}, {sample.LeftEyeX * MathHelpers.RadToDeg}, {sample.LeftEyeY * MathHelpers.RadToDeg}, {sample.RightEyeX * MathHelpers.RadToDeg}, {sample.RightEyeY * MathHelpers.RadToDeg}, {sample.GazeEvent:G}";
         _gazeDataSamples.PushFront(stringSample);
         _listView.SetSource(_gazeDataSamples);
     }

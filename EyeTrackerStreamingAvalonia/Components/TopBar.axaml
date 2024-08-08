@@ -1,26 +1,42 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:controls="using:EyeTrackerStreamingAvalonia.Components"
-        xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties">
-    <Design.PreviewWith>
-        <Panel Width="1282" Height="88">
-            <controls:TopBar />
-        </Panel>
-    </Design.PreviewWith>
+<TemplatedControl xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:controls="using:EyeTrackerStreamingAvalonia.Components"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
+                  x:Class="EyeTrackerStreamingAvalonia.Components.TopBar"
+                  mc:Ignorable="d" d:DesignWidth="1282" d:DesignHeight="88">
 
-    <Style Selector="controls|TopBar">
-        <!-- Set Defaults -->
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX --element-paddingY">
-                    <DockPanel>
-                        <controls:CustomButton>
-                            <Svg Path="/Assets/Svg/backArrow.svg"/>
-                        </controls:CustomButton>
-                        <TextBlock Text="Templated Control" />
-                    </DockPanel>
-                </Border>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-</Styles>
+    <TemplatedControl.Styles>
+        <Style Selector="controls|TopBar">
+            <!-- Set Defaults -->
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX --element-paddingY">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource --element-gap}" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource --element-gap}" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <controls:CustomButton Grid.Column="0" Command="{TemplateBinding BackCommand}"
+                                                   CommandParameter="{TemplateBinding BackCommandParameter}">
+                                <Svg Path="/Assets/Svg/backArrow.svg" />
+                            </controls:CustomButton>
+                            <controls:CustomButton Grid.Column="4" Command="{TemplateBinding SettingsCommand}"
+                                                   CommandParameter="{TemplateBinding SettingsCommandParameter}">
+                                <Svg Path="/Assets/Svg/cog.svg" />
+                            </controls:CustomButton>
+                            <TextBlock Grid.Column="2" Text="{TemplateBinding Title}"
+                                       FontFamily="{StaticResource Poppins}"
+                                       Foreground="{StaticResource --primary-typography-header}" FontSize="39"
+                                       FontWeight="700" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </TemplatedControl.Styles>
+</TemplatedControl>

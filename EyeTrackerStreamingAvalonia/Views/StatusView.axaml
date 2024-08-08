@@ -3,9 +3,116 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:vmAbstrac="clr-namespace:EyeTrackingStreaming.ViewModels.Interfaces;assembly=ViewModels"
+             xmlns:vmDesign="clr-namespace:EyeTrackerStreamingAvalonia.ViewModels.Design"
+             xmlns:ap="clr-namespace:EyeTrackerStreamingAvalonia.AttachedProperties"
+             mc:Ignorable="d" d:DesignWidth="1282" d:DesignHeight="722"
+             x:DataType="vmAbstrac:IStatusViewModel"
              x:Class="EyeTrackerStreamingAvalonia.Views.StatusView">
-    <components:CustomButton Width="100" Height="100">
-        <TextBlock>Hello world</TextBlock>
-    </components:CustomButton>
+    <Design.DataContext>
+        <vmDesign:StatusViewModelDesign />
+    </Design.DataContext>
+    <UserControl.Styles>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="500" />
+            <Setter Property="FontFamily" Value="{StaticResource Roboto}"></Setter>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="88" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <components:TopBar DockPanel.Dock="Top" Title="{Binding HostName}" Grid.ColumnSpan="2" />
+        <TabControl Grid.Row="1" TabStripPlacement="Left">
+            <TabControl.Styles>
+                <Style Selector="TabItem">
+                    <Setter Property="Padding" Value="0" />
+                    <Setter Property="Margin" Value="0" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Border Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}"
+                                        ap:DynamicMarginAndPadding.DynamicMargin="{TemplateBinding ap:DynamicMarginAndPadding.DynamicPadding}">
+                                    <Border
+                                        ap:DynamicMarginAndPadding.DynamicPadding="--element-paddingX --element-paddingY"
+                                        CornerRadius="{StaticResource --rounded}"
+                                        Background="{TemplateBinding Background}">
+                                        <ContentControl Content="{TemplateBinding Header}" />
+                                    </Border>
+                                </Border>
+                            </ControlTemplate>
+
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+                <Style Selector="TabItem:pointerover">
+                    <Setter Property="Background" Value="{StaticResource --hover-background}" />
+                </Style>
+                <Style Selector="TabItem:selected">
+                    <Setter Property="Background" Value="{StaticResource --selected-background}" />
+                </Style>
+                <Style Selector="TabControl">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" MinWidth="280" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Grid.Row="0" Grid.Column="0"
+                                            ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX 0 --element-paddingX 0">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="*" />
+                                                <RowDefinition Height="Auto" />
+                                            </Grid.RowDefinitions>
+                                            <ItemsPresenter Grid.Row="0">
+                                                <ItemsPresenter.ItemsPanel>
+                                                    <ItemsPanelTemplate>
+                                                        <DockPanel LastChildFill="False" />
+                                                    </ItemsPanelTemplate>
+                                                </ItemsPresenter.ItemsPanel>
+                                            </ItemsPresenter>
+                                            <components:CustomButton Grid.Row="1">
+                                                <TextBlock Classes="label">Unpair</TextBlock>
+                                            </components:CustomButton>
+                                        </Grid>
+                                    </Border>
+                                    <ContentPresenter Grid.Row="0" Grid.Column="1"
+                                                      Content="{TemplateBinding SelectedContent}" />
+                                </Grid>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </TabControl.Styles>
+            <TabItem DockPanel.Dock="Top" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
+                <TabItem.Header>
+                    <TextBlock Classes="label">Eye tracker functions</TextBlock>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <TextBlock>Eye tracker functions</TextBlock>
+                </TabItem.Content>
+            </TabItem>
+            <TabItem DockPanel.Dock="Top" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
+                <TabItem.Header>
+                    <TextBlock Classes="label">Additional functions</TextBlock>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <TextBlock>Additional functions</TextBlock>
+                </TabItem.Content>
+            </TabItem>
+            <TabItem DockPanel.Dock="Bottom" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
+                <TabItem.Header>
+                    <TextBlock Classes="label">Calibration</TextBlock>
+                </TabItem.Header>
+                <TabItem.Content>
+                    <TextBlock>Calibration</TextBlock>
+                </TabItem.Content>
+            </TabItem>
+        </TabControl>
+    </Grid>
 </UserControl>

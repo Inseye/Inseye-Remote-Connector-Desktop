@@ -11,10 +11,14 @@
         <system:Double x:Key="--element-gap">12.0</system:Double>
         <SolidColorBrush x:Key="--primary-typography-body" Color="#F6F6F9"/>
         <CornerRadius x:Key="--roundedSmall">6</CornerRadius>
+        <CornerRadius x:Key="--rounded">8</CornerRadius>
         <CornerRadius x:Key="--roundedLarge">16</CornerRadius>
         <Color x:Key="--primary-typography-header">#EEEBFC</Color>
         <Color x:Key="--Dark-Background-Fill-Color-Smoke-Default">rgba(0, 0, 0, 0.30)</Color>
+        <Color x:Key="--hover-background">rgba(251, 251, 254, 0.1)</Color>
+        <Color x:Key="--selected-background">rgba(251, 251, 254, 0.2)</Color>
         <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
+        <FontFamily x:Key="Roboto">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Roboto</FontFamily>
     </Styles.Resources>
     <Style Selector=":is(Window)">
         <Setter Property="TransparencyLevelHint" Value="Mica"/>

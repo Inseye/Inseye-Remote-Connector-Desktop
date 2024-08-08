@@ -57,7 +57,7 @@ public partial class ServiceOfferView : UserControl, ICommandSource
         AvaloniaProperty.Register<ServiceOfferView, ICommand?>(nameof(Command), enableDataValidation: true);
     
     public static readonly StyledProperty<object?> CommandParameterProperty =
-        AvaloniaProperty.Register<ServiceOfferView, object?>(nameof(CommandParameter));
+        AvaloniaProperty.Register<ServiceOfferView, object?>(nameof(CommandParameter), enableDataValidation: true);
 
     public ICommand? Command
     {

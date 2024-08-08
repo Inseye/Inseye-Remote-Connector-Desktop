@@ -1,25 +1,25 @@
-<Styles xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components">
-    <Design.PreviewWith>
-        <Border Padding="20">
-        <components:CustomButton>
-            <TextBlock>IconButton</TextBlock>
-        </components:CustomButton>
-        </Border>
-    </Design.PreviewWith>
-    <Style Selector="components|CustomButton">
-        <Setter Property="Template">
-            <ControlTemplate>
-                <Border Background="{TemplateBinding Background}" Name="InternalStackPanel" BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}" CornerRadius="{TemplateBinding CornerRadius}">
-                    <ContentPresenter Content="{TemplateBinding Content}" />
-                </Border>
-            </ControlTemplate>
-        </Setter>
-    </Style>
-    <Style Selector="Border#InternalStackPanel:pointerover">
-        <Setter Property="Background" Value="rgba(251, 251, 254, 0.1)" />
-    </Style>
-</Styles>
+<ContentControl xmlns="https://github.com/avaloniaui"
+                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                x:Class="EyeTrackerStreamingAvalonia.Components.CustomButton"
+                xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components">
+    <ContentControl.Styles>
+
+        <Style Selector="components|CustomButton">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border Background="{TemplateBinding Background}" Name="InternalStackPanel"
+                            BorderBrush="{TemplateBinding BorderBrush}" Padding="{TemplateBinding Padding}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="Border#InternalStackPanel:pointerover">
+            <Setter Property="Background" Value="{StaticResource --hover-background}" />
+        </Style>
+    </ContentControl.Styles>
+    <TextBlock>Button</TextBlock>
+</ContentControl>

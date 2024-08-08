@@ -44,9 +44,7 @@ public class SearchViewModel : ReactiveObject, ISearchViewModel, IDisposable
         Cts = new CancellationDisposable()
             .DisposeWith(Disposable);
         ConnectTo = ReactiveCommand
-            .CreateFromTask<ServiceOffer, Unit>(
-                offer => Task.Run(() => ConnectToHandler(offer), Cts.Token),
-                CanConnectionInterationBeStarted)
+            .CreateFromTask<ServiceOffer, Unit>(ConnectToHandler, CanConnectionInterationBeStarted)
             .DisposeWith(Disposable);
         CanConnectionInterationBeStarted.Value = true;
     }
@@ -90,6 +88,7 @@ public class SearchViewModel : ReactiveObject, ISearchViewModel, IDisposable
         catch (Exception exception)
         {
             Logger.LogCritical(exception, "Failed to connect to service offer: {@serviceOffer}", serviceOffer);
+            throw;
         }
         finally
         {

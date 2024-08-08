@@ -34,6 +34,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\API.DependencyInjection\API.DependencyInjection.csproj"/>
+        <ProjectReference Include="..\Mocks.DependencyInjection\Mocks.DependencyInjection.csproj" />
         <ProjectReference Include="..\Mocks\Mocks.csproj" />
         <ProjectReference Include="..\Shared.DependencyInjection\Shared.DependencyInjection.csproj"/>
         <ProjectReference Include="..\ViewModels.DependencyInjection\ViewModels.DependencyInjection.csproj"/>

@@ -17,7 +17,5 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="/Styling/CustomStyles.axaml" />
-        <StyleInclude Source="/Components/CustomButton.axaml" />
-        <StyleInclude Source="/Components/TopBar.axaml" />
     </Application.Styles>
 </Application>

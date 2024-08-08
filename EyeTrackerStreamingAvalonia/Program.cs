@@ -20,6 +20,7 @@ using EyeTrackerStreamingAvalonia.ViewModels;
 using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using gRPC.DependencyInjection;
 using Mocks;
+using Mocks.DependencyInjection;
 using Serilog;
 using Shared.DependencyInjection;
 using SimpleInjector;
@@ -44,9 +45,10 @@ internal sealed class Program
         container.Register<IServiceProvider>(() => Lifestyle.Scoped.GetCurrentScope(container)!, Lifestyle.Scoped);
         container.UseSimpleInjectorDependencyResolver(initializer);
         // standard services
-        container.RegisterGrpcApi();
+        // container.RegisterGrpcApi();
+        container.RegisterGrpcApiMock();
         // container.RegisterZeroconfServiceOfferProvider();
-        container.Register<IRemoteServiceOffersProvider, RemoteServiceOffersProviderMock>(Lifestyle.Singleton);
+        container.RegisterServiceOfferProviderMock();
         container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
         // logging
         container.AddLogging(config =>

@@ -10,11 +10,12 @@
 
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Markup.Xaml;
 using EyeTrackerStreamingAvalonia.Styling;
 
 namespace EyeTrackerStreamingAvalonia.Components;
 
-public class CustomButton : Button
+public partial class CustomButton : Button
 {
     static CustomButton()
     {
@@ -24,4 +25,10 @@ public class CustomButton : Button
         if (customStyles.Resources.TryGetValue("--element-paddingY", out var pad1) && pad1 is double padY && customStyles.Resources.TryGetValue("--element-paddingX", out var pad2) && pad2 is double padX)
             PaddingProperty.OverrideDefaultValue<CustomButton>(new Thickness(padX, padY));
     }
+
+    public CustomButton()
+    {
+        InitializeComponent();
+    }
+    
 }

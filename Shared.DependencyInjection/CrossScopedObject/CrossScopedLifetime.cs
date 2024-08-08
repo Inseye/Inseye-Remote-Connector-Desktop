@@ -48,10 +48,11 @@ internal class CrossScopedLifetime : Lifestyle
             if (currentScope == null)
                 throw new Exception("Scope is null");
             var implementation = Container.GetInstance<CrossScopedObjectManager<TImplementation>>();
-            var instance =  implementation.Get(); // TODO: Check that
+            var instance =  implementation.Get();
             if (instance == null)
                 return instance!; // this problem will be handled by Container
-            currentScope.WhenScopeEnds(WhenScopeEndsHandler<TImplementation>);
+            // currentScope.WhenScopeEnds(WhenScopeEndsHandler<TImplementation>);
+            currentScope.RegisterForDisposal(new Disposable<TImplementation>(Container));
             implementation.IncrementCounter();
             return instance;
         }
@@ -60,6 +61,22 @@ internal class CrossScopedLifetime : Lifestyle
         {
             var implementation = Container.GetInstance<CrossScopedObjectManager<TImplementation>>();
             implementation.DecrementCounter();
+        }
+
+        private class Disposable<TImplementation> : IDisposable where TImplementation : class
+        {
+            private readonly Container _container;
+
+            public Disposable(Container container)
+            {
+                _container = container;
+            }
+            
+            public void Dispose()
+            {
+                var implementation = _container.GetInstance<CrossScopedObjectManager<TImplementation>>();
+                implementation.DecrementCounter();
+            }
         }
     }
 }
