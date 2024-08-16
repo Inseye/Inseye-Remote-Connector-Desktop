@@ -10,6 +10,8 @@
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackingStreaming.ViewModels;
 using EyeTrackingStreaming.ViewModels.Interfaces;
+using EyeTrackingStreaming.ViewModels.Modules;
+using EyeTrackingStreaming.ViewModels.Modules.Interfaces;
 using SimpleInjector;
 
 namespace ViewModels.DependencyInjection;
@@ -22,6 +24,7 @@ public static class ContainerExtensions
 		container.Register<IStatusViewModel, StatusViewModel>(Lifestyle.Scoped);
 		container.Register<CalibrationViewModel>(Lifestyle.Scoped);
 		container.Register<ICalibrationHandler, RoutingCalibrationHandler>(Lifestyle.Scoped);
+		container.Register<IVrChatModuleViewModel, VrChatModuleViewModel>(Lifestyle.Scoped);
 		return container;
 	}
 }

@@ -10,7 +10,6 @@
 
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
 using EyeTrackerStreamingAvalonia.Styling;
 
 namespace EyeTrackerStreamingAvalonia.Components;
@@ -20,9 +19,9 @@ public partial class CustomButton : Button
     static CustomButton()
     {
         var customStyles = new CustomStyles();
-        if (customStyles.Resources.TryGetValue("--roundedSmall", out var radius) && radius is CornerRadius cornerRadius)
+        if (customStyles.TryGetResource("Rounded-Small", null, out var radius) && radius is CornerRadius cornerRadius)
             CornerRadiusProperty.OverrideDefaultValue<CustomButton>(cornerRadius);
-        if (customStyles.Resources.TryGetValue("--element-paddingY", out var pad1) && pad1 is double padY && customStyles.Resources.TryGetValue("--element-paddingX", out var pad2) && pad2 is double padX)
+        if (customStyles.TryGetResource("Element-PaddingY", null, out var pad1) && pad1 is double padY && customStyles.TryGetResource("Element-PaddingX", null, out var pad2) && pad2 is double padX)
             PaddingProperty.OverrideDefaultValue<CustomButton>(new Thickness(padX, padY));
     }
 

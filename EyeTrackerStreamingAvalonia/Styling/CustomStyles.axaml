@@ -3,25 +3,24 @@
         xmlns:system="clr-namespace:System;assembly=System.Runtime"
         x:Class="EyeTrackerStreamingAvalonia.Styling.CustomStyles">
     <Styles.Resources>
-        <system:Double x:Key="--canvas-paddingX">36.0</system:Double>
-        <system:Double x:Key="--element-paddingX">16.0</system:Double>
-        <system:Double x:Key="--element-paddingY">16.0</system:Double>
-        <system:Double x:Key="--element-paddingX-large">32.0</system:Double>
-        <system:Double x:Key="--canvas-paddingBottom">48.0</system:Double>
-        <system:Double x:Key="--element-gap">12.0</system:Double>
-        <SolidColorBrush x:Key="--primary-typography-body" Color="#F6F6F9"/>
-        <CornerRadius x:Key="--roundedSmall">6</CornerRadius>
-        <CornerRadius x:Key="--rounded">8</CornerRadius>
-        <CornerRadius x:Key="--roundedLarge">16</CornerRadius>
-        <Color x:Key="--primary-typography-header">#EEEBFC</Color>
-        <Color x:Key="--Dark-Background-Fill-Color-Smoke-Default">rgba(0, 0, 0, 0.30)</Color>
-        <Color x:Key="--hover-background">rgba(251, 251, 254, 0.1)</Color>
-        <Color x:Key="--selected-background">rgba(251, 251, 254, 0.2)</Color>
-        <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
-        <FontFamily x:Key="Roboto">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Roboto</FontFamily>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="--primary-typography-body" Color="#F6F6F9" />
+            <SolidColorBrush x:Key="--active" Color="#64748B" />
+            <SolidColorBrush x:Key="--noActive" Color="#94A3B8" />
+            <SolidColorBrush x:Key="--text" Color="#1E293B" />
+            <Color x:Key="--primary-typography-header">#EEEBFC</Color>
+            <Color x:Key="--Dark-Background-Fill-Color-Smoke-Default">rgba(0, 0, 0, 0.30)</Color>
+            <Color x:Key="--hover-background">rgba(251, 251, 254, 0.1)</Color>
+            <Color x:Key="--selected-background">rgba(251, 251, 254, 0.2)</Color>
+            <Color x:Key="Primary-ActiveElements-Background">#824CDB</Color>
+            <Color x:Key="Primary-ActiveElements-Text">#F6F6F9</Color>
+            <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
+            <FontFamily x:Key="Roboto">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Roboto</FontFamily>
+        </ResourceDictionary>
     </Styles.Resources>
+    <StyleInclude Source="/Styling/Variants/XL.axaml"/>
     <Style Selector=":is(Window)">
-        <Setter Property="TransparencyLevelHint" Value="Mica"/>
+        <Setter Property="TransparencyLevelHint" Value="Mica" />
         <!-- <Setter Property="Background" Value="rgba(32, 32, 32, 0.8)"/> -->
         <Setter Property="Background" Value="Transparent"></Setter>
     </Style>
@@ -31,8 +30,5 @@
                 <SolidColorBrush Color="#FFF"></SolidColorBrush>
             </Setter.Value>
         </Setter>
-    </Style>
-    <Style Selector=":is(Control).element-padding">
-        <Setter Property="Margin" Value="36 16 "/>
     </Style>
 </Styles>

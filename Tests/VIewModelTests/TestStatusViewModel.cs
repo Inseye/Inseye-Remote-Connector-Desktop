@@ -27,7 +27,7 @@ public class TestStatusViewModel
         {
             var testScheduler = new TestScheduler();
             RxApp.MainThreadScheduler = testScheduler;
-            var viewModel = new StatusViewModel(RemoteServiceProviderMock.Default, new CalibrationHandlerMock
+            var viewModel = new StatusViewModel(null!, new CalibrationHandlerMock
                 {
                     OnCalibrationHandler = (_, _) => throw new Exception("Exception on call")
                 },

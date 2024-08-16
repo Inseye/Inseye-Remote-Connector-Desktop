@@ -11,6 +11,7 @@ using System.Net;
 using System.Reactive;
 using EyeTrackerStreaming.Shared;
 using EyeTrackingStreaming.ViewModels.Interfaces;
+using EyeTrackingStreaming.ViewModels.Modules.Interfaces;
 using ReactiveUI;
 
 namespace EyeTrackerStreamingAvalonia.ViewModels.Design;
@@ -22,6 +23,7 @@ public class StatusViewModelDesign : ReactiveObject, IStatusViewModel
     public ReactiveCommand<Unit, Unit> BeginCalibration { get; }
     public EyeTrackerStatus EyeTrackerStatus { get; }
     public RemoteServiceStatus RemoteServiceStatus { get; }
+    public IVrChatModuleViewModel VrChatModuleViewModel { get; } = new VrChatModuleViewModelDesign(); 
     public bool VrChatConnectorEnabled { get; set; }
     public IPEndPoint VrChatEndpoint { get; }
 }

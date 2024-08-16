@@ -19,7 +19,6 @@ public interface IServiceOfferViewModel : IViewModel
     public ServiceOffer ServiceOffer { get; }
     public string ProtocolVersion { get; }
     public string DeviceName { get; }
-    public bool IsLastItem { get; }
     public string IpAddressWithPort { get; }
     public bool IsPaired { get; }
 

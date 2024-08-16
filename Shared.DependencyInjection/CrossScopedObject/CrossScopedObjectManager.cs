@@ -12,7 +12,7 @@ using EyeTrackerStreaming.Shared.Utility;
 
 namespace Shared.DependencyInjection.CrossScopedObject;
 
-internal class CrossScopedObjectManager<TService> : IAsyncDisposable, IDisposable, IProvider<TService>, IPublisher<TService>
+internal class CrossScopedObjectManager<TService> : IDisposable, IProvider<TService>, IPublisher<TService>
     where TService : class
 {
     private readonly InvokeObservable<TService?> _invokeObservable = new();
@@ -47,10 +47,17 @@ internal class CrossScopedObjectManager<TService> : IAsyncDisposable, IDisposabl
 
     internal void DecrementCounter()
     {
+        object? toDispose = null;
         lock (_lock)
         {
-            _counter--;
+            if (--_counter == 0)
+            {
+                toDispose = _instance;
+                _instance = null;
+            }
         }
+        DisposeManagedObject(toDispose);
+
     }
 
     public TService? Get()
@@ -74,22 +81,14 @@ internal class CrossScopedObjectManager<TService> : IAsyncDisposable, IDisposabl
                 throw new Exception("There are scoped users that are using current instance.");
             Instance = value;
         }
-        if (old is IDisposable disposable)
-            disposable.Dispose();
-        else if (old is IAsyncDisposable)
-            throw new NotImplementedException("Async disposable services are not supported.");
+        DisposeManagedObject(old);
     }
 
-    public async ValueTask DisposeAsync()
+    private static void DisposeManagedObject(object? obj)
     {
-        try
-        {
-            if (_instance is IAsyncDisposable asyncDisposable)
-                await asyncDisposable.DisposeAsync();
-        }
-        finally
-        {
-            Dispose();
-        }
+        if (obj is IDisposable disposable)
+            disposable.Dispose();
+        else if (obj is IAsyncDisposable)
+            throw new NotImplementedException("Async disposable services are not supported.");
     }
 }

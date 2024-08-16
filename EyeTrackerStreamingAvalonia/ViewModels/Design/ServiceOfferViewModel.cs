@@ -18,10 +18,6 @@ namespace EyeTrackerStreamingAvalonia.ViewModels.Design;
 
 public class ServiceOfferViewModelDesign : ReactiveObject, IServiceOfferViewModel
 {
-    public static FuncValueConverter<bool, double> DistanceHeightConverter { get; } =
-        new((isLast) =>
-            isLast ? 0.0 : MarginAndPaddingValues.KnownMarginValues["--element-gap"]);
-
     public static FuncValueConverter<bool, string> IsPairedToSVGPathConverter { get; } =
         new(isPaired => isPaired ? "/Assets/Svg/check.svg" : "/Assets/Svg/off.svg");
 

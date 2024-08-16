@@ -9,25 +9,29 @@
 
     <TemplatedControl.Styles>
         <Style Selector="controls|TopBar">
-            <!-- Set Defaults -->
             <Setter Property="Template">
                 <ControlTemplate>
-                    <Border ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX --element-paddingY">
+                    <Border
+                        Name="TopBardBorder"
+                        ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Canvas-PaddingX}"
+                        ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingY}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition Width="*" MaxWidth="{StaticResource --element-gap}" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource Element-Gap}" />
                                 <ColumnDefinition Width="*" />
-                                <ColumnDefinition Width="*" MaxWidth="{StaticResource --element-gap}" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource Element-Gap}" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <controls:CustomButton Grid.Column="0" Command="{TemplateBinding BackCommand}"
-                                                   CommandParameter="{TemplateBinding BackCommandParameter}">
-                                <Svg Path="/Assets/Svg/backArrow.svg" />
+                                                   CommandParameter="{TemplateBinding BackCommandParameter}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Svg Path="/Assets/Svg/backArrow.svg" Width="24" Height="24" />
                             </controls:CustomButton>
                             <controls:CustomButton Grid.Column="4" Command="{TemplateBinding SettingsCommand}"
-                                                   CommandParameter="{TemplateBinding SettingsCommandParameter}">
-                                <Svg Path="/Assets/Svg/cog.svg" />
+                                                   CommandParameter="{TemplateBinding SettingsCommandParameter}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Svg Path="/Assets/Svg/cog.svg" Width="24" Height="24" />
                             </controls:CustomButton>
                             <TextBlock Grid.Column="2" Text="{TemplateBinding Title}"
                                        FontFamily="{StaticResource Poppins}"

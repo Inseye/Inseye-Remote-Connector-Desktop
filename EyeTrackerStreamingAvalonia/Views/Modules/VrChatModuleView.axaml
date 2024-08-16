@@ -1,0 +1,118 @@
+﻿<TemplatedControl xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:modules="using:EyeTrackerStreamingAvalonia.Views.Modules"
+                  xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:vmModulesAbstract="clr-namespace:EyeTrackingStreaming.ViewModels.Modules.Interfaces;assembly=ViewModels"
+                  xmlns:vmDesign="clr-namespace:EyeTrackerStreamingAvalonia.ViewModels.Design"
+                  xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
+                  x:Class="EyeTrackerStreamingAvalonia.Views.Modules.VrChatModuleView"
+                  x:DataType="vmModulesAbstract:IVrChatModuleViewModel"
+                  mc:Ignorable="d" d:DesignWidth="875" d:DesignHeight="160">
+    <Design.DataContext>
+        <vmDesign:VrChatModuleViewModelDesign />
+    </Design.DataContext>
+    <TemplatedControl.Styles>
+        <Style Selector="modules|VrChatModuleView">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Element-PaddingX}"
+                            ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingY}"
+                            BorderThickness="1" BorderBrush="{StaticResource --active}"
+                            CornerRadius="{StaticResource Rounded-Small}">
+                        <DockPanel>
+                            <ToggleButton DockPanel.Dock="Right" VerticalAlignment="Top" IsChecked="{Binding IsEnabled}">
+                                <ToggleButton.Styles>
+                                    <StyleInclude Source="/Styling/Variants/LG.axaml"/>
+                                    <Style Selector="ToggleButton">
+                                        <Setter Property="FontFamily" Value="{StaticResource Roboto}"/>
+                                        <Setter Property="FontSize" Value="18"/>
+                                        <Setter Property="FontWeight" Value="500"/>
+                                        <Setter Property="Foreground" Value="{StaticResource Primary-ActiveElements-Text}"></Setter>
+                                        <Setter Property="ap:DynamicMarginAndPadding.HorizontalMargin" Value="{StaticResource Element-PaddingX}"/>
+                                        <Setter Property="ap:DynamicMarginAndPadding.VerticalMargin" Value="{StaticResource Element-PaddingY}"/>
+                                        <Setter Property="CornerRadius" Value="{StaticResource Rounded}"></Setter>
+                                    </Style>
+                                    <Style Selector="ToggleButton:checked > ContentPresenter">
+                                          <Setter Property="Content" Value="Disable"/>
+                                          <Setter Property="Background" Value="{StaticResource Primary-ActiveElements-Background}"/>
+                                    </Style>
+                                    <Style Selector="ToggleButton:unchecked > ContentPresenter">
+                                        <Setter Property="Content" Value="Enable"/>
+                                        <Setter Property="Background" Value="rgba(251, 251, 254, 0.05)"/>
+                                    </Style>
+                                </ToggleButton.Styles>
+                            </ToggleButton>
+                            <StackPanel Orientation="Vertical" DockPanel.Dock="Left">
+                            <TextBlock Text="VR Chat Module" FontFamily="Inter" FontSize="16" FontWeight="400"
+                                       Foreground="{StaticResource --primary-typography-body}"
+                                       ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Element-Gap}" />
+                            <Grid>
+                                <Grid.Styles> 
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="FontFamily" Value="Inter" />
+                                        <Setter Property="FontSize" Value="13" />
+                                        <Setter Property="FontWeight" Value="400" />
+                                        <Setter Property="Foreground" Value="{StaticResource --noActive}"></Setter>
+                                    </Style>
+                                </Grid.Styles>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition MinWidth="256" Width="Auto" />
+                                    <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Border Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                                        VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
+                                        Height="{StaticResource Element-Gap}" />
+                                <TextBlock Grid.Row="0" Grid.Column="0" VerticalAlignment="Center">Vr Chat OSC Address</TextBlock>
+                                <Border
+                                    Grid.Row="0" Grid.Column="1"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource --text}"
+                                    MinWidth="180"
+                                    ap:DynamicMarginAndPadding.HorizontalPadding="{DynamicResource Element-PaddingX-XLarge}"
+                                    ap:DynamicMarginAndPadding.VerticalPadding="{DynamicResource Element-PaddingY}">
+                                    <Border.Styles>
+                                        <StyleInclude Source="/Styling/Variants/XS.axaml" />
+                                    </Border.Styles>
+                                    <DockPanel LastChildFill="True">
+                                        <components:CopyButton DockPanel.Dock="Right" CopiedContent="{Binding IpAddress}">
+                                            <Svg Path="/Assets/Svg/copy.svg" HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Stretch" />
+                                        </components:CopyButton>
+                                        <TextBlock Text="{Binding IpAddress}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                                <TextBlock Grid.Row="2" Grid.Column="0" VerticalAlignment="Center">Vr Chat OSC Port</TextBlock>
+                                <Border
+                                    Grid.Row="2" Grid.Column="1"
+                                    BorderThickness="1"
+                                    BorderBrush="{StaticResource --text}"
+                                    MinWidth="180"
+                                    ap:DynamicMarginAndPadding.HorizontalPadding="{DynamicResource Element-PaddingX-XLarge}"
+                                    ap:DynamicMarginAndPadding.VerticalPadding="{DynamicResource Element-PaddingY}">
+                                    <Border.Styles>
+                                        <StyleInclude Source="/Styling/Variants/XS.axaml" />
+                                    </Border.Styles>
+                                    <DockPanel LastChildFill="True">
+                                        <components:CopyButton DockPanel.Dock="Right" CopiedContent="{Binding IpAddress}">
+                                            <Svg Path="/Assets/Svg/copy.svg" HorizontalAlignment="Stretch"
+                                                 VerticalAlignment="Stretch" />
+                                        </components:CopyButton>
+                                        <TextBlock Text="{Binding Port}" VerticalAlignment="Center" />
+                                    </DockPanel>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                        </DockPanel>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </TemplatedControl.Styles>
+</TemplatedControl>

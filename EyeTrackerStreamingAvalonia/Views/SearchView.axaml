@@ -20,50 +20,67 @@
                 <SolidColorBrush Color="Blue"></SolidColorBrush>
             </Setter>
         </Style>
-        
+
     </Design.DesignStyle>
 
 
     <DockPanel LastChildFill="True" Name="RootPanel">
         <TextBlock FontFamily="{StaticResource Poppins}" FontSize="39" FontWeight="700"
                    Foreground="{StaticResource --primary-typography-header}"
-                   ap:DynamicMarginAndPadding.DynamicMargin="--canvas-paddingX --element-paddingY" DockPanel.Dock="Top">
+                   ap:DynamicMarginAndPadding.HorizontalMargin="{StaticResource Canvas-PaddingX}"
+                   ap:DynamicMarginAndPadding.VerticalMargin="{StaticResource Element-PaddingY}" DockPanel.Dock="Top">
             Hello
         </TextBlock>
         <Grid Name="Content"
-              ap:DynamicMarginAndPadding.DynamicMargin="--canvas-paddingX 0 --canvas-paddingX --canvas-paddingBottom"
+              ap:DynamicMarginAndPadding.LeftMargin="{StaticResource Canvas-PaddingX}"
+              ap:DynamicMarginAndPadding.RightMargin="{StaticResource Canvas-PaddingX}" ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Canvas-Padding-Bottom}"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" MaxHeight="120" />
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="614"/>
-                <ColumnDefinition Width="*"/>
-            </Grid.ColumnDefinitions>
-            <DockPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                <TextBlock FontFamily="{StaticResource Poppins}" FontSize="24" FontStyle="Normal" FontWeight="700"
-                           VerticalAlignment="Center"
-                           TextAlignment="Center">
-                    Eye tracking devices in your local network
-                </TextBlock>
-            </DockPanel>
-            <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1" Grid.IsSharedSizeScope="True">
-                <Border HorizontalAlignment="Stretch" CornerRadius="{StaticResource --roundedLarge}"
-                        Background="{StaticResource --Dark-Background-Fill-Color-Smoke-Default}"
-                         VerticalAlignment="Stretch" ap:DynamicMarginAndPadding.DynamicPadding="--element-paddingY --element-paddingX">
-                    <ItemsControl Name="ItemsControl" ItemsSource="{Binding ServiceOffers}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <views:ServiceOfferView Command="{Binding ElementName=SearchViewControl, Path= ((vmAbstract:ISearchViewModel)DataContext).ConnectTo}" CommandParameter="{Binding ServiceOffer}"/>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </Border>
+            
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" MaxHeight="120" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="614" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Column="0" Grid.ColumnSpan="3" Grid.Row="0" VerticalAlignment="Stretch"
+                   HorizontalAlignment="Stretch">
+            <TextBlock FontFamily="{StaticResource Poppins}" FontSize="24" FontStyle="Normal" FontWeight="700"
+                       VerticalAlignment="Center"
+                       TextAlignment="Center">
+                Eye tracking devices in your local network
+            </TextBlock>
+        </DockPanel>
+        <DockPanel HorizontalAlignment="Stretch" VerticalAlignment="Top" Grid.Column="1" Grid.Row="1"
+                   Grid.IsSharedSizeScope="True">
+            <Border
+                HorizontalAlignment="Stretch" CornerRadius="{StaticResource Rounded-Large}"
+                    Background="{StaticResource --Dark-Background-Fill-Color-Smoke-Default}"
+                    VerticalAlignment="Stretch"
+                    ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Element-PaddingY}" ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingX}">
+                <ItemsControl Name="ItemsControl" ItemsSource="{Binding ServiceOffers}">
+                    <ItemsControl.Styles>
+                        <Style Selector="ItemsControl > ContentPresenter">
+                            <Setter Property="ap:DynamicMarginAndPadding.BottomMargin" Value="{StaticResource Element-Gap}"/>
+                        </Style>
+                        <Style Selector="ItemsControl > ContentPresenter:nth-last-child(1)">
+                            <Setter Property="ap:DynamicMarginAndPadding.BottomMargin" Value="0"/>
+                        </Style>
+                    </ItemsControl.Styles>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <views:ServiceOfferView
+                                Command="{Binding ElementName=SearchViewControl, Path= ((vmAbstract:ISearchViewModel)DataContext).ConnectTo}"
+                                CommandParameter="{Binding ServiceOffer}" />
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
 
-            </DockPanel>
+        </DockPanel>
         </Grid>
 
     </DockPanel>

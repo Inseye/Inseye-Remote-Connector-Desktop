@@ -11,6 +11,7 @@ using System.Net;
 using System.Reactive;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreamingAvalonia.ViewModels;
+using EyeTrackingStreaming.ViewModels.Modules.Interfaces;
 using ReactiveUI;
 
 namespace EyeTrackingStreaming.ViewModels.Interfaces;
@@ -41,14 +42,8 @@ public interface IStatusViewModel : IViewModel
     ///     Current remote service status.
     /// </summary>
     public RemoteServiceStatus RemoteServiceStatus { get; }
-
     /// <summary>
-    ///     VRChat module status.
+    ///     VrChatModuleViewModel
     /// </summary>
-    public bool VrChatConnectorEnabled { get; set; }
-
-    /// <summary>
-    ///     VRChat OSC endpoint used as gaze data remote destination destination.
-    /// </summary>
-    public IPEndPoint VrChatEndpoint { get; }
+    public IVrChatModuleViewModel VrChatModuleViewModel { get; }
 }

@@ -1,118 +1,176 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
-             xmlns:vmAbstrac="clr-namespace:EyeTrackingStreaming.ViewModels.Interfaces;assembly=ViewModels"
-             xmlns:vmDesign="clr-namespace:EyeTrackerStreamingAvalonia.ViewModels.Design"
-             xmlns:ap="clr-namespace:EyeTrackerStreamingAvalonia.AttachedProperties"
-             mc:Ignorable="d" d:DesignWidth="1282" d:DesignHeight="722"
-             x:DataType="vmAbstrac:IStatusViewModel"
-             x:Class="EyeTrackerStreamingAvalonia.Views.StatusView">
+<TemplatedControl xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
+                  xmlns:vmAbstrac="clr-namespace:EyeTrackingStreaming.ViewModels.Interfaces;assembly=ViewModels"
+                  xmlns:vmDesign="clr-namespace:EyeTrackerStreamingAvalonia.ViewModels.Design"
+                  xmlns:ap="clr-namespace:EyeTrackerStreamingAvalonia.AttachedProperties"
+                  xmlns:views="clr-namespace:EyeTrackerStreamingAvalonia.Views"
+                  xmlns:modules="clr-namespace:EyeTrackerStreamingAvalonia.Views.Modules"
+                  mc:Ignorable="d" d:DesignWidth="1282" d:DesignHeight="722"
+                  x:DataType="vmAbstrac:IStatusViewModel"
+                  x:Class="EyeTrackerStreamingAvalonia.Views.StatusView">
     <Design.DataContext>
         <vmDesign:StatusViewModelDesign />
     </Design.DataContext>
-    <UserControl.Styles>
+    <Design.DesignStyle>
+        <Style Selector="Window">
+            <Setter Property="Background">
+                <SolidColorBrush Color="Blue"></SolidColorBrush>
+            </Setter>
+        </Style>
+    </Design.DesignStyle>
+    <Control.Styles>
         <Style Selector="TextBlock.label">
             <Setter Property="FontSize" Value="18" />
             <Setter Property="FontWeight" Value="500" />
             <Setter Property="FontFamily" Value="{StaticResource Roboto}"></Setter>
         </Style>
-    </UserControl.Styles>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="88" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-        <components:TopBar DockPanel.Dock="Top" Title="{Binding HostName}" Grid.ColumnSpan="2" />
-        <TabControl Grid.Row="1" TabStripPlacement="Left">
-            <TabControl.Styles>
-                <Style Selector="TabItem">
-                    <Setter Property="Padding" Value="0" />
-                    <Setter Property="Margin" Value="0" />
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <Border Padding="{TemplateBinding Padding}" Margin="{TemplateBinding Margin}"
-                                        ap:DynamicMarginAndPadding.DynamicMargin="{TemplateBinding ap:DynamicMarginAndPadding.DynamicPadding}">
-                                    <Border
-                                        ap:DynamicMarginAndPadding.DynamicPadding="--element-paddingX --element-paddingY"
-                                        CornerRadius="{StaticResource --rounded}"
-                                        Background="{TemplateBinding Background}">
-                                        <ContentControl Content="{TemplateBinding Header}" />
-                                    </Border>
-                                </Border>
-                            </ControlTemplate>
+        <Style Selector="views|StatusView">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="88" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        <components:TopBar DockPanel.Dock="Top" Title="{Binding HostName}" Grid.ColumnSpan="2" BackCommand="{Binding Disconnect}" />
+                        <TabControl Grid.Row="1" TabStripPlacement="Left">
+                            <TabControl.Styles>
+                                <Style Selector="TabItem">
+                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Margin" Value="0" />
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Border Padding="{TemplateBinding Padding}"
+                                                        Margin="{TemplateBinding Margin}">
+                                                    <Border
+                                                        Name="TestedBorder"
+                                                        ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Element-PaddingX}" 
+                                                        ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingY}"
+                                                        CornerRadius="{StaticResource Rounded}"                                                        
+                                                        Background="{TemplateBinding Background}">
+                                                        <ContentControl Content="{TemplateBinding Header}" />
+                                                    </Border>
+                                                </Border>
+                                            </ControlTemplate>
 
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-                <Style Selector="TabItem:pointerover">
-                    <Setter Property="Background" Value="{StaticResource --hover-background}" />
-                </Style>
-                <Style Selector="TabItem:selected">
-                    <Setter Property="Background" Value="{StaticResource --selected-background}" />
-                </Style>
-                <Style Selector="TabControl">
-                    <Setter Property="Template">
-                        <Setter.Value>
-                            <ControlTemplate>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto" MinWidth="280" />
-                                        <ColumnDefinition Width="*" />
-                                    </Grid.ColumnDefinitions>
-                                    <Border Grid.Row="0" Grid.Column="0"
-                                            ap:DynamicMarginAndPadding.DynamicPadding="--canvas-paddingX 0 --element-paddingX 0">
-                                        <Grid>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                                <Style Selector="TabItem:pointerover">
+                                    <Setter Property="Background" Value="{StaticResource --hover-background}" />
+                                </Style>
+                                <Style Selector="TabItem:selected">
+                                    <Setter Property="Background" Value="{StaticResource --selected-background}" />
+                                </Style>
+                                <Style Selector="TabControl">
+                                    <Setter Property="Template">
+                                        <Setter.Value>
+                                            <ControlTemplate>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto" MinWidth="280" />
+                                                        <ColumnDefinition Width="*" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <Border Grid.Row="0" Grid.Column="0"
+                                                            ap:DynamicMarginAndPadding.LeftPadding="{StaticResource Canvas-PaddingX}" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-PaddingX}" ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Canvas-PaddingY-Large}">
+                                                        <Grid>
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="*" />
+                                                                <RowDefinition Height="Auto" />
+                                                            </Grid.RowDefinitions>
+                                                            <ItemsPresenter Grid.Row="0">
+                                                                <ItemsPresenter.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <DockPanel LastChildFill="False" />
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsPresenter.ItemsPanel>
+                                                            </ItemsPresenter>
+                                                            <components:CustomButton Grid.Row="1">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <Svg Path="/Assets/Svg/trashBin.svg" Width="24" Height="24" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-Gap}"/>
+                                                                    <TextBlock Classes="label">Unpair</TextBlock>
+                                                                </StackPanel>
+                                                            </components:CustomButton>
+                                                        </Grid>
+                                                    </Border>
+                                                    <Border Grid.Row="0" Grid.Column="1" CornerRadius="8, 0, 0, 0"
+                                                            Background="{StaticResource --Dark-Background-Fill-Color-Smoke-Default}"
+                                                            ap:DynamicMarginAndPadding.LeftPadding="{StaticResource Element-PaddingX}" ap:DynamicMarginAndPadding.TopPadding="{StaticResource Element-PaddingY}" ap:DynamicMarginAndPadding.RightPadding="{StaticResource Element-PaddingX}">
+                                                        <ScrollViewer AllowAutoHide="False"
+                                                                      VerticalScrollBarVisibility="Auto">
+                                                            <ContentPresenter
+                                                                Content="{TemplateBinding SelectedContent}" />
+                                                        </ScrollViewer>
+                                                    </Border>
+
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Setter.Value>
+                                    </Setter>
+                                </Style>
+                            </TabControl.Styles>
+                            <TabItem DockPanel.Dock="Top"
+                                     ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Element-Gap}">
+                                <TabItem.Header>
+                                    <TextBlock Classes="label">Eye tracker functions</TextBlock>
+                                </TabItem.Header>
+                                <TabItem.Content>
+                                    <StackPanel Orientation="Vertical">
+                                        <TextBlock FontFamily="{StaticResource Poppins}" Foreground="{StaticResource --primary-typography-header}" FontSize="25" FontStyle="Normal" FontWeight="700" ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Element-Gap}">
+                                        Eye Tracker status
+                                    </TextBlock>
+                                        <Grid ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Element-PaddingY}">
                                             <Grid.RowDefinitions>
-                                                <RowDefinition Height="*" />
-                                                <RowDefinition Height="Auto" />
+                                                <RowDefinition/>
+                                                <RowDefinition/>
                                             </Grid.RowDefinitions>
-                                            <ItemsPresenter Grid.Row="0">
-                                                <ItemsPresenter.ItemsPanel>
-                                                    <ItemsPanelTemplate>
-                                                        <DockPanel LastChildFill="False" />
-                                                    </ItemsPanelTemplate>
-                                                </ItemsPresenter.ItemsPanel>
-                                            </ItemsPresenter>
-                                            <components:CustomButton Grid.Row="1">
-                                                <TextBlock Classes="label">Unpair</TextBlock>
-                                            </components:CustomButton>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition MinWidth="250" Width="Auto"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0" Grid.Row="0" ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Element-Gap}">
+                                                Remote service status:
+                                            </TextBlock>
+                                            <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding RemoteServiceStatus}"/>
+                                            <TextBlock Grid.Column="0" Grid.Row="1">
+                                                Eye tracker status:
+                                            </TextBlock>
+                                            <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding EyeTrackerStatus}"/>
                                         </Grid>
-                                    </Border>
-                                    <ContentPresenter Grid.Row="0" Grid.Column="1"
-                                                      Content="{TemplateBinding SelectedContent}" />
-                                </Grid>
-                            </ControlTemplate>
-                        </Setter.Value>
-                    </Setter>
-                </Style>
-            </TabControl.Styles>
-            <TabItem DockPanel.Dock="Top" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
-                <TabItem.Header>
-                    <TextBlock Classes="label">Eye tracker functions</TextBlock>
-                </TabItem.Header>
-                <TabItem.Content>
-                    <TextBlock>Eye tracker functions</TextBlock>
-                </TabItem.Content>
-            </TabItem>
-            <TabItem DockPanel.Dock="Top" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
-                <TabItem.Header>
-                    <TextBlock Classes="label">Additional functions</TextBlock>
-                </TabItem.Header>
-                <TabItem.Content>
-                    <TextBlock>Additional functions</TextBlock>
-                </TabItem.Content>
-            </TabItem>
-            <TabItem DockPanel.Dock="Bottom" ap:DynamicMarginAndPadding.DynamicPadding="0 0 0 --element-gap">
-                <TabItem.Header>
-                    <TextBlock Classes="label">Calibration</TextBlock>
-                </TabItem.Header>
-                <TabItem.Content>
-                    <TextBlock>Calibration</TextBlock>
-                </TabItem.Content>
-            </TabItem>
-        </TabControl>
-    </Grid>
-</UserControl>
+                                    </StackPanel>
+                                </TabItem.Content>
+                            </TabItem>
+                            <TabItem DockPanel.Dock="Top"
+                                     ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Element-Gap}">
+                                <TabItem.Header>
+                                    <TextBlock Classes="label">Additional functions</TextBlock>
+                                </TabItem.Header>
+                                <TabItem.Content>
+                                    <StackPanel>
+                                        <modules:VrChatModuleView DataContext="{Binding VrChatModuleViewModel}"/>
+                                    </StackPanel>
+                                </TabItem.Content>
+                            </TabItem>
+                            <TabItem DockPanel.Dock="Bottom"
+                                     ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Element-Gap}">
+                                <TabItem.Header>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Svg Path="/Assets/Svg/calibration.svg" Width="24" Height="24" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-Gap}"/>
+                                        <TextBlock Classes="label">Calibration</TextBlock>
+                                    </StackPanel>
+                                </TabItem.Header>
+                                <TabItem.Content>
+                                    <TextBlock>Calibration content</TextBlock>
+                                </TabItem.Content>
+                            </TabItem>
+                        </TabControl>
+                    </Grid>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </Control.Styles>
+</TemplatedControl>

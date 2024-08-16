@@ -31,7 +31,7 @@
     </UserControl.Styles>
     <DockPanel>
         <Border DockPanel.Dock="Top" PointerPressed="OnPointerPressed" PointerReleased="OnPointerReleased" PointerExited="OnPointerExited" 
-                CornerRadius="{StaticResource --roundedSmall}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                CornerRadius="{StaticResource Rounded-Small}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Border.Styles>
                 <Style Selector="Border:pointerover">
                     <Setter Property="Background">
@@ -50,21 +50,21 @@
             </Border.Styles>
             <Grid>
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MaxWidth="{StaticResource Element-PaddingX-Large}" Width="*" />
                     <ColumnDefinition Width="*" MinWidth="100" />
-                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MaxWidth="{StaticResource Element-PaddingX-Large}" Width="*" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="DeviceAddress" />
-                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MaxWidth="{StaticResource Element-PaddingX-Large}" Width="*" />
                     <ColumnDefinition MinWidth="40" MaxWidth="80" Width="Auto" SharedSizeGroup="ETVer" />
-                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MaxWidth="{StaticResource Element-PaddingX-Large}" Width="*" />
                     <ColumnDefinition Width="Auto" SharedSizeGroup="Paired" />
-                    <ColumnDefinition MaxWidth="{StaticResource --element-paddingX-large}" Width="*" />
+                    <ColumnDefinition MaxWidth="{StaticResource Element-PaddingX-Large}" Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
-                    <RowDefinition MaxHeight="{StaticResource --element-paddingY}" Height="*" />
+                    <RowDefinition MaxHeight="{StaticResource Element-PaddingY}" Height="*" />
                     <RowDefinition Height="Auto" SharedSizeGroup="Headers" />
                     <RowDefinition Height="Auto" SharedSizeGroup="Content" />
-                    <RowDefinition MaxHeight="{StaticResource --element-paddingY}" Height="*" />
+                    <RowDefinition MaxHeight="{StaticResource Element-PaddingY}" Height="*" />
                 </Grid.RowDefinitions>
 
 
@@ -87,13 +87,10 @@
                 <!-- <Svg Grid.Column="7" Grid.Row="2" -->
                 <!--      Path="{Binding IsPaired, Converter={x:Static vmd:ServiceOfferViewModelDesign.IsPairedToSVGPathConverter}}" /> -->
                 <!-- Top padding -->
-                <Panel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="9" Height="{StaticResource --element-paddingY}" />
+                <Panel Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="9" Height="{StaticResource Element-PaddingY}" />
                 <!-- Bottom padding -->
-                <Panel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="9" Height="{StaticResource --element-paddingY}" />
+                <Panel Grid.Column="0" Grid.Row="3" Grid.ColumnSpan="9" Height="{StaticResource Element-PaddingY}" />
             </Grid>
         </Border>
-        <!-- Item gap -->
-        <Panel
-            Height="{Binding IsLastItem, Converter = {x:Static vmd:ServiceOfferViewModelDesign.DistanceHeightConverter}}" />
     </DockPanel>
 </UserControl>

@@ -1,0 +1,18 @@
+﻿<ContentControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:components="clr-namespace:EyeTrackerStreamingAvalonia.Components"
+             mc:Ignorable="d" d:DesignWidth="40" d:DesignHeight="40"
+             x:Class="EyeTrackerStreamingAvalonia.Components.CopyButton">
+    <ContentControl.Styles>
+        <Style Selector="components|CopyButton">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <ContentPresenter Content="{TemplateBinding Content}" />
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </ContentControl.Styles>
+    <Svg Path="/Assets/Svg/copy.svg"/>
+</ContentControl>

@@ -18,6 +18,7 @@ using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreamingAvalonia.ViewModels;
 using EyeTrackingStreaming.ViewModels.Interfaces;
+using EyeTrackingStreaming.ViewModels.Modules.Interfaces;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ReactiveUI;
@@ -27,22 +28,13 @@ namespace EyeTrackingStreaming.ViewModels;
 
 public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 {
-	private bool _isVrChatConnectorEnabledEnabled;
-
-	private IDisposable? _oscClientSubscription;
-
-	public StatusViewModel(IProvider<IRemoteService> remoteServiceProvider,
-		ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router,
-		OscClient oscClient,
-		IOptions<OscClientConfiguration> oscConfiguration,
-		IPublisher<IRemoteService> remoteServicePublisher)
+	public StatusViewModel(IRemoteService remoteService, IVrChatModuleViewModel vrChatModuleViewModel,
+		ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router)
 	{
-		OscClient = oscClient;
-		RemoteServicePublisher = remoteServicePublisher;
 		Logger = logger;
 		Router = router;
 		CalibrationHandler = calibrationHandler;
-		RemoteService = remoteServiceProvider.Get();
+		RemoteService = remoteService;
 		LifeBoundedSource.DisposeWith(Disposable);
 		EyeTrackerStatusPropertyHelper = RemoteService.EyeTrackerStatusStream
 			.ToProperty(this, x => x.EyeTrackerStatus,
@@ -62,8 +54,7 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		BeginCalibration = ReactiveCommand.CreateFromTask(PerformCalibration)
 			.DisposeWith(Disposable);
 		Disconnect = ReactiveCommand.CreateFromTask(PerformDisconnect).DisposeWith(Disposable);
-		VrChatEndpoint = ConstructVrChatEndpoint(oscConfiguration.Value.Address, oscConfiguration.Value.Port);
-		// SetVrChatEndpoint = ReactiveCommand.Create<(string, int), Unit>(SetVrEndpoint).DisposeWith(Disposable);
+		VrChatModuleViewModel = vrChatModuleViewModel;
 	}
 
 	private ICalibrationHandler CalibrationHandler { get; }
@@ -74,28 +65,17 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 	private ObservableAsPropertyHelper<RemoteServiceStatus> RemoteServiceStatusPropertyHelper { get; }
 	private ILogger<StatusViewModel> Logger { get; }
 	private IRouter Router { get; }
-	private IPublisher<IRemoteService> RemoteServicePublisher { get; }
-	private OscClient OscClient { get; }
-
-	// public ReactiveCommand<(string address, int port), Unit> SetVrChatEndpoint { get; }
 
 	public void Dispose()
 	{
 		Logger.LogTrace($"Disposing {nameof(StatusViewModel)}");
 		Disposable.Dispose();
-		OscClient?.Dispose();
 	}
 
 	public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatusPropertyHelper.Value;
 	public RemoteServiceStatus RemoteServiceStatus => RemoteServiceStatusPropertyHelper.Value;
+	public IVrChatModuleViewModel VrChatModuleViewModel { get; }
 
-	public bool VrChatConnectorEnabled
-	{
-		get => _isVrChatConnectorEnabledEnabled;
-		set => EnableVrChatConnectorInternal(value);
-	}
-
-	public IPEndPoint VrChatEndpoint { get; }
 	public ReactiveCommand<Unit, Unit> BeginCalibration { get; }
 	public ReactiveCommand<Unit, Unit> Disconnect { get; }
 
@@ -122,7 +102,6 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		{
 			Logger.LogDebug("Disconnecting from remote service [user action]");
 			RemoteService.Disconnect();
-			RemoteServicePublisher.Publish(null);
 			await Router.NavigateTo(Route.AndroidServiceSearch, default);
 		}
 		catch (Exception exception)
@@ -145,52 +124,5 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		}
 
 		return Unit.Default;
-	}
-
-	private void EnableVrChatConnectorInternal(bool isEnabled)
-	{
-		if (_isVrChatConnectorEnabledEnabled == isEnabled) return;
-		this.RaisePropertyChanging(nameof(VrChatConnectorEnabled));
-		if (isEnabled)
-		{
-			_oscClientSubscription =
-				RemoteService.GazeDataStream.Subscribe(ForwardGazeDataSampleToOsc);
-		}
-		else
-		{
-			_oscClientSubscription?.Dispose();
-			_oscClientSubscription = null;
-		}
-
-		_isVrChatConnectorEnabledEnabled = isEnabled;
-		this.RaisePropertyChanged(nameof(VrChatConnectorEnabled));
-	}
-
-	// private Unit SetVrEndpoint((string address, int port) args)
-	// {
-	//     var (address, port) = args;
-	//     var parsedAddress = IPAddress.Parse(address);
-	//     if (parsedAddress.AddressFamily != AddressFamily.InterNetwork)
-	//         throw new FormatException("Ip address must be an IPv4 address"); // TODO: Handle this exception
-	//     if (port is < 0 or > 65535)
-	//         throw new FormatException("Port must be greater then 0."); // TODO: Handle this exception
-	//     if (parsedAddress.Equals(OscEndpoint.Address) && port == OscEndpoint.Port)
-	//         return Unit.Default;
-	//     return Unit.Default;
-	// }
-
-	private static IPEndPoint ConstructVrChatEndpoint(string address, int port)
-	{
-		var parsedAddress = IPAddress.Parse(address);
-		if (parsedAddress.AddressFamily != AddressFamily.InterNetwork)
-			throw new FormatException("Ip address must be an IPv4 address"); // TODO: Handle this exception
-		if (port is < 0 or > 65535)
-			throw new FormatException("Port must be greater then 0."); // TODO: Handle this exception
-		return new IPEndPoint(parsedAddress, port);
-	}
-
-	private void ForwardGazeDataSampleToOsc(GazeDataSample sample)
-	{
-		OscClient.SendGazeData(sample, VrChatEndpoint);
 	}
 }

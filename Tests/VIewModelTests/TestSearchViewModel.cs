@@ -42,14 +42,10 @@ public class TestSearchViewModel
             new NullLogger<SearchViewModel>());
         Assert.That(searchViewModel.ServiceOffers.Count, Is.EqualTo(3));
         var last = searchViewModel.ServiceOffers[^1];
-        Assert.That(searchViewModel.ServiceOffers[^1].IsLastItem, Is.True);
         sourceCollection.RemoveAt(1);
         Assert.That(searchViewModel.ServiceOffers.Count, Is.EqualTo(2));
-        Assert.That(last.IsLastItem, Is.True);
         Assert.That(searchViewModel.ServiceOffers[^1], Is.EqualTo(last));
         sourceCollection.Add(new ServiceOffer("test 4", "127.0.0,4", 1234, new Version(0, 0, 1)));
-        Assert.That(last.IsLastItem, Is.False);
         Assert.That(searchViewModel.ServiceOffers.Count, Is.EqualTo(3));
-        Assert.That(searchViewModel.ServiceOffers[^1].IsLastItem, Is.True);
     }
 }

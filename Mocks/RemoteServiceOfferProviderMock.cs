@@ -43,6 +43,7 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
 
     private async Task BackgroundTask()
     {
+        return;
         var random = new Random();
         try
         {

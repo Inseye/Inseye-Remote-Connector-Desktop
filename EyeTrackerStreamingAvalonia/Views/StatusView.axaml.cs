@@ -7,13 +7,11 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using Avalonia.Controls.Primitives;
 
 namespace EyeTrackerStreamingAvalonia.Views;
 
-public partial class StatusView : UserControl
+public partial class StatusView : TemplatedControl
 {
     public StatusView()
     {

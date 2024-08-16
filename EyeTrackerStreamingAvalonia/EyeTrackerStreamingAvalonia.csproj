@@ -143,5 +143,8 @@
       <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Regular.ttf" />
       <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-Thin.ttf" />
       <UpToDateCheckInput Remove="Assets\Fonts\Lato\Lato-ThinItalic.ttf" />
+      <UpToDateCheckInput Remove="Styling\CustomStyles.axaml" />
+      <UpToDateCheckInput Remove="Styling\Variants\XL.axaml" />
+      <UpToDateCheckInput Remove="Styling\Variants\XS.axaml" />
     </ItemGroup>
 </Project>

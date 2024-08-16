@@ -7,7 +7,6 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.
 
-using System.Diagnostics;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.Results;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -35,23 +34,30 @@ public sealed class RemoteServiceMock : IRemoteService, IDisposable
     private async void BackgroundDataGenerator()
     {
         var token = _lifetimeTokenSource.Token;
-        while (!token.IsCancellationRequested)
+        SynchronizationContext.SetSynchronizationContext(null);
+        await Task.Yield();
+        try
         {
-            var span = DateTime.UtcNow - DateTime.UnixEpoch;
-            var ms = span.TotalMilliseconds;
-            var x = Math.Sin((ms / 5000.0d) * 2 * Math.PI);
-            x *= Math.Sign(x) * x * 30 * MathHelpers.DegToRad;
-            var y = Math.Cos((ms / 5000.0d) * 2 * Math.PI);
-            y *= Math.Sign(y) * y * 30 * MathHelpers.DegToRad;
-            var @event = GazeEvent.BothEyeBlinkedOrClosed;
-            if (((long)ms) % 2000 - 1000 > 0)
+            while (!token.IsCancellationRequested)
             {
-                @event = GazeEvent.HeadsetMount;
+                var span = DateTime.UtcNow - DateTime.UnixEpoch;
+                var ms = span.TotalMilliseconds;
+                var x = Math.Sin((ms / 5000.0d) * 2 * Math.PI);
+                x *= Math.Sign(x) * x * 30 * MathHelpers.DegToRad;
+                var y = Math.Cos((ms / 5000.0d) * 2 * Math.PI);
+                y *= Math.Sign(y) * y * 30 * MathHelpers.DegToRad;
+                var @event = GazeEvent.BothEyeBlinkedOrClosed;
+                if (((long)ms) % 2000 - 1000 > 0)
+                {
+                    @event = GazeEvent.HeadsetMount;
+                }
+
+                _gazeDataStream.Send(new GazeDataSample((long)ms, (float)x, (float)y, (float)x, (float)y, @event));
+                // _gazeDataStream.Send(new GazeDataSample((long) ms,  (float) 0.0f, (float) 0.0f, (float) 0.0f, (float) 0.0f, @event));
+                await Task.Delay(100, token);
             }
-            _gazeDataStream.Send(new GazeDataSample((long) ms,  (float) x, (float) y, (float) x, (float) y, @event));
-            // _gazeDataStream.Send(new GazeDataSample((long) ms,  (float) 0.0f, (float) 0.0f, (float) 0.0f, (float) 0.0f, @event));
-            await Task.Delay(100, token);
         }
+        catch (TaskCanceledException) { }
     }
     public void Dispose()
     {
