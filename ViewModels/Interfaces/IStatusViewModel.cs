@@ -29,11 +29,6 @@ public interface IStatusViewModel : IViewModel
     ReactiveCommand<Unit, Unit> Disconnect { get; }
 
     /// <summary>
-    ///     Command that starts new eye tracker calibration procedure.
-    /// </summary>
-    ReactiveCommand<Unit, Unit> BeginCalibration { get; }
-
-    /// <summary>
     ///     Current eye tracker status.
     /// </summary>
     public EyeTrackerStatus EyeTrackerStatus { get; }
@@ -46,4 +41,5 @@ public interface IStatusViewModel : IViewModel
     ///     VrChatModuleViewModel
     /// </summary>
     public IVrChatModuleViewModel VrChatModuleViewModel { get; }
+    public ICalibrationViewModel CalibrationViewModel { get; }
 }

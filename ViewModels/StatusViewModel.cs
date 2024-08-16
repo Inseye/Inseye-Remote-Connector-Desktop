@@ -29,11 +29,11 @@ namespace EyeTrackingStreaming.ViewModels;
 public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 {
 	public StatusViewModel(IRemoteService remoteService, IVrChatModuleViewModel vrChatModuleViewModel,
-		ICalibrationHandler calibrationHandler, ILogger<StatusViewModel> logger, IRouter router)
+		ICalibrationViewModel calibrationViewModel, ILogger<StatusViewModel> logger, IRouter router)
 	{
 		Logger = logger;
 		Router = router;
-		CalibrationHandler = calibrationHandler;
+		CalibrationViewModel = calibrationViewModel;
 		RemoteService = remoteService;
 		LifeBoundedSource.DisposeWith(Disposable);
 		EyeTrackerStatusPropertyHelper = RemoteService.EyeTrackerStatusStream
@@ -51,13 +51,11 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 				.DisposeWith(Disposable))
 			.DisposeWith(Disposable);
 		HostName = RemoteService.HostInfo.ServiceName;
-		BeginCalibration = ReactiveCommand.CreateFromTask(PerformCalibration)
-			.DisposeWith(Disposable);
 		Disconnect = ReactiveCommand.CreateFromTask(PerformDisconnect).DisposeWith(Disposable);
 		VrChatModuleViewModel = vrChatModuleViewModel;
 	}
 
-	private ICalibrationHandler CalibrationHandler { get; }
+	public ICalibrationViewModel CalibrationViewModel { get; }
 	private CompositeDisposable Disposable { get; } = new();
 	private ObservableAsPropertyHelper<EyeTrackerStatus> EyeTrackerStatusPropertyHelper { get; }
 	private CancellationDisposable LifeBoundedSource { get; } = new();
@@ -75,26 +73,9 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 	public EyeTrackerStatus EyeTrackerStatus => EyeTrackerStatusPropertyHelper.Value;
 	public RemoteServiceStatus RemoteServiceStatus => RemoteServiceStatusPropertyHelper.Value;
 	public IVrChatModuleViewModel VrChatModuleViewModel { get; }
-
-	public ReactiveCommand<Unit, Unit> BeginCalibration { get; }
 	public ReactiveCommand<Unit, Unit> Disconnect { get; }
 
 	public string HostName { get; }
-
-	private async Task PerformCalibration()
-	{
-		try
-		{
-			await CalibrationHandler.CalibrationHandler(RemoteService, LifeBoundedSource.Token);
-		}
-		catch (TaskCanceledException)
-		{
-		}
-		catch (Exception exception)
-		{
-			Logger.LogCritical(exception, "Failed to perform calibration.");
-		}
-	}
 
 	private async Task<Unit> PerformDisconnect()
 	{

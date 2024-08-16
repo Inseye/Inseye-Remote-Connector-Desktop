@@ -23,7 +23,8 @@ public class StatusViewModelDesign : ReactiveObject, IStatusViewModel
     public ReactiveCommand<Unit, Unit> BeginCalibration { get; }
     public EyeTrackerStatus EyeTrackerStatus { get; }
     public RemoteServiceStatus RemoteServiceStatus { get; }
-    public IVrChatModuleViewModel VrChatModuleViewModel { get; } = new VrChatModuleViewModelDesign(); 
+    public IVrChatModuleViewModel VrChatModuleViewModel { get; } = new VrChatModuleViewModelDesign();
+    public ICalibrationViewModel CalibrationViewModel { get; } = new CalibrationViewModelDesign();
     public bool VrChatConnectorEnabled { get; set; }
     public IPEndPoint VrChatEndpoint { get; }
 }

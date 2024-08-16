@@ -1,0 +1,197 @@
+<TemplatedControl xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
+                  xmlns:controls="using:EyeTrackerStreamingAvalonia.Views"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:vmAbstract="using:EyeTrackingStreaming.ViewModels.Interfaces"
+                  xmlns:vmDesign="using:EyeTrackerStreamingAvalonia.ViewModels.Design"
+                  x:Class="EyeTrackerStreamingAvalonia.Views.CalibrationView"
+                  x:DataType="vmAbstract:ICalibrationViewModel"
+                  mc:Ignorable="d" d:DesignHeight="600" d:DesignWidth="940">
+    <Design.DataContext>
+        <vmDesign:CalibrationViewModelDesign />
+    </Design.DataContext>
+    <TemplatedControl.Styles>
+        <Style Selector="controls|CalibrationView">
+            <Setter Property="CalibrationStatus" Value="{Binding CalibrationState}" />
+        </Style>
+        <Style Selector="DockPanel.MasterPanel">
+            <Setter Property="LastChildFill" Value="True" />
+            <Setter Property="ap:DynamicMarginAndPadding.HorizontalMargin" Value="{StaticResource Element-PaddingX}" />
+            <Setter Property="ap:DynamicMarginAndPadding.TopMargin" Value="{StaticResource Element-PaddingY}" />
+            <Setter Property="ap:DynamicMarginAndPadding.BottomMargin" Value="{StaticResource Canvas-PaddingY-Large}" />
+        </Style>
+        <Style Selector="Grid.HeaderPanel">
+            <Setter Property="Height" Value="120" />
+            <Setter Property="Width" Value="615" />
+            <Setter Property="DockPanel.Dock" Value="Top" />
+            <Setter Property="HorizontalAlignment" Value="Center"></Setter>
+        </Style>
+        <Style Selector="Border.ButtonPanel">
+            <Setter Property="DockPanel.Dock" Value="Bottom" />
+            <Setter Property="ap:DynamicMarginAndPadding.TopPadding" Value="{StaticResource Canvas-PaddingY-Large}" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+            <Setter Property="HorizontalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.Description">
+            <Setter Property="Grid.Row" Value="2" />
+            <Setter Property="FontFamily" Value="{StaticResource Roboto}" />
+            <Setter Property="FontSize" Value="16.0" />
+            <Setter Property="FontWeight" Value="400" />
+            <Setter Property="Foreground" Value="{StaticResource --primary-typography-header}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+        </Style>
+        <Style Selector="TextBlock.Header">
+            <Setter Property="FontFamily" Value="{StaticResource Poppins}" />
+            <Setter Property="FontSize" Value="24" />
+            <Setter Property="FontWeight" Value="700" />
+            <Setter Property="Foreground" Value="{StaticResource --primary-typography-header}" />
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Bottom" />
+        </Style>
+        <Style Selector="Button.FillButton">
+            <Setter Property="CornerRadius" Value="{StaticResource Rounded}" />
+        </Style>
+        <Style Selector="Button.FillButton > ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="{StaticResource Primary-ActiveElements-Background}" />
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style Selector="Button.Cancel > ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="rgba(251,251,254,0.20)" />
+            <Setter Property="Padding" Value="0"></Setter>
+        </Style>
+
+        <Style Selector="Button.FillButton TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Primary-ActiveElements-Text}" />
+            <Setter Property="FontFamily" Value="{StaticResource Roboto}" />
+            <Setter Property="FontWeight" Value="500" />
+            <Setter Property="FontSize" Value="18" />
+        </Style>
+        <Style Selector=":is(Control).ButtonContent">
+            <Setter Property="ap:DynamicMarginAndPadding.HorizontalMargin" Value="{StaticResource Element-PaddingX}" />
+            <Setter Property="ap:DynamicMarginAndPadding.VerticalMargin" Value="{StaticResource Element-PaddingY}" />
+        </Style>
+        <Style Selector="controls|CalibrationView[CalibrationStatus=None]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel Classes="MasterPanel">
+                        <Grid Classes="HeaderPanel">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Classes="Header" Text="Device calibration" />
+                            <Panel Grid.Row="1" Height="{StaticResource Element-Gap}" />
+                            <TextBlock Grid.Row="2" Classes="Description" Text="Calibrate the device"></TextBlock>
+                        </Grid>
+                        <Border Classes="ButtonPanel">
+                            <Button Classes="FillButton" Command="{Binding StartCalibration}">
+                                <TextBlock Classes="ButtonContent">Start calibration</TextBlock>
+                            </Button>
+                        </Border>
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="controls|CalibrationView[CalibrationStatus=InProgress]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel Classes="MasterPanel">
+                        <Grid Classes="HeaderPanel">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Classes="Header" Text="Calibration in progress" />
+                            <Panel Grid.Row="1" Height="{StaticResource Element-Gap}" />
+                            <TextBlock Grid.Row="2" Classes="Description" Text="Eye tracker is now being calibrated"></TextBlock>
+                        </Grid>
+                        <Border Classes="ButtonPanel">
+                            <Button Classes="FillButton" Command="{Binding CancelCurrentOperation}">
+                                <StackPanel Classes="ButtonContent" Orientation="Horizontal">
+                                    <TextBlock>Abort calibration</TextBlock>
+                                    <Svg Width="24" Height="24" Path="/Assets/Svg/off.svg"
+                                         ap:DynamicMarginAndPadding.LeftMargin="{StaticResource Element-Gap}" />
+                                </StackPanel>
+                            </Button>
+                        </Border>
+                        <Svg Width="184" Height="184" Path="/Assets/Svg/calibration_in_progress.svg" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="controls|CalibrationView[CalibrationStatus=FinishedSuccessfully]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel Classes="MasterPanel">
+                        <Grid Classes="HeaderPanel">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Classes="Header" Text="Calibration finished" />
+                            <Panel Grid.Row="1" Height="{StaticResource Element-Gap}" />
+                            <TextBlock Grid.Row="2" Classes="Description" Text="Calibration successful."></TextBlock>
+                        </Grid>
+                        <Border Classes="ButtonPanel">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Classes="FillButton Cancel" Command="{Binding CancelCurrentOperation}">
+                                    <TextBlock Classes="ButtonContent">Cancel</TextBlock>
+                                </Button>
+                                <Button Classes="FillButton" ap:DynamicMarginAndPadding.LeftMargin="10"
+                                        Command="{Binding StartCalibration}">
+                                    <TextBlock Classes="ButtonContent">Restart calibration</TextBlock>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                        <Svg Width="240" Height="240" Path="/Assets/Svg/successful_calibration_check.svg" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+        <Style Selector="controls|CalibrationView[CalibrationStatus=FinishedFailed]">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <DockPanel Classes="MasterPanel">
+                        <Grid Classes="HeaderPanel">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <TextBlock Classes="Header" Text="Calibration finished" />
+                            <Panel Grid.Row="1" Height="{StaticResource Element-Gap}" />
+                            <TextBlock Grid.Row="2" Classes="Description" Text="{Binding ErrorMessage}">
+                                <TextBlock.Styles>
+                                    <Style Selector="TextBlock.Description" >
+                                        <Setter Property="Foreground"
+                                                Value="{StaticResource Primary-EyeCatch-TextAccent}" />
+                                    </Style>
+                                </TextBlock.Styles>
+                            </TextBlock>
+                        </Grid>
+                        <Border Classes="ButtonPanel">
+                            <StackPanel Orientation="Horizontal">
+                                <Button Classes="FillButton Cancel" Command="{Binding CancelCurrentOperation}">
+                                    <TextBlock Classes="ButtonContent">Cancel</TextBlock>
+                                </Button>
+                                <Button Classes="FillButton" ap:DynamicMarginAndPadding.LeftMargin="10"
+                                        Command="{Binding StartCalibration}">
+                                    <TextBlock Classes="ButtonContent">Restart calibration</TextBlock>
+                                </Button>
+                            </StackPanel>
+                        </Border>
+                        <Svg Width="240" Height="240" Path="/Assets/Svg/failed_calibration_error.svg" />
+                    </DockPanel>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </TemplatedControl.Styles>
+</TemplatedControl>

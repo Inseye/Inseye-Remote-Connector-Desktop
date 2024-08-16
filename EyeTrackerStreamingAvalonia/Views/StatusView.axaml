@@ -165,7 +165,7 @@
                                     </StackPanel>
                                 </TabItem.Header>
                                 <TabItem.Content>
-                                    <TextBlock>Calibration content</TextBlock>
+                                    <views:CalibrationView DataContext="{Binding CalibrationViewModel}"/>
                                 </TabItem.Content>
                             </TabItem>
                         </TabControl>
