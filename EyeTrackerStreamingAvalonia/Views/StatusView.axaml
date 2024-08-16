@@ -39,15 +39,14 @@
                         <TabControl Grid.Row="1" TabStripPlacement="Left">
                             <TabControl.Styles>
                                 <Style Selector="TabItem">
-                                    <Setter Property="Padding" Value="0" />
+                                    <Setter Property="Padding" Value="0"/>
                                     <Setter Property="Margin" Value="0" />
                                     <Setter Property="Template">
                                         <Setter.Value>
                                             <ControlTemplate>
-                                                <Border Padding="{TemplateBinding Padding}"
-                                                        Margin="{TemplateBinding Margin}">
+                                                <Border 
+                                                        ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Element-Gap}">
                                                     <Border
-                                                        Name="TestedBorder"
                                                         ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Element-PaddingX}" 
                                                         ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingY}"
                                                         CornerRadius="{StaticResource Rounded}"                                                        
@@ -75,8 +74,9 @@
                                                         <ColumnDefinition Width="Auto" MinWidth="280" />
                                                         <ColumnDefinition Width="*" />
                                                     </Grid.ColumnDefinitions>
+                                                    <!-- Selectors view -->
                                                     <Border Grid.Row="0" Grid.Column="0"
-                                                            ap:DynamicMarginAndPadding.LeftPadding="{StaticResource Canvas-PaddingX}" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-PaddingX}" ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Canvas-PaddingY-Large}">
+                                                            ap:DynamicMarginAndPadding.LeftPadding="{StaticResource Canvas-PaddingX}" ap:DynamicMarginAndPadding.RightPadding="{StaticResource Element-PaddingX}" ap:DynamicMarginAndPadding.BottomPadding="{StaticResource Canvas-PaddingY-Large}">
                                                         <Grid>
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="*" />
@@ -89,6 +89,7 @@
                                                                     </ItemsPanelTemplate>
                                                                 </ItemsPresenter.ItemsPanel>
                                                             </ItemsPresenter>
+                                                            <!-- Unpair button -->
                                                             <components:CustomButton Grid.Row="1">
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <Svg Path="/Assets/Svg/trashBin.svg" Width="24" Height="24" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-Gap}"/>
@@ -97,6 +98,7 @@
                                                             </components:CustomButton>
                                                         </Grid>
                                                     </Border>
+                                                    <!-- Content view -->
                                                     <Border Grid.Row="0" Grid.Column="1" CornerRadius="8, 0, 0, 0"
                                                             Background="{StaticResource --Dark-Background-Fill-Color-Smoke-Default}"
                                                             ap:DynamicMarginAndPadding.LeftPadding="{StaticResource Element-PaddingX}" ap:DynamicMarginAndPadding.TopPadding="{StaticResource Element-PaddingY}" ap:DynamicMarginAndPadding.RightPadding="{StaticResource Element-PaddingX}">
@@ -155,8 +157,7 @@
                                     </StackPanel>
                                 </TabItem.Content>
                             </TabItem>
-                            <TabItem DockPanel.Dock="Bottom"
-                                     ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Element-Gap}">
+                            <TabItem DockPanel.Dock="Bottom">
                                 <TabItem.Header>
                                     <StackPanel Orientation="Horizontal">
                                         <Svg Path="/Assets/Svg/calibration.svg" Width="24" Height="24" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-Gap}"/>
