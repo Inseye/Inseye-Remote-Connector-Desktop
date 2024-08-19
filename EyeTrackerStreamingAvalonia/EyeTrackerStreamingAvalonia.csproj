@@ -145,4 +145,4 @@
       <UpToDateCheckInput Remove="Styling\Variants\XL.axaml" />
       <UpToDateCheckInput Remove="Styling\Variants\XS.axaml" />
     </ItemGroup>
-<PropertyGroup><Version /></PropertyGroup></Project>
+<PropertyGroup><Version>0.3.0</Version></PropertyGroup></Project>
