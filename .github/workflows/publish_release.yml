@@ -28,6 +28,7 @@ jobs:
           exit 1
       - uses: actions/checkout@v4
         with:
+          lfs: true
           submodules: recursive
       - name: Format changelog and build release message
         run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
@@ -100,9 +101,7 @@ jobs:
                       print(f"Adding {file_path} to archive")
                       archive.write(file_path, os.path.relpath(file_path, folder_path))
           print(f"Archive path: {str(archive_path)}")
-      - name: Ls
-        run: ls ${{ github.workspace }}/windowsPublish
-      - uses: stefanzweifel/git-auto-commit-action@v4
+      - uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "[Auto] Version bumped to ${{ github.event.inputs.version }}"
           file_pattern: ":(exclude)${{ env.RELEASE_MESSAGE }} :(exclude)*windowsPublish*"
