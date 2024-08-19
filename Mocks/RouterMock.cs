@@ -21,17 +21,17 @@ public class RouterMock : IRouter
 	public IObservable<bool> CanNavigateBackObservable { get; set; } = new NullObservable<bool>();
 	public Route CurrentRoute { get; set; } = Route.None;
 
-	public Task NavigateTo(Route route, CancellationToken token, object? context = null)
+	public Task NavigateTo(Route route, CancellationToken token)
 	{
 		return OnNavigateTo(route, token);
 	}
 
-	public Task NavigateToStack(Route route, CancellationToken token, object? context = null)
+	public Task NavigateToStack(Route route, CancellationToken token)
 	{
 		return OnNavigateToStack(route, token);
 	}
 
-	public Task NavigateBack(CancellationToken token, object? context = null)
+	public Task NavigateBack(CancellationToken token)
 	{
 		return OnNavigateBack(token);
 	}

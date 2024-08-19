@@ -23,7 +23,7 @@ public class CrossScopeLifetimeTests
 
     class ResolvedClass : IInterface, IDisposable
     {
-        public event Action OnDispose;
+        public event Action? OnDispose;
         public void Dispose()
         {
             OnDispose?.Invoke();

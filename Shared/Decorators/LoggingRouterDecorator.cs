@@ -20,21 +20,21 @@ public class LoggingRouterDecorator(IRouter decorated, ILogger<LoggingRouterDeco
 
 	public Route CurrentRoute => decorated.CurrentRoute;
 
-	public Task NavigateTo(Route route, CancellationToken token, object context = null)
+	public Task NavigateTo(Route route, CancellationToken token)
 	{
 		logger.LogInformation("Navigating to {route}.", route);
-		return decorated.NavigateTo(route, token, context);
+		return decorated.NavigateTo(route, token);
 	}
 
-	public Task NavigateToStack(Route route, CancellationToken token, object context = null)
+	public Task NavigateToStack(Route route, CancellationToken token)
 	{
 		logger.LogInformation("Navigating to {route}, stack.", route);
-		return decorated.NavigateToStack(route, token, context);
+		return decorated.NavigateToStack(route, token);
 	}
 
-	public Task NavigateBack(CancellationToken token, object context = null)
+	public Task NavigateBack(CancellationToken token)
 	{
 		logger.LogInformation("Navigating back from {route}", CurrentRoute);
-		return decorated.NavigateBack(token, context);
+		return decorated.NavigateBack(token);
 	}
 }

@@ -7,22 +7,16 @@
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
 // All other rights reserved.ed.
 
-using System.Net;
-using System.Net.Sockets;
 using System.Reactive;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using EyeTrackerStreaming.Shared;
-using EyeTrackerStreaming.Shared.Configuration;
 using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
-using EyeTrackerStreamingAvalonia.ViewModels;
 using EyeTrackingStreaming.ViewModels.Interfaces;
 using EyeTrackingStreaming.ViewModels.Modules.Interfaces;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using ReactiveUI;
-using VRChatConnector;
 
 namespace EyeTrackingStreaming.ViewModels;
 
@@ -46,9 +40,8 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		RemoteService.ServiceStatusStream
 			.Where(s => s == RemoteServiceStatus.Disconnected || s == RemoteServiceStatus.Disconnecting)
 			.ObserveOn(RxApp.MainThreadScheduler)
-			.Finally(() => OnServiceDisconnected(RemoteServiceStatus.Disconnecting))
-			.InvokeCommand(ReactiveCommand.CreateFromTask<RemoteServiceStatus, Unit>(OnServiceDisconnected)
-				.DisposeWith(Disposable))
+			.Finally(() => OnServiceDisconnected(RemoteServiceStatus.Disconnected))
+			.Subscribe(OnServiceDisconnected)
 			.DisposeWith(Disposable);
 		HostName = RemoteService.HostInfo.ServiceName;
 		Disconnect = ReactiveCommand.CreateFromTask(PerformDisconnect).DisposeWith(Disposable);
@@ -93,7 +86,7 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		return Unit.Default;
 	}
 
-	private async Task<Unit> OnServiceDisconnected(RemoteServiceStatus status)
+	private async void OnServiceDisconnected(RemoteServiceStatus _)
 	{
 		try
 		{
@@ -103,7 +96,5 @@ public class StatusViewModel : ReactiveObject, IStatusViewModel, IDisposable
 		{
 			Logger.LogCritical(exception, "Failed to respond to service disconnection");
 		}
-
-		return Unit.Default;
 	}
 }

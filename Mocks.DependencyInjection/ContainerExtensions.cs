@@ -17,8 +17,11 @@ public static class ContainerExtensions
 {
     public static Container RegisterAllMocks(this Container container)
     {
+        var prev = container.Options.AllowOverridingRegistrations;
+        container.Options.AllowOverridingRegistrations = true;
         container.RegisterServiceOfferProviderMock();
         container.RegisterGrpcApiMock();
+        container.Options.AllowOverridingRegistrations = prev;
         return container;
     }
 

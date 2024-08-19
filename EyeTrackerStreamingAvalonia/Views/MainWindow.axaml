@@ -19,7 +19,7 @@
         <DockPanel Height="32" DockPanel.Dock="Top" Name="TitleBar">
             <Panel Margin="4 0 0 0" DockPanel.Dock="Left">
                 <DockPanel Name="TitleBarTitleBarIconTitleGroup">
-                    <Panel Name="Icon" DockPanel.Dock="Left"></Panel>
+                    <Panel Name="IconPanel" DockPanel.Dock="Left"></Panel>
                     <DockPanel DockPanel.Dock="Left" Name="TextContainer" Margin="12 8 8 0">
                         <TextBlock DockPanel.Dock="Left" FontSize="12" FontWeight="400" FontFamily="Segoe UI" Foreground="#FFF">Inseye Windows Service</TextBlock>
                         <TextBlock Margin="8, 0 0 0" FontStyle="Italic" FontWeight="400" LineHeight="16" FontSize="12"  FontFamily="Segoe UI" Foreground="#CCFFFFFF">

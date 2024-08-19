@@ -17,6 +17,6 @@ namespace EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 
 public interface IMainWindowViewModel : IViewModel
 {
-	IViewModel CurrentViewModel { get; }
+	IViewModel? CurrentViewModel { get; }
 	void LoadInitialView();
 }

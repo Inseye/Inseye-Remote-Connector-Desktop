@@ -65,7 +65,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 
 	public Route CurrentRoute { get; private set; }
 
-	public async Task NavigateTo(Route route, CancellationToken token, object? context = null)
+	public async Task NavigateTo(Route route, CancellationToken token)
 	{
 		if (route == CurrentRoute)
 			return;
@@ -79,7 +79,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 		CanNavigateBack = false;
 	}
 
-	public async Task NavigateToStack(Route route, CancellationToken token, object? context = null)
+	public async Task NavigateToStack(Route route, CancellationToken token)
 	{
 		if (route == CurrentRoute)
 			return;
@@ -92,7 +92,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 		CanNavigateBack = true;
 	}
 
-	public async Task NavigateBack(CancellationToken token, object? context = null)
+	public async Task NavigateBack(CancellationToken token)
 	{
 		token.ThrowIfCancellationRequested();
 		await UiThreadSynchronizationContext.Context;

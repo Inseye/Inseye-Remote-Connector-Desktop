@@ -8,7 +8,6 @@
 // All other rights reserved.
 
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using DynamicData;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
@@ -43,7 +42,6 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
 
     private async Task BackgroundTask()
     {
-        return;
         var random = new Random();
         try
         {
@@ -59,7 +57,7 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
                 await Task.Delay(2000).ConfigureAwait(false);
             }
         }
-        catch (TaskCanceledException taskCanceledException)
+        catch (TaskCanceledException)
         {
             // ignore
         }

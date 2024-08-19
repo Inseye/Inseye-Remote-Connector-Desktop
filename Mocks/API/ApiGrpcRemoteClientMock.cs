@@ -27,7 +27,7 @@ public sealed class ApiGrpcRemoteClientMock : RemoteService.RemoteServiceClient
         OnObserveEyeTrackerAvailability { get; set; } = (_, _) => throw new NotImplementedException();
 
     public override AsyncServerStreamingCall<CalibrationResponse> PerformCalibration(CalibrationRequest request,
-        Metadata headers = null,
+        Metadata? headers = null,
         DateTime? deadline = null, CancellationToken cancellationToken = default)
     {
         return OnPerformCalibration(request, new CallOptions(headers, deadline, cancellationToken));
@@ -39,7 +39,7 @@ public sealed class ApiGrpcRemoteClientMock : RemoteService.RemoteServiceClient
         return OnPerformCalibration(request, options);
     }
 
-    public override AsyncServerStreamingCall<GazeData> OpenGazeStream(GazeDataRequest request, Metadata headers = null,
+    public override AsyncServerStreamingCall<GazeData> OpenGazeStream(GazeDataRequest request, Metadata? headers = null,
         DateTime? deadline = null,
         CancellationToken cancellationToken = default)
     {
@@ -53,7 +53,7 @@ public sealed class ApiGrpcRemoteClientMock : RemoteService.RemoteServiceClient
 
     public override AsyncServerStreamingCall<EyeTrackerAvailability> ObserveEyeTrackerAvailability(
         ObserveEyeTrackerAvailabilityRequest request,
-        Metadata headers = null, DateTime? deadline = null,
+        Metadata? headers = null, DateTime? deadline = null,
         CancellationToken cancellationToken = default)
     {
         return OnObserveEyeTrackerAvailability(request, new CallOptions(headers, deadline, cancellationToken));

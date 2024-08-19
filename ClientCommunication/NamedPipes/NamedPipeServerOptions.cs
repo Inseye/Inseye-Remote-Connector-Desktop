@@ -11,6 +11,6 @@ namespace ClientCommunication.NamedPipes;
 
 public record NamedPipeServerOptions
 {
-    public string NamedPipeName { get; init; }
-    public int MaximumNumberOfConcurrentClients { get; init; }
+    public required string NamedPipeName { get; init; }
+    public required int MaximumNumberOfConcurrentClients { get; init; }
 }

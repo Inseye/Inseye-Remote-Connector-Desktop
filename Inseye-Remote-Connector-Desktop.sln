@@ -1,9 +1,5 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EyeTrackerStreamingConsole", "EyeTrackerStreamingConsole\EyeTrackerStreamingConsole.csproj", "{82C92B22-8042-4781-A8D2-D9C1AA2649D2}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalGUI", "TerminalGUI\TerminalGUI.csproj", "{7594537B-B879-4215-B477-8401EA8A7838}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "Shared\Shared.csproj", "{2A462C2A-D022-4DE8-B2B2-028212A404EC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "API", "API\API.csproj", "{F761E456-8C63-43F9-801D-4A94C450CBD2}"
@@ -11,10 +7,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ViewModels", "ViewModels\ViewModels.csproj", "{D6B16387-DAD0-4876-8EEA-7C8A8CFDC722}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCommunication", "ClientCommunication\ClientCommunication.csproj", "{BF38A409-785C-4D0B-81EF-B236ADE56CB5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalGUI.DependencyInjection", "TerminalGUI.DependencyInjection\TerminalGUI.DependencyInjection.csproj", "{F7714BCE-38B6-4D7D-A4F3-27564FEFD6C7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerminalGUI.Mock", "TerminalGUI.Mock\TerminalGUI.Mock.csproj", "{D6323CA9-58BA-4533-A5C6-E8CD1968592E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared.DependencyInjection", "Shared.DependencyInjection\Shared.DependencyInjection.csproj", "{EE848E70-7261-4728-908A-46A9D5072AAA}"
 EndProject
@@ -30,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCommunicationTester",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClientCommunication.DependencyInjection", "ClientCommunication.DependencyInjection\ClientCommunication.DependencyInjection.csproj", "{A46FC18A-9465-41FD-B66D-7310D0EAD649}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceTester", "ServiceTester\ServiceTester.csproj", "{B75A1355-C27E-4988-8E50-6EFD4F203829}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VRChatConnector", "VRChatConnector\VRChatConnector.csproj", "{D2B0D8A0-7FAE-45DB-8A02-7F4FD4D45547}"
@@ -46,14 +36,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{82C92B22-8042-4781-A8D2-D9C1AA2649D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82C92B22-8042-4781-A8D2-D9C1AA2649D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82C92B22-8042-4781-A8D2-D9C1AA2649D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82C92B22-8042-4781-A8D2-D9C1AA2649D2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7594537B-B879-4215-B477-8401EA8A7838}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7594537B-B879-4215-B477-8401EA8A7838}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7594537B-B879-4215-B477-8401EA8A7838}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7594537B-B879-4215-B477-8401EA8A7838}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2A462C2A-D022-4DE8-B2B2-028212A404EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2A462C2A-D022-4DE8-B2B2-028212A404EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2A462C2A-D022-4DE8-B2B2-028212A404EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -70,14 +52,6 @@ Global
 		{BF38A409-785C-4D0B-81EF-B236ADE56CB5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF38A409-785C-4D0B-81EF-B236ADE56CB5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF38A409-785C-4D0B-81EF-B236ADE56CB5}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F7714BCE-38B6-4D7D-A4F3-27564FEFD6C7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F7714BCE-38B6-4D7D-A4F3-27564FEFD6C7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F7714BCE-38B6-4D7D-A4F3-27564FEFD6C7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F7714BCE-38B6-4D7D-A4F3-27564FEFD6C7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D6323CA9-58BA-4533-A5C6-E8CD1968592E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D6323CA9-58BA-4533-A5C6-E8CD1968592E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D6323CA9-58BA-4533-A5C6-E8CD1968592E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D6323CA9-58BA-4533-A5C6-E8CD1968592E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EE848E70-7261-4728-908A-46A9D5072AAA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{EE848E70-7261-4728-908A-46A9D5072AAA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE848E70-7261-4728-908A-46A9D5072AAA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -106,10 +80,6 @@ Global
 		{A46FC18A-9465-41FD-B66D-7310D0EAD649}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A46FC18A-9465-41FD-B66D-7310D0EAD649}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A46FC18A-9465-41FD-B66D-7310D0EAD649}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B75A1355-C27E-4988-8E50-6EFD4F203829}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B75A1355-C27E-4988-8E50-6EFD4F203829}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B75A1355-C27E-4988-8E50-6EFD4F203829}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B75A1355-C27E-4988-8E50-6EFD4F203829}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8CE8FCE0-5800-444F-BCAD-FF34BF37377E}.Release|Any CPU.ActiveCfg = Release|Any CPU

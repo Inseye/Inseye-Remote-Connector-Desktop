@@ -61,36 +61,6 @@ public static class ContainerExtensions
         return container;
     }
 
-	public static Container RegisterCrossContainer<TService>(this Container targetContainer,
-		Container sourceContainer, Lifestyle lifestyle) where TService : class
-	{
-		if (!sourceContainer.IsLocked)
-			throw new InvalidOperationException(
-				"Source container must be locked (ready to use) before registering cross container service");
-
-
-		if (lifestyle is SingletonLifestyle)
-		{
-			var instance = sourceContainer.GetInstance<TService>();
-			targetContainer.RegisterInstance(instance);
-		}
-		else if (lifestyle is ScopedLifestyle scopedLifestyle)
-		{
-			targetContainer.Register(() =>
-			{
-				var targetScope = scopedLifestyle.GetCurrentScope(targetContainer);
-				var producer = sourceContainer.GetRegistration<TService>();
-				return (TService)producer!.GetInstance(targetScope);
-			}, lifestyle);
-		}
-		else
-		{
-			targetContainer.Register(sourceContainer.GetInstance<TService>, lifestyle);
-		}
-
-		return targetContainer;
-	}
-
 
 	public static Container RegisterScopingRouterFor<TRouter>(this Container container, Lifestyle routersLifestyle)
 		where TRouter : class, IRouter

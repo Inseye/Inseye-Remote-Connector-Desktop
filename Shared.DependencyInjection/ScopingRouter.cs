@@ -50,7 +50,7 @@ internal class ScopingRouter<T> : IRouter, IDisposable
 	public IObservable<bool> CanNavigateBackObservable => Router.CanNavigateBackObservable;
 	public Route CurrentRoute => Router.CurrentRoute;
 
-	public async Task NavigateTo(Route route, CancellationToken token, object context = null)
+	public async Task NavigateTo(Route route, CancellationToken token)
 	{
 		if (route == CurrentRoute)
 			return;
@@ -73,7 +73,7 @@ internal class ScopingRouter<T> : IRouter, IDisposable
 		}
 	}
 
-	public async Task NavigateToStack(Route route, CancellationToken token, object context = null)
+	public async Task NavigateToStack(Route route, CancellationToken token)
 	{
 		if (route == CurrentRoute)
 			return;
@@ -91,7 +91,7 @@ internal class ScopingRouter<T> : IRouter, IDisposable
 		}
 	}
 
-	public async Task NavigateBack(CancellationToken token, object context = null)
+	public async Task NavigateBack(CancellationToken token)
 	{
 		if (!CanNavigateBack)
 			throw new Exception("Can't navigate back");

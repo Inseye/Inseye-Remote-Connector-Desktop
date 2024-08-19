@@ -31,7 +31,8 @@
                    ap:DynamicMarginAndPadding.VerticalMargin="{StaticResource Element-PaddingY}" DockPanel.Dock="Top">
             Hello
         </TextBlock>
-        <Grid Name="Content"
+        <!-- Content -->
+        <Grid
               ap:DynamicMarginAndPadding.LeftMargin="{StaticResource Canvas-PaddingX}"
               ap:DynamicMarginAndPadding.RightMargin="{StaticResource Canvas-PaddingX}" ap:DynamicMarginAndPadding.BottomMargin="{StaticResource Canvas-Padding-Bottom}"
               HorizontalAlignment="Stretch"

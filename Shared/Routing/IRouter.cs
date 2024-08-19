@@ -22,7 +22,7 @@ public interface IRouter
     /// <param name="route">Destination route</param>
     /// <param name="token">Operation cancellation token.</param>
     /// <returns></returns>
-    public Task NavigateTo(Route route, CancellationToken token, object context = null);
+    public Task NavigateTo(Route route, CancellationToken token);
 
     /// <summary>
     ///     Navigates to selected destination.
@@ -31,12 +31,12 @@ public interface IRouter
     /// <param name="route">Destination route.</param>
     /// <param name="token">Operation cancellation token.</param>
     /// <returns></returns>
-    public Task NavigateToStack(Route route, CancellationToken token, object context = null);
+    public Task NavigateToStack(Route route, CancellationToken token);
 
     /// <summary>
     ///     Navigates back to last destination pushed to stack.
     /// </summary>
     /// <param name="token">Operation cancellation token.</param>
     /// <returns></returns>
-    public Task NavigateBack(CancellationToken token, object context = null);
+    public Task NavigateBack(CancellationToken token);
 }

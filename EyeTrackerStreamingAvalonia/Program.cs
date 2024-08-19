@@ -45,10 +45,8 @@ internal sealed class Program
         container.Register<IServiceProvider>(() => Lifestyle.Scoped.GetCurrentScope(container)!, Lifestyle.Scoped);
         container.UseSimpleInjectorDependencyResolver(initializer);
         // standard services
-        // container.RegisterGrpcApi();
-        container.RegisterGrpcApiMock();
-        // container.RegisterZeroconfServiceOfferProvider();
-        container.RegisterServiceOfferProviderMock();
+        container.RegisterGrpcApi();
+        container.RegisterZeroconfServiceOfferProvider();
         container.RegisterCrossScopeManagedService<IRemoteService>(() => new NullRemoteService());
         // logging
         container.AddLogging(config =>
@@ -57,12 +55,11 @@ internal sealed class Program
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
                 .WriteTo.File(
-                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop),
+                    Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                         "desktop_service.log"))
                 .CreateLogger();
             config.AddSerilog(serilogLogger);
         });
-        container.Register<ILogManager, LogManager>(Lifestyle.Singleton);
 
         // VRChat
         container.RegisterVrChatConnector();
@@ -73,6 +70,8 @@ internal sealed class Program
         container.Register<IMainWindowViewModel, MainWindowViewModel>(Lifestyle.Singleton);
         container.Register<IRouter, MainWindowViewModel>(Lifestyle.Singleton);
         container.Register<IUiThreadSynchronizationContext, AvaloniaSynchronizationContextResolver>(Lifestyle.Singleton);
+        // optional mocks for development
+        // container.RegisterAllMocks();
         return BuildAvaloniaApp()
             .AfterPlatformServicesSetup(_ => container.Verify())
             .StartWithClassicDesktopLifetime(args);
