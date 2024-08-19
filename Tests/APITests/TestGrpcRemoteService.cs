@@ -24,12 +24,13 @@ public class TestGrpcRemoteService
     public void TestRemoteServiceStatusOnRemoteServiceStatusFinished()
     {
         var @event = new AutoResetEvent(false);
-        static IEnumerable<EyeTrackerAvailability> StatusSource(AutoResetEvent ev)
+        IEnumerable<EyeTrackerAvailability> StatusSource(AutoResetEvent ev)
         {
             yield return new EyeTrackerAvailability
             {
                 Status = EyeTrackerAvailability.Types.Status.Available
             };
+            @event.WaitOne();
             yield return new EyeTrackerAvailability
             {
                 Status = EyeTrackerAvailability.Types.Status.Available
@@ -43,7 +44,8 @@ public class TestGrpcRemoteService
                 StatusSource(@event).ToAsyncServerStreamingCall(null, opt.CancellationToken)
         }, new ServiceOffer("mock", "0.0.0.0", 0, new Version(0, 0, 1)), NullLogger<IRemoteService>.Instance);
         Assert.That(service.ServiceStatus, Is.EqualTo(RemoteServiceStatus.Connected));
-        Thread.Sleep(2); // wait for the iterator to expire
+        @event.Set();
+        Thread.Sleep(100); // wait for the iterator to expire
         Assert.That(service.ServiceStatus, Is.EqualTo(RemoteServiceStatus.Disconnected));
     }
 }
