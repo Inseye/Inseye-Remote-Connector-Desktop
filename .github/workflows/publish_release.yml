@@ -86,19 +86,20 @@ jobs:
           import os
           import zipfile
           version = "${{ github.event.inputs.version }}"
-          folder_path = r"${{ github.workspace }}\windowsPublish"
+          folder_path = r"${{ github.workspace }}/windowsPublish"
           out_file_name = fr"Inseye-Remote-Connector-Desktop_{version}.zip"
-          archive_path = fr"{folder_path}\{out_file_name}"
+          archive_path = fr"{folder_path}/{out_file_name}"
           folder_path = os.path.abspath(folder_path)
           archive_path = os.path.abspath(archive_path)
-          print(f"Archive path: {str(archive_path)}")
           with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
               for root, dirs, files in os.walk(folder_path):
                   for file in files:
                       if file == out_file_name:
                           continue
                       file_path = os.path.join(root, file)
+                      print(f"Adding {file_path} to archive")
                       archive.write(file_path, os.path.relpath(file_path, folder_path))
+          print(f"Archive path: {str(archive_path)}")
       - name: Ls
         run: ls ${{ github.workspace }}/windowsPublish
       - uses: stefanzweifel/git-auto-commit-action@v4
