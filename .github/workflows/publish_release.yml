@@ -79,7 +79,7 @@ jobs:
       - name: Test # depends on setup-dotnet
         run: dotnet test --no-restore --verbosity normal
       - name: Publish windows # depends on setup-dotnet
-        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o windowsPublish ./EyeTrackerStreamingAvalonia/EyeTrackerStreamingAvalonia.csproj
+        run: dotnet publish -c Release -r win-x64 -p:IncludeSourceRevisionInInformationalVersion=false -o windowsPublish ./EyeTrackerStreamingAvalonia/EyeTrackerStreamingAvalonia.csproj
       - name: Pack release files
         shell: python
         run: |
@@ -91,7 +91,7 @@ jobs:
           archive_path = fr"{folder_path}\{out_file_name}"
           folder_path = os.path.abspath(folder_path)
           archive_path = os.path.abspath(archive_path)
-
+          print(f"Archive path: {str(archive_path)}")
           with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
               for root, dirs, files in os.walk(folder_path):
                   for file in files:
