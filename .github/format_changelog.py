@@ -24,7 +24,7 @@ with changelog_path.open('r+') as file_handle:
             substr = line[starindex + 1:endindex]
             if substr.lower() == 'unreleased' or substr == version:
                 today = datetime.date.today()
-                lines[index] = f"## [{version}] - {today.year}-{today.month:02d}-{today.day}"
+                lines[index] = f"## [{version}] - {today.year}-{today.month:02d}-{today.day}\n"
                 break
     else:
         raise Exception(f"Failed to find changes with either Unreleased or {version} tag.")
