@@ -99,6 +99,8 @@ jobs:
                           continue
                       file_path = os.path.join(root, file)
                       archive.write(file_path, os.path.relpath(file_path, folder_path))
+      - name: Ls
+        run: ls ${{ github.workspace }}/windowsPublish
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[Auto] Version bumped to ${{ github.event.inputs.version }}"

@@ -30,6 +30,7 @@ with changelog_path.open('r+') as file_handle:
         raise Exception(f"Failed to find changes with either Unreleased or {version} tag.")
     file_handle.seek(0)
     file_handle.writelines(lines)
+    file_handle.truncate()
 
 if args.extract is not None:
     with Path(args.extract).open('w') as file_handle:
