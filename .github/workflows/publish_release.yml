@@ -32,7 +32,44 @@ jobs:
       - name: Format changelog and build release message
         run: python ${{ github.workspace }}/.github/format_changelog.py -v ${{ github.event.inputs.version }} --extract ${{ env.RELEASE_MESSAGE }}
       - name: Bump .csproj version
-        run: python ${{ github.workspace }}/.github/bump_version_csproj.py -f ${{ github.workspace }}/EyeTrackerStreamingConsole/EyeTrackerStreamingConsole.csproj -v ${{ github.event.inputs.version }}
+        shell: python
+        run: |
+          from xml.etree import ElementTree
+          import pathlib
+          from xml.etree.ElementTree import Element, SubElement
+          PROPERTY_GROUP = "PropertyGroup"
+          VERSION = "Version"
+
+
+
+          cs_proj_path = pathlib.Path(r"${{ github.workspace }}/EyeTrackerStreamingAvalonia/EyeTrackerStreamingAvalonia.csproj")
+          version = "${{ github.event.inputs.version }}"
+          if not cs_proj_path.exists():
+              raise Exception("Missing csproj file")
+          tree = ElementTree.parse(cs_proj_path)
+          root = tree.getroot()
+
+
+          def walk_property_group(property_group) -> Element | None:
+              for child in property_group:
+                  if child.tag == PROPERTY_GROUP:
+                      walk_property_group(property_group)
+                  elif child.tag == VERSION:
+                      return child
+              return None
+
+
+          for child in root:
+              if child.tag == "PropertyGroup":
+                  node = walk_property_group(child)
+                  if node is not None:
+                      node.text = version
+                      break
+          else:
+              prop_group = SubElement(root, PROPERTY_GROUP)
+              version = SubElement(prop_group, VERSION)
+              version.text = version
+          tree.write(cs_proj_path)
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -42,14 +79,33 @@ jobs:
       - name: Test # depends on setup-dotnet
         run: dotnet test --no-restore --verbosity normal
       - name: Publish windows # depends on setup-dotnet
-        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o eyeTrackingStreamingConsolePublish ./EyeTrackerStreamingConsole/EyeTrackerStreamingConsole.csproj
+        run: dotnet publish -c Release -r win-x64 -p:PublishSingleFile=true -p:IncludeSourceRevisionInInformationalVersion=false --self-contained false -o windowsPublish ./EyeTrackerStreamingAvalonia/EyeTrackerStreamingAvalonia.csproj
+      - name: Pack release files
+        shell: python
+        run: |
+          import os
+          import zipfile
+          version = "${{ github.event.inputs.version }}"
+          folder_path = r"${{ github.workspace }}\windowsPublish"
+          out_file_name = fr"Inseye-Remote-Connector-Desktop_{version}.zip"
+          archive_path = fr"{folder_path}\{out_file_name}"
+          folder_path = os.path.abspath(folder_path)
+          archive_path = os.path.abspath(archive_path)
+
+          with zipfile.ZipFile(archive_path, 'w', zipfile.ZIP_DEFLATED) as archive:
+              for root, dirs, files in os.walk(folder_path):
+                  for file in files:
+                      if file == out_file_name:
+                          continue
+                      file_path = os.path.join(root, file)
+                      archive.write(file_path, os.path.relpath(file_path, folder_path))
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: "[Auto] Version bumped to ${{ github.event.inputs.version }}"
-          file_pattern: ":(exclude)${{ env.RELEASE_MESSAGE }} :(exclude)*eyeTrackingStreamingConsolePublish*"
+          file_pattern: ":(exclude)${{ env.RELEASE_MESSAGE }} :(exclude)*windowsPublish*"
       - uses: ncipollo/release-action@v1
         with:
           tag: "${{ github.event.inputs.version }}"
           draft: true
           bodyFile: "${{ env.RELEASE_MESSAGE }}"
-          artifacts: "./eyeTrackingStreamingConsolePublish/EyeTrackerStreamingConsole.exe"
+          artifacts: "${{ github.workspace }}/windowsPublish/Inseye-Remote-Connector-Desktop_${{ github.event.inputs.version }}.zip"

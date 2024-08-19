@@ -11,7 +11,7 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace EyeTrackerStreaming.Shared;
 
-public sealed class PooledObjectPolicy<T> : IPooledObjectPolicy<T>
+public sealed class PooledObjectPolicy<T> : IPooledObjectPolicy<T> where T : notnull 
 {
     private readonly Func<T> _createDelegate;
     private readonly Func<T, bool> _returnDelegate;

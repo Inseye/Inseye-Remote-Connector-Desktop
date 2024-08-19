@@ -1,0 +1,46 @@
+<TemplatedControl xmlns="https://github.com/avaloniaui"
+                  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                  xmlns:controls="using:EyeTrackerStreamingAvalonia.Components"
+                  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                  xmlns:ap="using:EyeTrackerStreamingAvalonia.AttachedProperties"
+                  x:Class="EyeTrackerStreamingAvalonia.Components.TopBar"
+                  mc:Ignorable="d" d:DesignWidth="1282" d:DesignHeight="88">
+
+    <TemplatedControl.Styles>
+        <Style Selector="controls|TopBar">
+            <Setter Property="Template">
+                <ControlTemplate>
+                    <Border
+                        Name="TopBardBorder"
+                        ap:DynamicMarginAndPadding.HorizontalPadding="{StaticResource Canvas-PaddingX}"
+                        ap:DynamicMarginAndPadding.VerticalPadding="{StaticResource Element-PaddingY}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource Element-Gap}" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="*" MaxWidth="{StaticResource Element-Gap}" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <controls:CustomButton Grid.Column="0" Command="{TemplateBinding BackCommand}"
+                                                   CommandParameter="{TemplateBinding BackCommandParameter}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Svg Path="/Assets/Svg/backArrow.svg" Width="24" Height="24" />
+                            </controls:CustomButton>
+                            <controls:CustomButton Grid.Column="4" Command="{TemplateBinding SettingsCommand}"
+                                                   CommandParameter="{TemplateBinding SettingsCommandParameter}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <Svg Path="/Assets/Svg/cog.svg" Width="24" Height="24" />
+                            </controls:CustomButton>
+                            <TextBlock Grid.Column="2" Text="{TemplateBinding Title}"
+                                       FontFamily="{StaticResource Poppins}"
+                                       Foreground="{StaticResource --primary-typography-header}" FontSize="39"
+                                       FontWeight="700" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter>
+        </Style>
+    </TemplatedControl.Styles>
+</TemplatedControl>

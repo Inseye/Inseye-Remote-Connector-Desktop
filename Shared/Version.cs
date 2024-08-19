@@ -161,7 +161,7 @@ public readonly struct Version : System.IEquatable<Version>
     /// </summary>
     /// <param name="obj">Any object.</param>
     /// <returns>True if argument is and <see cref="Version" /> and it's values are equal to this.</returns>
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is Version other && Equals(other);
     }

@@ -19,27 +19,23 @@ Solution is split into multiple `.csproj` projects.
 + `API.DependencyInjection` - library with helper classes that register services implemented in `API` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
 + `ClientCommunication` - library with code responsible for communication between desktop service and other client application on desktop
 + `ClientCommunication.DependencyInjection` - library with helper classes that register services implemented in `ClientCommunication` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
-+ `ClientCommunicationTester` - program used to manual testing of communication between desktop service and desktop client
-+ `EyeTrackerStreamingConsole` - program that implements desktop service with UI from `TerminalGUI`
++ `ClientCommunicationTester` - program used to manual test communication between desktop service and desktop client
++ `EyeTrackerStreamingAvalonia` - program that implements desktop service with UI from `Avalonia`
 + `Mocks` - library with various mock implementation of service interfaces from `Shared`
 + `Mocks.DependencyInjection` - library with helper classes that register services implemented in `Mocks` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
 + `ServiceTester` - console program used to test connection between service and desktop
 + `Shared` - library with interface definition and shared utility classes used across most other projects
 + `Shared.DependencyInjection` - library that helps integrating with dependency injection framework [SimpleInjector](https://www.nuget.org/packages/SimpleInjector)
-+ `TerminalGUI` - library with UI views made with [Terminal.Gui](https://github.com/gui-cs/Terminal.Gui/) library
-+ `TerminalGUI.DependencyInjection` - library with helper classes that register services implemented in `TerminalGUI` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
-+ `TerminalGUI.Mock` - program that implements desktop service with UI from `TerminalGUI` and services from `Mock`
 + `ViewModels` - library with view models responsible for application behaviour, deeply based on [reactive programming](https://reactivex.io/) paradigm 
 + `ViewModels.DependencyInjection` - library with helper classes that register services implemented in `ViewModels` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
++ `VrChatConnector` - library that implements OSC protocol used to stream gaze data to VrChat
++ `VrChatConnector.DependencyInjection` - library with helper classes that register services implemented in `VrChatConnector` in [SimpleInjector](https://www.nuget.org/packages/SimpleInjector) container
 
 ## Building project
 
 Update all submodule with `git submodule update --init -r .`.
 
-Run main application with `dotnet run --project ./EyeTrackerStreamingConsole`.
-
-Run mock application with `dotnet run --project ./TerminalGUI.Mock`
-
+Run main application with `dotnet run --project ./EyeTrackerStreamingAvalonia`.
 
 
 ## ServiceTester

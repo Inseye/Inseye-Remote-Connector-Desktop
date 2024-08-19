@@ -8,6 +8,7 @@
 // All other rights reserved.
 
 using System.Collections.ObjectModel;
+using DynamicData;
 using EyeTrackerStreaming.Shared;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Version = EyeTrackerStreaming.Shared.Version;
@@ -16,6 +17,8 @@ namespace Mocks;
 
 public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDisposable
 {
+    private int _id;
+    private Random Random { get; } = new();
     private readonly Task _backgroundTask;
     private readonly ObservableCollection<ServiceOffer> _invokeObservable = new();
     private readonly CancellationTokenSource _tcs = new();
@@ -23,6 +26,7 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
     public RemoteServiceOffersProviderMock()
     {
         (_backgroundTask = BackgroundTask()).ConfigureAwait(false);
+        _invokeObservable.AddRange([Long(), Long(), Long(), Long()]);
         ServiceOffers = new ReadOnlyObservableCollection<ServiceOffer>(_invokeObservable);
     }
 
@@ -34,7 +38,7 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
         _backgroundTask.Wait();
     }
 
-    public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; } 
+    public ReadOnlyObservableCollection<ServiceOffer> ServiceOffers { get; }
 
     private async Task BackgroundTask()
     {
@@ -43,18 +47,33 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
         {
             while (!_tcs.IsCancellationRequested)
             {
-                _invokeObservable.Clear();       
+                _invokeObservable.Clear();
                 foreach (var offer in Enumerable.Range(0, (int) random.NextInt64(1, 5))
-                             .Select(i => new ServiceOffer($"Service Name{i}", "address", 1234, new Version(0, 0, 0, "mock"))))
+                             .Select(i => GenerateOffer()))
                 {
                     _invokeObservable.Add(offer);
                 }
-                await Task.Delay(3000).ConfigureAwait(false);
+
+                await Task.Delay(2000).ConfigureAwait(false);
             }
         }
-        catch (TaskCanceledException taskCanceledException)
+        catch (TaskCanceledException)
         {
             // ignore
         }
+    }
+
+    private ServiceOffer GenerateOffer()
+    {
+        return new ServiceOffer($"Service Name{_id++}",
+            $"{Random.Next(1, 254)}.{Random.Next(0, 254)}.{Random.Next(0, 254)}.{Random.Next(0, 254)}",
+            Random.Next(1000, 65535), new Version(Random.Next(0, 100), Random.Next(0, 100), Random.Next(0, 100)));
+    }
+
+    private ServiceOffer Long()
+    {
+        return new ServiceOffer($"Service Name 100",
+            $"254.254.254.254",
+            65535, new Version(99, 99 ,99));
     }
 }

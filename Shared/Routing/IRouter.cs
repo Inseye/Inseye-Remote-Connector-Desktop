@@ -1,19 +1,19 @@
 ﻿// Module name: Shared
 // File name: IRouter.cs
-// Last edit: 2024-04-30 12:22 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
+// Last edit: 2024-07-25 09:04 by Mateusz Chojnowski mateusz.chojnowski@inseye.com
 // Copyright (c) Inseye Inc.
 // 
 // This file is part of Inseye Software Development Kit subject to Inseye SDK License
 // See  https://github.com/Inseye/Licenses/blob/master/SDKLicense.txt.
-// All other rights reserved.
+// All other rights reserved.ed.
 
 namespace EyeTrackerStreaming.Shared.Routing;
 
 public interface IRouter
 {
-    public bool CanNavigateBack { get; }
-    public IObservable<bool> CanNavigateBackObservable { get; }
-    public Route CurrentRoute { get; }
+	public bool CanNavigateBack { get; }
+	public IObservable<bool> CanNavigateBackObservable { get; }
+	public Route CurrentRoute { get; }
 
     /// <summary>
     ///     Navigates to selected destination.

@@ -1,0 +1,29 @@
+﻿<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime">
+   <Styles.Resources>
+       <system:String x:Key="VariantName">LG</system:String>
+       <CornerRadius x:Key="Rounded-Small">4.0</CornerRadius>
+       <CornerRadius x:Key="Rounded">6.0</CornerRadius>
+       <CornerRadius x:Key="Rounded-Large">12.0</CornerRadius>
+       <CornerRadius x:Key="Rounded-XLarge">18.0</CornerRadius>
+       <!-- canvas -->
+       <system:Double x:Key="Canvas-PaddingX">12.0</system:Double>
+       <system:Double x:Key="Canvas-PaddingY">12.0</system:Double>
+       <system:Double x:Key="Canvas-Padding-Bottom">16.0</system:Double>
+       <system:Double x:Key="Canvas-Gap">8.0</system:Double>
+       <system:Double x:Key="Canvas-PaddingX-Large">24.0</system:Double>
+       <system:Double x:Key="Canvas-PaddingY-Large">24.0</system:Double>
+       <!-- element -->
+       <system:Double x:Key="Element-PaddingX">8.0</system:Double>
+       <system:Double x:Key="Element-PaddingY">8.0</system:Double>
+       <system:Double x:Key="Element-Bottom">10.0</system:Double>
+       <system:Double x:Key="Element-Gap">9.0</system:Double>
+       <system:Double x:Key="Element-PaddingX-Large">16.0</system:Double>
+       <system:Double x:Key="Element-PaddingY-Large">12.0</system:Double>
+       <system:Double x:Key="Element-PaddingX-XLarge">20.0</system:Double>
+       <system:Double x:Key="Element-PaddingY-XLarge">18.0</system:Double>
+       <!-- icons -->
+       <system:Double x:Key="Icons-Size">24.0</system:Double>
+   </Styles.Resources>
+</Styles>

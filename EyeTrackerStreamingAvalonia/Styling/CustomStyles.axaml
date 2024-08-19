@@ -1,0 +1,36 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:system="clr-namespace:System;assembly=System.Runtime"
+        x:Class="EyeTrackerStreamingAvalonia.Styling.CustomStyles">
+    <Styles.Resources>
+        <ResourceDictionary>
+            <SolidColorBrush x:Key="--primary-typography-body" Color="#F6F6F9" />
+            <SolidColorBrush x:Key="--active" Color="#64748B" />
+            <SolidColorBrush x:Key="--noActive" Color="#94A3B8" />
+            <SolidColorBrush x:Key="--text" Color="#1E293B" />
+            <Color x:Key="--primary-typography-header">#EEEBFC</Color>
+            <Color x:Key="--Dark-Background-Fill-Color-Smoke-Default">rgba(0, 0, 0, 0.30)</Color>
+            <Color x:Key="--hover-background">rgba(251, 251, 254, 0.1)</Color>
+            <Color x:Key="--selected-background">rgba(251, 251, 254, 0.2)</Color>
+            <Color x:Key="Primary-EyeCatch-TextAccent">#F04306</Color>
+            <Color x:Key="Primary-ActiveElements-Background">#824CDB</Color>
+            <Color x:Key="Primary-ActiveElements-Text">#F6F6F9</Color>
+            <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
+            <FontFamily x:Key="Roboto">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Roboto</FontFamily>
+            <system:String x:Key="FailedCalibrationDefaultMessage">Calibration failed.</system:String>
+        </ResourceDictionary>
+    </Styles.Resources>
+    <StyleInclude Source="/Styling/Variants/XL.axaml"/>
+    <Style Selector=":is(Window)">
+        <Setter Property="TransparencyLevelHint" Value="Mica" />
+        <!-- <Setter Property="Background" Value="rgba(32, 32, 32, 0.8)"/> -->
+        <Setter Property="Background" Value="Transparent"></Setter>
+    </Style>
+    <Style Selector="TextBlock">
+        <Setter Property="Foreground">
+            <Setter.Value>
+                <SolidColorBrush Color="#FFF"></SolidColorBrush>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</Styles>
