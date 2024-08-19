@@ -10,6 +10,7 @@
 
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using Shared.DependencyInjection;
+using Shared.DependencyInjection.CrossScopedObject;
 using SimpleInjector;
 
 namespace Tests;
@@ -19,6 +20,11 @@ public class CrossScopeLifetimeTests
     interface IInterface
     {
         public event Action OnDispose;
+    }
+
+    class ValidationClass : IInterface
+    {
+        public event Action? OnDispose;
     }
 
     class ResolvedClass : IInterface, IDisposable
@@ -39,7 +45,7 @@ public class CrossScopeLifetimeTests
         container.RegisterInitializer<IPublisher<IInterface>>(obj =>
         {
             if (container.IsVerifying)
-                obj.Publish(new ResolvedClass());
+                obj.Publish(new ValidationClass());
         });
         container.Verify();
     }
@@ -49,7 +55,9 @@ public class CrossScopeLifetimeTests
     {
         var container = new Container();
         container.SetDefaultOptions();
-        container.RegisterCrossScopeManagedService<IInterface>(() => new ResolvedClass());
+        container.RegisterCrossScopeManagedService<IInterface>(() => new ValidationClass());
+        var publisher = container.GetInstance<IPublisher<IInterface>>();
+        publisher.Publish(new ResolvedClass());
         using (var scope = new Scope(container))
         {
             var @interface = scope.GetInstance<IInterface>();
@@ -62,13 +70,20 @@ public class CrossScopeLifetimeTests
         var isDisposed = false;
         var container = new Container();
         container.SetDefaultOptions();
-        container.RegisterCrossScopeManagedService<IInterface>(() => new ResolvedClass());
-        using (var scope = new Scope(container))
+        container.RegisterCrossScopeManagedService<IInterface>(() => new ValidationClass());
+        var manager = container.GetInstance<CrossScopedObjectManager<IInterface>>();
+        var resolvedClass = new ResolvedClass();
+        manager.Publish(resolvedClass);
+        using (manager.KeepCurrentValue())
         {
-            var @interface = scope.GetInstance<IInterface>();
-            @interface.OnDispose += () => isDisposed = true;
+            using (var scope = new Scope(container))
+            {
+                var @interface = scope.GetInstance<IInterface>();
+                @interface.OnDispose += () => isDisposed = true;
+            }
+            Assert.That(isDisposed, Is.False);
         }
-        Assert.That(isDisposed, Is.False);
+        
         container.Dispose();
         Assert.That(isDisposed, Is.True);
     }
@@ -78,13 +93,20 @@ public class CrossScopeLifetimeTests
     {
         var container = new Container();
         container.SetDefaultOptions();
-        container.RegisterCrossScopeManagedService<IInterface>(() => new ResolvedClass());
-        using (var scope = new Scope(container))
+        container.RegisterCrossScopeManagedService<IInterface>(() => new ValidationClass());
+        var pub = container.GetInstance<IPublisher<IInterface>>();
+        var resolvedClass = new ResolvedClass();
+        pub.Publish(resolvedClass);
+        var exception = Assert.Throws<Exception>(() =>
         {
-            var @interface = scope.GetInstance<IInterface>();
-            var publisher = container.GetInstance<IPublisher<IInterface>>();
-            publisher.Publish(null);
-        }
+            using (var scope = new Scope(container))
+            {
+                var @interface = scope.GetInstance<IInterface>();
+                var publisher = container.GetInstance<IPublisher<IInterface>>();
+                publisher.Publish(null);
+            }
+        });
+        Assert.That(exception.Message, Is.EqualTo("There are users that are using current instance."));
     }
     
 }

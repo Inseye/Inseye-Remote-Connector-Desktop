@@ -8,11 +8,12 @@
 // All other rights reserved.
 
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
+using EyeTrackerStreaming.Shared.Structs;
 using EyeTrackerStreaming.Shared.Utility;
 
 namespace Shared.DependencyInjection.CrossScopedObject;
 
-internal class CrossScopedObjectManager<TService> : IDisposable, IProvider<TService>, IPublisher<TService>
+public class CrossScopedObjectManager<TService> : IDisposable, IProvider<TService>, IPublisher<TService>
     where TService : class
 {
     private readonly InvokeObservable<TService?> _invokeObservable = new();
@@ -70,6 +71,21 @@ internal class CrossScopedObjectManager<TService> : IDisposable, IProvider<TServ
         return _invokeObservable;
     }
 
+    public IDisposable KeepCurrentValue()
+    {
+        lock (_lock)
+        {
+            if (_instance != null)
+            {
+                IncrementCounter();
+                return new ValueKeeper(this);
+            }
+
+            throw new NullReferenceException("Object manager stores no value.");
+        }
+    }
+    
+
     public void Publish(TService? value)
     {
         if(EqualityComparer<TService>.Default.Equals(_instance, value))
@@ -78,7 +94,7 @@ internal class CrossScopedObjectManager<TService> : IDisposable, IProvider<TServ
         lock (_lock)
         {
             if (_counter != 0)
-                throw new Exception("There are scoped users that are using current instance.");
+                throw new Exception("There are users that are using current instance.");
             Instance = value;
         }
         DisposeManagedObject(old);
@@ -91,4 +107,23 @@ internal class CrossScopedObjectManager<TService> : IDisposable, IProvider<TServ
         else if (obj is IAsyncDisposable)
             throw new NotImplementedException("Async disposable services are not supported.");
     }
+
+    private class ValueKeeper : IDisposable
+    {
+        private DisposeBool _disposed;
+        private CrossScopedObjectManager<TService> Manager { get; }
+
+        public ValueKeeper(CrossScopedObjectManager<TService> manager)
+        {
+            Manager = manager;
+        }
+
+        public void Dispose()
+        {
+            if (!_disposed.PerformDispose())
+                return;
+            Manager.DecrementCounter();
+        }
+    }
+    
 }
