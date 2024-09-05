@@ -15,8 +15,8 @@
             <Color x:Key="Primary-EyeCatch-TextAccent">#F04306</Color>
             <Color x:Key="Primary-ActiveElements-Background">#824CDB</Color>
             <Color x:Key="Primary-ActiveElements-Text">#F6F6F9</Color>
-            <FontFamily x:Key="Poppins">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Poppins</FontFamily>
-            <FontFamily x:Key="Roboto">avares://EyeTrackerStreamingAvalonia/Assets/Fonts#Roboto</FontFamily>
+            <FontFamily x:Key="Poppins">/Assets/Fonts#Poppins</FontFamily>
+            <FontFamily x:Key="Roboto">/Assets/Fonts#Roboto</FontFamily>
             <system:String x:Key="FailedCalibrationDefaultMessage">Calibration failed.</system:String>
         </ResourceDictionary>
     </Styles.Resources>

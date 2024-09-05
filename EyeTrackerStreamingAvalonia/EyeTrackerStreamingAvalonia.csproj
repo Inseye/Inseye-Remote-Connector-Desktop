@@ -6,6 +6,8 @@
         <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <ApplicationIcon>Assets\icon-256x256.ico</ApplicationIcon>
+        <AssemblyName>Inseye Windows Service</AssemblyName>
     </PropertyGroup>
 
     <ItemGroup>

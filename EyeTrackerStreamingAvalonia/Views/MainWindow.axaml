@@ -7,8 +7,8 @@
         mc:Ignorable="d" d:DesignWidth="1280" d:DesignHeight="720"
         x:Class="EyeTrackerStreamingAvalonia.Views.MainWindow"
         x:DataType="interfaces:IMainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
-        Title="EyeTrackerStreamingAvalonia"
+        Icon="/Assets/icon-256x256.ico"
+        Title="Main Window"
         ExtendClientAreaToDecorationsHint="True">
     <Design.DataContext>
         <!-- This only sets the DataContext for the previewer in an IDE,
