@@ -9,7 +9,7 @@
 
 namespace VRChatConnector.DataStructures;
 
-internal readonly struct VrChatVector2
+public readonly struct VrChatVector2
 {
     public readonly float X;
     public readonly float Y;

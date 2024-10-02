@@ -59,6 +59,7 @@ public class OscClient : IDisposable
     /// <param name="endpoint">Endpoint to which data is sent.</param>
     public async void SendGazeData(GazeDataSample sample, IPEndPoint endpoint)
     {
+        endpoint = new IPEndPoint(IPAddress.Parse("192.168.1.20"), 9000);
         ObjectDisposedException.ThrowIf(_disposed, this);
         var y = -sample.LeftEyeY + -sample.RightEyeY / 2 * MathHelpers.RadToDeg;
         var x = sample.LeftEyeX + sample.RightEyeX / 2 * MathHelpers.RadToDeg;

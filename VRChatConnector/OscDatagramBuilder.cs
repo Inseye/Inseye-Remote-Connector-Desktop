@@ -15,7 +15,7 @@ namespace VRChatConnector;
 /// <summary>
 ///     Builds datagrams sent through VRChat
 /// </summary>
-internal readonly struct OscDatagramBuilder
+public readonly struct OscDatagramBuilder
 {
     private readonly byte[] _buffer;
 
@@ -32,38 +32,38 @@ internal readonly struct OscDatagramBuilder
     public ReadOnlySpan<byte> Create(string address, float value)
     {
         var length = WriteAddress(address);
-        length = WriteTags("f", length + 1);
-        length = WriteFloat(value, length + 1);
+        length = WriteTags("f", length);
+        length = WriteFloat(value, length);
         return _buffer.AsSpan(0, length);
     }
 
     public ReadOnlySpan<byte> Create(string address, VrChatVector2 value)
     {
         var length = WriteAddress(address);
-        length = WriteTags("ff", length + 1);
-        length = WriteFloat(value.X, length + 1);
-        length = WriteFloat(value.Y, length + 1);
+        length = WriteTags("ff", length);
+        length = WriteFloat(value.X, length);
+        length = WriteFloat(value.Y, length);
         return _buffer.AsSpan(0, length);
     }
 
     public ReadOnlySpan<byte> Create(string address, VrChatVector3 value)
     {
         var length = WriteAddress(address);
-        length = WriteTags("fff", length + 1);
-        length = WriteFloat(value.X, length + 1);
-        length = WriteFloat(value.Y, length + 1);
-        length = WriteFloat(value.Z, length + 1);
+        length = WriteTags("fff", length);
+        length = WriteFloat(value.X, length);
+        length = WriteFloat(value.Y, length);
+        length = WriteFloat(value.Z, length);
         return _buffer.AsSpan(0, length);
     }
 
     public ReadOnlySpan<byte> Create(string address, VrChatVector4 value)
     {
         var length = WriteAddress(address);
-        length = WriteTags("ffff", length + 1);
-        length = WriteFloat(value.X, length + 1);
-        length = WriteFloat(value.Y, length + 1);
-        length = WriteFloat(value.Z, length + 1);
-        length = WriteFloat(value.W, length + 1);
+        length = WriteTags("ffff", length);
+        length = WriteFloat(value.X, length);
+        length = WriteFloat(value.Y, length);
+        length = WriteFloat(value.Z, length);
+        length = WriteFloat(value.W, length);
         return _buffer.AsSpan(0, length);
     }
 
@@ -81,7 +81,7 @@ internal readonly struct OscDatagramBuilder
 
     private int WriteString(string stringToWrite, int writePosition)
     {
-        var length = writePosition + stringToWrite.Length;
+        var length = writePosition + stringToWrite.Length + 1; // osc string are null terminated
         var alignedLength = CalculateNewAlignedLength(length);
         CheckNewLength(alignedLength);
         foreach (var character in stringToWrite)
@@ -89,19 +89,19 @@ internal readonly struct OscDatagramBuilder
         _buffer[writePosition++] = (byte) '\0';
         while (writePosition < alignedLength)
             _buffer[writePosition++] = 0;
-        return writePosition - 1;
+        return writePosition;
     }
 
     private int WriteFloat(float data, int writePosition)
     {
-        CheckNewLength(writePosition + sizeof(float) - 1);
+        CheckNewLength(writePosition + sizeof(float));
         Span<float> swapBuffer = stackalloc float[1];
         swapBuffer[0] = data;
         var bytesSpan = MemoryMarshal.AsBytes(swapBuffer);
         _buffer[writePosition++] = bytesSpan[3];
         _buffer[writePosition++] = bytesSpan[2];
         _buffer[writePosition++] = bytesSpan[1];
-        _buffer[writePosition] = bytesSpan[0];
+        _buffer[writePosition++] = bytesSpan[0];
         return writePosition;
     }
 
@@ -117,6 +117,9 @@ internal readonly struct OscDatagramBuilder
     /// <returns></returns>
     private int CalculateNewAlignedLength(int unalignedLength)
     {
-        return unalignedLength + ((4 - (unalignedLength & 3)) & 3);
+        var rest = unalignedLength % 4;
+        if (rest != 0) 
+            unalignedLength += 4 - rest;
+        return unalignedLength;
     }
 }
