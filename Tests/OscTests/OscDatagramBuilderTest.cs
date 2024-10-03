@@ -32,6 +32,26 @@ public class OscDatagramBuilderTest
 		Assert.That(array[index++], Is.EqualTo(0));
 		Assert.That(array[index++], Is.EqualTo(0));
 		Assert.That(array[index++], Is.EqualTo(0));
-
+		/// check floats
+		// 1.0f
+		Assert.That(array[index++], Is.EqualTo(63));
+		Assert.That(array[index++], Is.EqualTo(128));
+		Assert.That(array[index++], Is.EqualTo(0));
+		Assert.That(array[index++], Is.EqualTo(0));
+		// 2.0f
+		Assert.That(array[index++], Is.EqualTo(64));
+		Assert.That(array[index++], Is.EqualTo(0));
+		Assert.That(array[index++], Is.EqualTo(0));
+		Assert.That(array[index++], Is.EqualTo(0));
+		// 3.0f 
+		Assert.That(array[index++], Is.EqualTo(64));
+		Assert.That(array[index++], Is.EqualTo(64));
+		Assert.That(array[index++], Is.EqualTo(0));
+		Assert.That(array[index++], Is.EqualTo(0));
+		// 4.0f 
+		Assert.That(array[index++], Is.EqualTo(64));
+		Assert.That(array[index++], Is.EqualTo(128));
+		Assert.That(array[index++], Is.EqualTo(0));
+		Assert.That(array[index++], Is.EqualTo(0));
 	}
 }
