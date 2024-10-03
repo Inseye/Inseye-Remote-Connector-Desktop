@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] 
+
+### Fixed
+
+- fixed various mock bugs
+
+### Changed
+
+- removed parts of UI that have no purpose yet
+
 ## [0.3.0] - 2024-08-19
 
 ### Added 

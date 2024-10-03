@@ -18,7 +18,9 @@ using EyeTrackerStreaming.Shared.Routing;
 using EyeTrackerStreaming.Shared.ServiceInterfaces;
 using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using EyeTrackingStreaming.ViewModels.Interfaces;
+using Microsoft.Extensions.Logging;
 using ReactiveUI;
+using Serilog;
 using SimpleInjector;
 
 namespace EyeTrackerStreamingAvalonia.ViewModels;
@@ -28,8 +30,9 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 	private bool _canNavigateBack;
 	private IViewModel? _currentViewModel;
 	private IUiThreadSynchronizationContext UiThreadSynchronizationContext { get; }
+	private ILogger<MainWindowViewModel> Logger { get; }
 
-	public MainWindowViewModel(Container masterContainer, IUiThreadSynchronizationContext uiSynchronizationContext)
+	public MainWindowViewModel(Container masterContainer, IUiThreadSynchronizationContext uiSynchronizationContext, ILogger<MainWindowViewModel> logger)
 	{
 		MasterContainer = masterContainer;
 		CurrentScope = new Scope(MasterContainer);
@@ -37,6 +40,7 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 		CurrentViewModel = GetViewModelForRoute(CurrentRoute);
 		CanNavigateBackObservable = this.WhenValueChanged(obj => obj.CanNavigateBack, true, () => false);
 		UiThreadSynchronizationContext = uiSynchronizationContext;
+		Logger = logger;
 	}
 
 	public void LoadInitialView()
@@ -67,14 +71,18 @@ public class MainWindowViewModel : ReactiveObject, IMainWindowViewModel, IRouter
 
 	public async Task NavigateTo(Route route, CancellationToken token)
 	{
+		Logger.LogTrace("NavigateTo: {Route}", route);
 		if (route == CurrentRoute)
 			return;
 		token.ThrowIfCancellationRequested();
 		await UiThreadSynchronizationContext.Context;
+		Logger.LogTrace("Switched to main uiThreadSynchronizationContext");
 		token.ThrowIfCancellationRequested();
 		await CurrentScope.DisposeAsync();
+		Logger.LogTrace("Disposed current scope");
 		CurrentScope = new Scope(MasterContainer);
 		CurrentViewModel = GetViewModelForRoute(route);
+		Logger.LogTrace("Changed CurrentViewModel");
 		CurrentRoute = route;
 		CanNavigateBack = false;
 	}

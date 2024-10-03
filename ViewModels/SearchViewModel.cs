@@ -68,6 +68,7 @@ public class SearchViewModel : ReactiveObject, ISearchViewModel, IDisposable
     {
         Logger.LogTrace($"Disposing {nameof(SearchViewModel)}");
         Disposable.Dispose();
+        Logger.LogTrace($"Disposed {nameof(SearchViewModel)}");
     }
 
     private async Task<Unit> ConnectToHandler(ServiceOffer serviceOffer)
@@ -77,8 +78,11 @@ public class SearchViewModel : ReactiveObject, ISearchViewModel, IDisposable
         {
             Logger.LogTrace("ConnectToHandlerCalled");
             var service = await RemoteServiceFactory.CreateRemoteService(serviceOffer, Cts.Token);
+            Logger.LogTrace("CreatedRemoteService");
             Publisher.Publish(service);
+            Logger.LogTrace("PublishedRemoteService");
             await Router.NavigateTo(Route.ConnectionStatus, Cts.Token);
+            Logger.LogTrace("NavigatedToConnectionStatusRoute");
         }
         catch (TimeoutException)
         {

@@ -90,12 +90,14 @@
                                                                 </ItemsPresenter.ItemsPanel>
                                                             </ItemsPresenter>
                                                             <!-- Unpair button -->
+                                                            <!--
                                                             <components:CustomButton Grid.Row="1">
                                                                 <StackPanel Orientation="Horizontal">
                                                                     <Svg Path="/Assets/Svg/trashBin.svg" Width="24" Height="24" ap:DynamicMarginAndPadding.RightMargin="{StaticResource Element-Gap}"/>
                                                                     <TextBlock Classes="label">Unpair</TextBlock>
                                                                 </StackPanel>
                                                             </components:CustomButton>
+                                                            -->
                                                         </Grid>
                                                     </Border>
                                                     <!-- Content view -->
