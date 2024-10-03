@@ -28,11 +28,11 @@
                                                    HorizontalAlignment="Center" VerticalAlignment="Center">
                                 <Svg Path="/Assets/Svg/backArrow.svg" Width="24" Height="24" />
                             </controls:CustomButton>
-                            <controls:CustomButton Grid.Column="4" Command="{TemplateBinding SettingsCommand}"
-                                                   CommandParameter="{TemplateBinding SettingsCommandParameter}"
-                                                   HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <Svg Path="/Assets/Svg/cog.svg" Width="24" Height="24" />
-                            </controls:CustomButton>
+                            <!-- <controls:CustomButton Grid.Column="4" Command="{TemplateBinding SettingsCommand}" -->
+                            <!--                        CommandParameter="{TemplateBinding SettingsCommandParameter}" -->
+                            <!--                        HorizontalAlignment="Center" VerticalAlignment="Center"> -->
+                            <!--     <Svg Path="/Assets/Svg/cog.svg" Width="24" Height="24" /> -->
+                            <!-- </controls:CustomButton> -->
                             <TextBlock Grid.Column="2" Text="{TemplateBinding Title}"
                                        FontFamily="{StaticResource Poppins}"
                                        Foreground="{StaticResource --primary-typography-header}" FontSize="39"
