@@ -9,6 +9,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using EyeTrackerStreaming.Shared.Configuration;
@@ -19,7 +20,6 @@ using EyeTrackerStreamingAvalonia.Services;
 using EyeTrackerStreamingAvalonia.ViewModels;
 using EyeTrackerStreamingAvalonia.ViewModels.Interfaces;
 using gRPC.DependencyInjection;
-using Mocks;
 using Mocks.DependencyInjection;
 using Serilog;
 using Shared.DependencyInjection;
@@ -54,9 +54,11 @@ internal sealed class Program
             var serilogLogger = new LoggerConfiguration()
                 .MinimumLevel.Verbose()
                 .Enrich.FromLogContext()
+                
                 .WriteTo.File(
                     Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "desktop_service.log"))
+                        "desktop_service.log"), outputTemplate:
+                    "{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] ({SourceContext}) {Message:lj}{NewLine}{Properties}{NewLine}{Exception}")
                 .CreateLogger();
             config.AddSerilog(serilogLogger);
         });
@@ -71,7 +73,8 @@ internal sealed class Program
         container.Register<IRouter, MainWindowViewModel>(Lifestyle.Singleton);
         container.Register<IUiThreadSynchronizationContext, AvaloniaSynchronizationContextResolver>(Lifestyle.Singleton);
         // optional mocks for development
-        // container.RegisterAllMocks();
+        if (args.Contains("-m"))
+            container.RegisterAllMocks();
         return BuildAvaloniaApp()
             .AfterPlatformServicesSetup(_ => container.Verify())
             .StartWithClassicDesktopLifetime(args);
