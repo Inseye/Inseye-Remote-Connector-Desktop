@@ -37,9 +37,6 @@ Update all submodule with `git submodule update --init -r .`.
 
 Run main application with `dotnet run --project ./EyeTrackerStreamingAvalonia`.
 
+## EyeTrackingStreamingAvalonia
 
-## ServiceTester
-
-Service tester logging can be configured in [program entrypoint](./ServiceTester/Program.cs) in logging section.
-
-For now all uncaught exceptions are pushed to the terminating the application and then printed in console, please copy them and send to me (Mateusz Chojnowski). 
+You can pass optional argument `-m` to run the application with various mock implementation (intended for development and internal use).
