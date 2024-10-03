@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - fixed various mock bugs
 
+- osc datagrams have explicitly set proper size
+
 ### Changed
 
 - removed parts of UI that have no purpose yet
