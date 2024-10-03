@@ -54,7 +54,7 @@ public class RemoteServiceOffersProviderMock : IRemoteServiceOffersProvider, IDi
                     _invokeObservable.Add(offer);
                 }
 
-                await Task.Delay(2000).ConfigureAwait(false);
+                await Task.Delay(2000, _tcs.Token).ConfigureAwait(false);
             }
         }
         catch (TaskCanceledException)
